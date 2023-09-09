@@ -1,0 +1,12 @@
+// Add additional repositories
+// Basic repositories like Sonatype, Maven Central and JitPack are already included
+repositories {
+
+}
+
+// Add additional dependencies
+// Use "implementation" for dependencies that are not shaded into the final jar
+// Use "internal" for dependencies that are shaded into the final jar
+dependencies {
+	
+}
