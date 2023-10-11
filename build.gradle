@@ -1,17 +1,8 @@
-// You should not need to edit this file directly.
-// Use dependencies.gradle instead.
-
 plugins {
     id "java"
     id "org.openjfx.javafxplugin" version "0.0.13"
     id "com.github.johnrengelman.shadow" version "7.0.0"
 }
-
-// Use dependencies from "dependencies.gradle"
-if (file("dependencies.gradle").exists()) {
-    apply from: "dependencies.gradle"
-}
-
 // Test dependencies
 dependencies {
 
