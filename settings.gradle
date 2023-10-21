@@ -1,2 +1,5 @@
 // Project name
 rootProject.name = projectName
+
+include "framework"
+include "example"
