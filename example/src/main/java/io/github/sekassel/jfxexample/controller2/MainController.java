@@ -5,7 +5,7 @@ import io.github.sekassel.jfxframework.controller.ControllerEvent;
 import io.github.sekassel.jfxframework.controller.Param;
 import javafx.scene.control.Label;
 
-@Controller(route = "/menu/main")
+@Controller(id = "/menu/main")
 public class MainController {
 
     public Label welcomeLabel;

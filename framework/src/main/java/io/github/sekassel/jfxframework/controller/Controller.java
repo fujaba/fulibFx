@@ -17,20 +17,20 @@ public @interface Controller {
     /**
      * The path of the FXML file to load.
      * <p>
-     * If not specified the default naming scheme will be used.
+     * If not specified the default naming scheme ({@link ControllerManager#transform(String)}) will be used (ExampleController --> example.fxml).
      *
      * @return The path of the FXML file to load.
      */
     String path() default "";
 
     /**
-     * The route of the controller.
+     * The id of the controller.
      * <p>
-     * Example: "/ingame/npc/shop"
+     * If not specified the default naming scheme will be used (io.github.example.ExampleController --> example).
      *
      * @return The route of the controller
      */
-    String route();
+    String id() default "";
 
     /**
      * Whether the controller is a sub controller (rendered inside another controller).

@@ -61,7 +61,7 @@ public class ControllerManager {
      * @param controller The controller to register
      */
     private void register(@NotNull Class<?> controller) {
-        this.classes.put(controller.getAnnotation(Controller.class).route(), controller);
+        this.classes.put(controller.getAnnotation(Controller.class).id(), controller);
     }
 
     /**
@@ -99,7 +99,7 @@ public class ControllerManager {
 
         String path = controller.getAnnotation(Controller.class).path();
 
-        Parent parent = path.isEmpty() ? load(FXML_PATH + transform(controller.getSimpleName()), this.instances.get(route)) : load(path, this.instances.get(route));
+        Parent parent = path.isEmpty() ? load(FXML_PATH + transform(controller.getSimpleName()) + ".fxml", this.instances.get(route)) : load(path, this.instances.get(route));
 
         callAnnotation(route, controller, ControllerEvent.onRender.class, parameters);
 
@@ -145,7 +145,7 @@ public class ControllerManager {
     /**
      * Loads a fxml file.
      *
-     * @param fileName The name of the file (with path and file extension)
+     * @param fileName The name of the fxml resource file (with path and file extension)
      * @param factory  The controller factory to use
      * @return A parent representing the fxml file
      */
@@ -160,14 +160,18 @@ public class ControllerManager {
     }
 
     /**
-     * Transforms a class name to a fxml file name.
-     * Example: ExampleController --> example.fxml
+     * Transforms a class name to a fxml file name or id using the default naming scheme. Used if no path is specified in the {@link Controller#path()} annotation.
+     * <p>
+     * Example: ExampleController --> example
+     * <p>
+     * Note that this method could result in funky names if the class name doesn't follow the naming scheme.
      *
-     * @param className The name of the class (should be class.getSimpleName())
-     * @return The name of the fxml file
+     * @param className The name of the class (should be {@link Class#getName()} or {@link Class#getSimpleName()}
+     * @return The transformed name
      */
     protected String transform(String className) {
-        return className.replace("Controller", "").toLowerCase() + ".fxml";
+        String[] classes = className.split("\\.");
+        return classes[classes.length - 1].replace("Controller", "").toLowerCase();
     }
 
 }
