@@ -1,15 +1,16 @@
 package io.github.sekassel.jfxexample.controller;
 
 import io.github.sekassel.jfxexample.ExampleApp;
-import io.github.sekassel.jfxframework.controller.Controller;
+import io.github.sekassel.jfxframework.controller.annotation.Controller;
 import io.github.sekassel.jfxframework.controller.ControllerEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 
+import javax.inject.Inject;
 import java.util.Map;
 
-@Controller(path = "view/login/login.fxml", route = "/menu/login")
+@Controller(path = "view/login/login.fxml")
 public class LoginController {
 
     @FXML
@@ -18,6 +19,9 @@ public class LoginController {
     @FXML
     private Button loginButton;
 
+    @Inject
+    public LoginController() {
+    }
 
     @ControllerEvent.onInit()
     public void init() {
@@ -31,7 +35,7 @@ public class LoginController {
 
     @FXML
     public void buttonClick() {
-        ExampleApp.instance.show("/menu/main", Map.of("username", usernameTextField.getText()));
+        ExampleApp.instance.show("mainmenu", Map.of("username", usernameTextField.getText()));
     }
 
 }
