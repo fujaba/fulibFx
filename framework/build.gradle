@@ -138,3 +138,7 @@ dependencies {
 static JavaVersion getVersionForMajor(String version) {
     return JavaVersion.values().find { (it.majorVersion == version) }
 }
+
+test {
+    useJUnitPlatform()
+}
