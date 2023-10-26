@@ -15,7 +15,7 @@ public class Routing {
     @Inject
     public Provider<LoginController> login;
 
-    @Route(route = "mainmenu")
+    @Route(route = "/mainmenu")
     @Inject
     public Provider<MainController> main;
 

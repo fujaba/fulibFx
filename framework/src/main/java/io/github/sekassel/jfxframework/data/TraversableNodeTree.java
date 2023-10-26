@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 /**
- * A tree that can be traversed by a path in form of directory-like structure.
+ * A tree that can be traversed by a path in form of directory-like structure implemented using nodes.
  *
  * @param <E> The type of the values stored in the tree.
  */
@@ -24,55 +24,26 @@ public class TraversableNodeTree<E> implements TraversableTree<E> {
         this.root = new Node<>("", null, null, null);
         this.current = this.root;
     }
-
-    /**
-     * Returns the value of the root node.
-     *
-     * @return The value of the root node.
-     */
     @Override
     public @Nullable E root() {
         return this.root.value();
     }
 
-    /**
-     * Traverses the tree to the given path.
-     *
-     * @param path The path to traverse to.
-     * @return The value at the given path, or null if the path does not exist.
-     */
     @Override
     public E traverse(String path) {
-        Node<E> node = path.startsWith("/") ? this.root : this.current;
-
-        for (String element : path.split("/")) {
-            if (element.isBlank()) {
-                continue;
-            }
-
-            if (node == null)
-                return null;
-
-            if (element.equals("..")) {
-                if (node.parent != null) {
-                    node = node.parent;
-                }
-                continue;
-            }
-
-            node = node.children().parallelStream().filter(child -> child.id().equals(element)).findAny().orElse(null);
-
-        }
-        if (node != null)
-            this.current = node;
-        return node == null ? null : node.value();
+        return this.follow(path, true);
     }
 
-    /**
-     * Returns the value of the currently visited node.
-     *
-     * @return The value of the current node.
-     */
+    @Override
+    public @Nullable E get(String path) {
+        return this.follow(path, false);
+    }
+
+    @Override
+    public boolean containsPath(String path) {
+        return this.follow(path, false) != null;
+    }
+
     @Override
     public @Nullable E current() {
         return this.current.value();
@@ -115,6 +86,43 @@ public class TraversableNodeTree<E> implements TraversableTree<E> {
 
         }
         node.value(value);
+    }
+
+    /**
+     * Follows the given path and returns the value at the end of the path.
+     * <p>
+     * If the path starts with a slash, the root node will be used as the starting point.
+     * <p>
+     * If the path does not start with a slash, the current node will be used as the starting point.
+     *
+     * @param path     The path to follow.
+     * @param navigate Whether the current node should be changed to the node at the end of the path.
+     * @return The value at the end of the path, or null if the path does not exist.
+     */
+    private E follow(String path, boolean navigate) {
+        Node<E> node = path.startsWith("/") ? this.root : this.current;
+
+        for (String element : path.split("/")) {
+            if (element.isBlank()) {
+                continue;
+            }
+
+            if (node == null)
+                return null;
+
+            if (element.equals("..")) {
+                if (node.parent != null) {
+                    node = node.parent;
+                }
+                continue;
+            }
+
+            node = node.children().parallelStream().filter(child -> child.id().equals(element)).findAny().orElse(null);
+
+        }
+        if (navigate && node != null)
+            this.current = node;
+        return node == null ? null : node.value();
     }
 
     /**

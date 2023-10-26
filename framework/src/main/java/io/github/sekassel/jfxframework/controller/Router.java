@@ -7,6 +7,8 @@ import io.github.sekassel.jfxframework.controller.annotation.Route;
 import io.github.sekassel.jfxframework.controller.exception.ControllerDuplicatedRouteException;
 import io.github.sekassel.jfxframework.controller.exception.ControllerInvalidRouteException;
 import io.github.sekassel.jfxframework.controller.exception.ControllerLoadingException;
+import io.github.sekassel.jfxframework.data.TraversableNodeTree;
+import io.github.sekassel.jfxframework.data.TraversableTree;
 import io.github.sekassel.jfxframework.util.Util;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -21,20 +23,19 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 
 import static io.github.sekassel.jfxframework.util.Constants.FXML_PATH;
 
 public class Router {
 
-    private final Map<String, ControllerRoute> routes;
+    private final TraversableTree<Field> routes;
 
     private Object source;
     private Class<? extends FxFramework> baseClass = FxFramework.class;
 
     public Router() {
-        this.routes = new HashMap<>();
+        this.routes = new TraversableNodeTree<>();
     }
 
     /**
@@ -55,7 +56,7 @@ public class Router {
     /**
      * Registers a field as a route.
      * <p>
-     * The field has to be marked with {@link ControllerRoute}.
+     * The field has to be marked with {@link Route}.
      *
      * @param field The controller to register
      */
@@ -69,10 +70,10 @@ public class Router {
         Route annotation = field.getAnnotation(Route.class);
         String route = annotation.route().equals("$name") ? field.getName() : annotation.route();
 
-        if (this.routes.containsKey(route))
-            throw new ControllerDuplicatedRouteException(route, field.getType(), this.routes.get(route).controller().getType());
+        if (this.routes.containsPath(route))
+            throw new ControllerDuplicatedRouteException(route, field.getType(), this.routes.get(route).getType());
 
-        this.routes.put(route, new ControllerRoute(route, field));
+        this.routes.insert(route, field);
     }
 
     /**
@@ -84,9 +85,9 @@ public class Router {
      */
     public @NotNull Parent render(@NotNull String route, @NotNull Map<String, Object> parameters) {
         // Check if the route exists and has a valid controller
-        if (!this.routes.containsKey(route)) throw new ControllerInvalidRouteException(route);
+        if (!this.routes.containsPath(route)) throw new ControllerInvalidRouteException(route);
 
-        Field provider = this.routes.get(route).controller();
+        Field provider = this.routes.traverse(route);
         Class<?> controller = Util.getProvidedClass(provider);
 
         if (controller == null)
@@ -175,15 +176,6 @@ public class Router {
      */
     public void setMainClass(Class<? extends FxFramework> clazz) {
         this.baseClass = clazz;
-    }
-
-    /**
-     * Represents a route and the field providing the corresponding controller.
-     *
-     * @param route      The route
-     * @param controller The field providing the controller
-     */
-    private record ControllerRoute(String route, Field controller) {
     }
 
 }
