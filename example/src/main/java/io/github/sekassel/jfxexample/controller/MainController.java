@@ -1,4 +1,4 @@
-package io.github.sekassel.jfxexample.controller2;
+package io.github.sekassel.jfxexample.controller;
 
 import io.github.sekassel.jfxexample.ExampleApp;
 import io.github.sekassel.jfxframework.controller.ControllerEvent;
@@ -21,7 +21,7 @@ public class MainController {
     public Label welcomeLabel;
 
     @FXML
-    public Button back;
+    public Button continueButton;
 
     @Inject
     public MainController() {
@@ -43,7 +43,7 @@ public class MainController {
     }
 
     @FXML
-    public void back(ActionEvent actionEvent) {
-        ExampleApp.instance.show("..", Map.of());
+    public void continueButton(ActionEvent actionEvent) {
+        ExampleApp.instance.show("back", Map.of());
     }
 }

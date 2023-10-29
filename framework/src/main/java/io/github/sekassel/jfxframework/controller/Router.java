@@ -11,12 +11,11 @@ import io.github.sekassel.jfxframework.controller.exception.ControllerLoadingExc
 import io.github.sekassel.jfxframework.data.TraversableNodeTree;
 import io.github.sekassel.jfxframework.data.TraversableTree;
 import io.github.sekassel.jfxframework.util.Util;
+import io.github.sekassel.jfxframework.util.reflection.Reflection;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.reflections.Reflections;
-import org.reflections.scanners.Scanners;
 
 import javax.inject.Provider;
 import java.io.IOException;
@@ -50,7 +49,7 @@ public class Router {
 
         this.source = routes;
 
-        new Reflections(routes.getClass(), Scanners.FieldsAnnotated).getFieldsAnnotatedWith(Route.class).forEach(this::registerRoute);
+        Reflection.getFieldsWithAnnotation(routes.getClass(), Route.class).forEach(this::registerRoute);
 
     }
 
@@ -126,7 +125,7 @@ public class Router {
      * @param parameters The parameters to pass to the methods
      */
     private void callMethodsWithAnnotation(@NotNull String route, @NotNull Object instance, @NotNull Class<? extends Annotation> annotation, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
-        new Reflections(instance.getClass(), Scanners.MethodsAnnotated).getMethodsAnnotatedWith(annotation).forEach(method -> {
+        Reflection.getMethodsWithAnnotation(instance.getClass(), annotation).forEach(method -> {
             try {
                 method.invoke(instance, applicableParameters(method, parameters));
             } catch (Exception e) {

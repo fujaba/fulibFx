@@ -78,9 +78,6 @@ dependencies {
 
     // https://mvnrepository.com/artifact/org.glassfish.tyrus/tyrus-container-grizzly-client/1.15
     implementation group: 'org.glassfish.tyrus', name: 'tyrus-container-grizzly-client', version: '1.15'
-
-    // https://mvnrepository.com/artifact/org.reflections/reflections
-    implementation group: 'org.reflections', name: 'reflections', version: '0.10.2'
 }
 
 java {
