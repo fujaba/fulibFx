@@ -1,7 +1,8 @@
 package io.github.sekassel.jfxexample.routes;
 
+import io.github.sekassel.jfxexample.controller.BackController;
 import io.github.sekassel.jfxexample.controller.LoginController;
-import io.github.sekassel.jfxexample.controller2.MainController;
+import io.github.sekassel.jfxexample.controller.MainController;
 import io.github.sekassel.jfxframework.controller.annotation.Route;
 
 import javax.inject.Inject;
@@ -18,6 +19,10 @@ public class Routing {
     @Route(route = "/mainmenu")
     @Inject
     public Provider<MainController> main;
+
+    @Route(route = "/mainmenu/back")
+    @Inject
+    public Provider<BackController> back;
 
     @Inject
     public Routing() {
