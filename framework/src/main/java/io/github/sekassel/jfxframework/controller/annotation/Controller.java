@@ -7,8 +7,6 @@ import java.lang.annotation.Target;
 
 /**
  * Annotation used to mark controllers.
- * <p>
- * See
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
