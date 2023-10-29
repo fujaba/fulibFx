@@ -35,7 +35,7 @@ public class LoginController {
 
     @FXML
     public void buttonClick() {
-        ExampleApp.instance.show("mainmenu", Map.of("username", usernameTextField.getText()));
+        ExampleApp.instance.show("mainmenu", Map.of("username", usernameTextField.getText(), "example", 42));
     }
 
 }

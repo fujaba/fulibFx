@@ -21,10 +21,12 @@ public class ExampleApp extends FxFramework {
     @Override
     public void start(Stage primaryStage) {
         try {
+
             super.start(primaryStage);
             instance = this;
             controllerManager().registerRoutes(component.router());
             show("", Map.of());
+
         } catch (Exception e) {
             e.printStackTrace();
         }

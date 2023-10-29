@@ -3,6 +3,7 @@ package io.github.sekassel.jfxframework.controller;
 import io.github.sekassel.jfxframework.FxFramework;
 import io.github.sekassel.jfxframework.controller.annotation.Controller;
 import io.github.sekassel.jfxframework.controller.annotation.Param;
+import io.github.sekassel.jfxframework.controller.annotation.Params;
 import io.github.sekassel.jfxframework.controller.annotation.Route;
 import io.github.sekassel.jfxframework.controller.exception.ControllerDuplicatedRouteException;
 import io.github.sekassel.jfxframework.controller.exception.ControllerInvalidRouteException;
@@ -145,7 +146,11 @@ public class Router {
         return Arrays.stream(method.getParameters())
                 .map(parameter -> {
                     Param param = parameter.getAnnotation(Param.class);
-                    if (param == null) return null;
+                    if (param == null) {
+                        Params params = parameter.getAnnotation(Params.class);
+                        if (params == null) return null;
+                        return parameters;
+                    }
                     return parameters.get(param.name());
                 })
                 .toArray();
