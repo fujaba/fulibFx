@@ -22,6 +22,12 @@ dependencies {
 
     // JFxFramework
     implementation project(':framework')
+
+    // https://mvnrepository.com/artifact/com.google.dagger/dagger
+    implementation group: 'com.google.dagger', name: 'dagger', version: '2.42'
+
+    // https://mvnrepository.com/artifact/com.google.dagger/dagger-compiler
+    annotationProcessor group: 'com.google.dagger', name: 'dagger-compiler', version: '2.42'
 }
 
 java {

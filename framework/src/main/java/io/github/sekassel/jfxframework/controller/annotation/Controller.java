@@ -1,4 +1,4 @@
-package io.github.sekassel.jfxframework.controller;
+package io.github.sekassel.jfxframework.controller.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -17,7 +17,7 @@ public @interface Controller {
     /**
      * The path of the FXML file to load.
      * <p>
-     * If not specified the default naming scheme ({@link ControllerManager#transform(String)}) will be used (ExampleController --> example.fxml).
+     * If not specified the default naming scheme will be used (ExampleController --> example.fxml).
      *
      * @return The path of the FXML file to load.
      */

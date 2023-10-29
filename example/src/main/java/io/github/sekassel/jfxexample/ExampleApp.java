@@ -1,5 +1,7 @@
 package io.github.sekassel.jfxexample;
 
+import io.github.sekassel.jfxexample.dagger.MainComponent;
+import io.github.sekassel.jfxexample.dagger.DaggerMainComponent;
 import io.github.sekassel.jfxframework.FxFramework;
 import javafx.stage.Stage;
 
@@ -9,12 +11,25 @@ public class ExampleApp extends FxFramework {
 
     public static ExampleApp instance;
 
+    private final MainComponent component;
+
+    public ExampleApp() {
+        super();
+        this.component = DaggerMainComponent.builder().mainApp(this).build();
+    }
+
     @Override
     public void start(Stage primaryStage) {
-        super.start(primaryStage);
-        instance = this;
-        controllerManager().register("io.github.sekassel.jfxexample.controller", "io.github.sekassel.jfxexample.controller2");
-        show("/menu/login", Map.of());
+        try {
+
+            super.start(primaryStage);
+            instance = this;
+            controllerManager().registerRoutes(component.router());
+            show("", Map.of());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -22,4 +37,7 @@ public class ExampleApp extends FxFramework {
         super.stop();
     }
 
+    public MainComponent component() {
+        return component;
+    }
 }

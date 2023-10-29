@@ -1,14 +1,31 @@
 package io.github.sekassel.jfxexample.controller2;
 
-import io.github.sekassel.jfxframework.controller.Controller;
+import io.github.sekassel.jfxexample.ExampleApp;
 import io.github.sekassel.jfxframework.controller.ControllerEvent;
-import io.github.sekassel.jfxframework.controller.Param;
+import io.github.sekassel.jfxframework.controller.annotation.Controller;
+import io.github.sekassel.jfxframework.controller.annotation.Param;
+import io.github.sekassel.jfxframework.controller.annotation.Params;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.layout.Pane;
 
-@Controller(id = "/menu/main")
+import javax.inject.Inject;
+import java.util.Map;
+
+@Controller(id = "mainmenu")
 public class MainController {
 
+    @FXML
     public Label welcomeLabel;
+
+    @FXML
+    public Button back;
+
+    @Inject
+    public MainController() {
+    }
 
     @ControllerEvent.onInit()
     public void init(@Param(name = "username") String user) {
@@ -18,5 +35,15 @@ public class MainController {
     @ControllerEvent.onRender()
     public void setText(@Param(name = "username") String username, @Param(name = "password") String password) {
         welcomeLabel.setText("Welcome " + username + ", your password is " + password);
+    }
+
+    @ControllerEvent.onRender()
+    public void listParameters(@Params Map<String, Object> params) {
+        params.forEach((key, value) -> ((Pane) welcomeLabel.getParent()).getChildren().add(new Label(key + ": " + value)));
+    }
+
+    @FXML
+    public void back(ActionEvent actionEvent) {
+        ExampleApp.instance.show("..", Map.of());
     }
 }
