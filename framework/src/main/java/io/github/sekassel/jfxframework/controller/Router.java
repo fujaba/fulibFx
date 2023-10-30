@@ -173,9 +173,13 @@ public class Router {
     private @Nullable Object @NotNull [] applicableParameters(@NotNull Method method, @NotNull Map<String, Object> parameters) {
         return Arrays.stream(method.getParameters())
                 .map(parameter -> {
+                    Param param = parameter.getAnnotation(Param.class);
+                    Params params = parameter.getAnnotation(Params.class);
+
+                    if (param != null && params != null)
+                        throw new RuntimeException("Parameter '" + parameter.getName() + "' in method '" + method.getDeclaringClass().getName() + "#" + method.getName() + "' is annotated with both @Param and @Params");
 
                     // Check if the parameter is annotated with @Param and if the parameter is of the correct type
-                    Param param = parameter.getAnnotation(Param.class);
                     if (param != null) {
                         if (parameters.containsKey(param.name()) && !parameter.getType().isAssignableFrom(parameters.get(param.name()).getClass())) {
                             throw new RuntimeException("Parameter named '" + param.name() + "' in method '" + method.getDeclaringClass().getName() + "#" + method.getName() + "' is of type " + parameter.getType().getName() + " but the provided value is of type " + parameters.get(param.name()).getClass().getName());
@@ -184,7 +188,6 @@ public class Router {
                     }
 
                     // Check if the parameter is annotated with @Params and if the parameter is of the type Map<String, Object>
-                    Params params = parameter.getAnnotation(Params.class);
                     if (params != null) {
                         if (!Util.isMapWithTypes(parameter, String.class, Object.class)) {
                             throw new RuntimeException("Parameter annotated with @Params in method '" + method.getClass().getName() + "#" + method.getName() + "' is not of type " + Map.class.getName());
