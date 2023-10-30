@@ -13,13 +13,17 @@ import java.lang.annotation.Target;
 public @interface Controller {
 
     /**
-     * The path of the FXML file to load.
+     * The view that should be rendered when displaying the controller. This can either be a path to an FXML file or a method that returns a {@link javafx.scene.Node}.
      * <p>
-     * If not specified the default naming scheme will be used (ExampleController --> example.fxml).
+     * If nothing is specified the default naming scheme for an FXML file will be used (ExampleController --> example.fxml).
+     * <p>
+     * Example: '#myMethod' will call the method myMethod() in the controller and use the returned {@link javafx.scene.Node} (throwing an exception if the method does not exist or is invalid).
+     * <p>
+     * Example: 'path/to/myView.fxml' will load the FXML file myView.fxml and use its root node as the view.
      *
-     * @return The path of the FXML file to load.
+     * @return The String specifying the view.
      */
-    String path() default "";
+    String view() default "";
 
     /**
      * The id of the controller.
@@ -29,13 +33,6 @@ public @interface Controller {
      * @return The route of the controller
      */
     String id() default "";
-
-    /**
-     * Whether the controller is a sub controller (rendered inside another controller).
-     *
-     * @return Whether the controller is a sub controller
-     */
-    boolean sub() default false;
 
 
 }

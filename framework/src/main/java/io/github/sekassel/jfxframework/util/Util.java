@@ -19,7 +19,7 @@ public class Util {
     }
 
     /**
-     * Transforms a class name to a fxml file name or id using the default naming scheme. Used if no path is specified in the {@link Controller#path()} annotation.
+     * Transforms a class name to a fxml file name or id using the default naming scheme. Used if no path is specified in the {@link Controller#view()} annotation.
      * <p>
      * Example: ExampleController --> example
      * <p>

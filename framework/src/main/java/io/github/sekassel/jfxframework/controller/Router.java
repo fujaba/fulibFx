@@ -21,7 +21,9 @@ import javax.inject.Provider;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -109,9 +111,36 @@ public class Router {
         // Call the onInit method
         callMethodsWithAnnotation(route, instance, ControllerEvent.onInit.class, parameters);
 
-        // Load the fxml file and call the onRender method
-        String path = controller.getAnnotation(Controller.class).path();
-        Parent parent = path.isEmpty() ? load(FXML_PATH + Util.transform(controller.getSimpleName()) + ".fxml", instance) : load(path, instance);
+        // Render the controller
+        Parent parent;
+        String view = controller.getAnnotation(Controller.class).view();
+
+        // If the controller extends from a javafx Parent, render it
+        if (Parent.class.isAssignableFrom(instance.getClass())) {
+            parent = (Parent) instance;
+            if (!view.isEmpty()) throw new RuntimeException("Controller '" + controller.getName() + "' is a javafx parent and cannot have a view specified.");
+        }
+
+        // If the controller specifies a method as view, call it
+        else if (view.startsWith("#")) {
+            String methodName = view.substring(1);
+            try {
+                Method method = instance.getClass().getDeclaredMethod(methodName);
+                if (!Parent.class.isAssignableFrom(method.getReturnType()))
+                    throw new RuntimeException("Method '" + methodName + "()' in class '" + instance.getClass().getName() + "' does not return a Parent.");
+                parent = (Parent) method.invoke(instance);
+            } catch (NoSuchMethodException e) {
+                throw new RuntimeException("Method '" + methodName + "()' in class '" + instance.getClass().getName() + "' does not exist.");
+            } catch (InvocationTargetException | IllegalAccessException e) {
+                throw new RuntimeException("Method '" + methodName + "()' in class '" + instance.getClass().getName() + "' could not be called.", e);
+            }
+        }
+        // If the controller specifies a fxml file, load it
+        else {
+            parent = view.isEmpty() ? load(FXML_PATH + Util.transform(controller.getSimpleName()) + ".fxml", instance) : load(view, instance);
+        }
+
+        // Call the onRender method
         callMethodsWithAnnotation(route, instance, ControllerEvent.onRender.class, parameters);
 
         return parent;
@@ -176,7 +205,10 @@ public class Router {
      * @return A parent representing the fxml file
      */
     protected @NotNull Parent load(@NotNull String fileName, @NotNull Object factory) {
-        FXMLLoader loader = new FXMLLoader(baseClass.getResource(fileName));
+        URL url = baseClass.getResource(fileName);
+        if (url == null) throw new RuntimeException("Could not find resource '" + fileName + "'");
+
+        FXMLLoader loader = new FXMLLoader(url);
         loader.setControllerFactory(c -> factory);
         try {
             return loader.load();

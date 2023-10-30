@@ -10,7 +10,7 @@ import javafx.scene.control.TextField;
 import javax.inject.Inject;
 import java.util.Map;
 
-@Controller(path = "view/login/login.fxml")
+@Controller(view = "view/login/login.fxml")
 public class LoginController {
 
     @FXML
