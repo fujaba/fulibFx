@@ -1,4 +1,4 @@
-package io.github.sekassel.jfxframework.jfx;
+package io.github.sekassel.jfx;
 
 import javafx.fxml.FXML;
 import javafx.scene.Parent;

@@ -23,6 +23,9 @@ dependencies {
     // JFxFramework
     implementation project(':framework')
 
+    // JFxAddon
+    implementation project(':jfx-addon')
+
     // https://mvnrepository.com/artifact/com.google.dagger/dagger
     implementation group: 'com.google.dagger', name: 'dagger', version: '2.42'
 

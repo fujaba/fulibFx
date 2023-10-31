@@ -3,3 +3,4 @@ rootProject.name = projectName
 
 include "framework"
 include "example"
+include "jfx-addon"
