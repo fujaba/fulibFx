@@ -7,7 +7,7 @@ public class TraversableTreeTest {
 
     @Test
     public void traverse() {
-        TraversableTree<Integer> tree = new TraversableNodeTree<>();
+        TraversableTree<Integer> tree = new TraversableRoutingTree<>();
 
         // Tree should be empty
         Assertions.assertNull(tree.root());

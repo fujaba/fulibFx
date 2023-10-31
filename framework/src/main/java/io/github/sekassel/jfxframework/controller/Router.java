@@ -8,7 +8,7 @@ import io.github.sekassel.jfxframework.controller.annotation.Route;
 import io.github.sekassel.jfxframework.controller.exception.ControllerDuplicatedRouteException;
 import io.github.sekassel.jfxframework.controller.exception.ControllerInvalidRouteException;
 import io.github.sekassel.jfxframework.controller.exception.ControllerLoadingException;
-import io.github.sekassel.jfxframework.data.TraversableNodeTree;
+import io.github.sekassel.jfxframework.data.TraversableRoutingTree;
 import io.github.sekassel.jfxframework.data.TraversableTree;
 import io.github.sekassel.jfxframework.util.Util;
 import io.github.sekassel.jfxframework.util.reflection.Reflection;
@@ -37,7 +37,7 @@ public class Router {
     private Class<? extends FxFramework> baseClass = FxFramework.class;
 
     public Router() {
-        this.routes = new TraversableNodeTree<>();
+        this.routes = new TraversableRoutingTree<>();
     }
 
     /**

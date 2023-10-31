@@ -11,7 +11,7 @@ import java.util.Collection;
  *
  * @param <E> The type of the values stored in the tree.
  */
-public class TraversableNodeTree<E> implements TraversableTree<E> {
+public class TraversableRoutingTree<E> implements TraversableTree<E> {
 
     private final @NotNull Node<E> root;
 
@@ -20,7 +20,7 @@ public class TraversableNodeTree<E> implements TraversableTree<E> {
     /**
      * Creates a new traversable tree.
      */
-    public TraversableNodeTree() {
+    public TraversableRoutingTree() {
         this.root = new Node<>("", null, null, null);
         this.current = this.root;
     }
