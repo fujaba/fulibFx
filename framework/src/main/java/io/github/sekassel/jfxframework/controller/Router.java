@@ -72,6 +72,11 @@ public class Router {
         Route annotation = field.getAnnotation(Route.class);
         String route = annotation.route().equals("$name") ? field.getName() : annotation.route();
 
+        if (!route.startsWith("/")) {
+            route = "/" + route;
+            FxFramework.logger().warning("Route '" + annotation.route() + "' at field '" + field.getName() + "' in class '" + field.getDeclaringClass().getName() + "' does not start with a slash. Automatically prepending a slash.");
+        }
+
         if (this.routes.containsPath(route))
             throw new ControllerDuplicatedRouteException(route, field.getType(), this.routes.get(route).getType());
 
