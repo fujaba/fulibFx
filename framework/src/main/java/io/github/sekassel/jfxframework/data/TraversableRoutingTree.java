@@ -24,6 +24,7 @@ public class TraversableRoutingTree<E> implements TraversableTree<E> {
         this.root = new Node<>("", null, null, null);
         this.current = this.root;
     }
+
     @Override
     public @Nullable E root() {
         return this.root.value();
@@ -61,9 +62,18 @@ public class TraversableRoutingTree<E> implements TraversableTree<E> {
      */
     @Override
     public void insert(@NotNull String path, @NotNull E value) {
-
         Node<E> node = path.startsWith("/") ? this.root : this.current;
+        insertAtNode(node, path, value);
+    }
 
+    /**
+     * Inserts a value at the given path. If the path does not exist, it will be created.
+     *
+     * @param node  The node to start at.
+     * @param path  The path to insert the value at.
+     * @param value The value to insert.
+     */
+    public void insertAtNode(Node<E> node, String path, E value) {
         for (String element : path.split("/")) {
             if (element.isBlank()) {
                 continue;
@@ -100,6 +110,11 @@ public class TraversableRoutingTree<E> implements TraversableTree<E> {
      * @return The value at the end of the path, or null if the path does not exist.
      */
     private E follow(String path, boolean navigate) {
+        Node<E> node = this.nodeAt(path, navigate);
+        return node == null ? null : node.value();
+    }
+
+    private Node<E> nodeAt(String path, boolean navigate) {
         Node<E> node = path.startsWith("/") ? this.root : this.current;
 
         for (String element : path.split("/")) {
@@ -122,7 +137,11 @@ public class TraversableRoutingTree<E> implements TraversableTree<E> {
         }
         if (navigate && node != null)
             this.current = node;
-        return node == null ? null : node.value();
+        return node;
+    }
+
+    public Node<E> nodeAt(String path) {
+        return this.nodeAt(path, false);
     }
 
     /**
@@ -137,11 +156,21 @@ public class TraversableRoutingTree<E> implements TraversableTree<E> {
         private @Nullable Node<E> parent;
         private @Nullable Collection<Node<E>> children;
 
+        private boolean sub = false;
+
         public Node(@NotNull String id, @Nullable E value, @Nullable Node<E> parent, @Nullable Collection<Node<E>> children) {
             this.id = id;
             this.value = value;
             this.parent = parent;
             this.children = children;
+        }
+
+        public boolean sub() {
+            return sub;
+        }
+
+        public void setSub(boolean sub) {
+            this.sub = sub;
         }
 
         public @NotNull String id() {
