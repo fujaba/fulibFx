@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
+<?import io.github.sekassel.jfxexample.controller.CustomButton?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.VBox?>
 
@@ -12,5 +12,5 @@
         <Insets bottom="30.0" left="30.0" right="30.0" top="30.0"/>
     </padding>
     <TextField fx:id="usernameTextField" promptText="Username"/>
-    <Button fx:id="loginButton" onAction="#buttonClick" mnemonicParsing="false" text="Login"/>
+    <CustomButton fx:id="loginButton" onAction="#buttonClick" />
 </VBox>
