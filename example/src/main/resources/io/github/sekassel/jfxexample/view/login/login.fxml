@@ -12,5 +12,5 @@
         <Insets bottom="30.0" left="30.0" right="30.0" top="30.0"/>
     </padding>
     <TextField fx:id="usernameTextField" promptText="Username"/>
-    <CustomButton fx:id="loginButton" onAction="#buttonClick" />
+    <CustomButton fx:id="loginButton" onAction="#buttonClick" text="Login"/>
 </VBox>
