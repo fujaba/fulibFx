@@ -1,11 +1,13 @@
 package io.github.sekassel.jfxframework.controller;
 
 import io.github.sekassel.jfxframework.FxFramework;
-import io.github.sekassel.jfxframework.controller.annotation.*;
+import io.github.sekassel.jfxframework.controller.annotation.Controller;
+import io.github.sekassel.jfxframework.controller.annotation.Providing;
+import io.github.sekassel.jfxframework.controller.annotation.Route;
+import io.github.sekassel.jfxframework.controller.building.ControllerBuildFactory;
 import io.github.sekassel.jfxframework.controller.exception.ControllerDuplicatedRouteException;
 import io.github.sekassel.jfxframework.controller.exception.ControllerInvalidRouteException;
 import io.github.sekassel.jfxframework.controller.exception.ControllerLoadingException;
-import io.github.sekassel.jfxframework.controller.building.ControllerBuildFactory;
 import io.github.sekassel.jfxframework.data.TraversableNodeTree;
 import io.github.sekassel.jfxframework.data.TraversableTree;
 import io.github.sekassel.jfxframework.util.Util;
@@ -126,11 +128,7 @@ public class Router {
         }
 
         // Call the onInit method
-        try {
-            Reflection.callMethodsWithAnnotation(instance, ControllerEvent.onInit.class, parameters);
-        } catch (InvocationTargetException | IllegalAccessException e) {
-            throw new ControllerLoadingException(route, e);
-        }
+        Reflection.callMethodsWithAnnotation(instance, ControllerEvent.onInit.class, parameters);
 
         // Render the controller
         Parent parent;
@@ -163,11 +161,7 @@ public class Router {
         }
 
         // Call the onRender method
-        try {
-            Reflection.callMethodsWithAnnotation(instance, ControllerEvent.onRender.class, parameters);
-        } catch (InvocationTargetException | IllegalAccessException e) {
-            throw new ControllerLoadingException(route, e);
-        }
+        Reflection.callMethodsWithAnnotation(instance, ControllerEvent.onRender.class, parameters);
 
         return parent;
     }
@@ -183,11 +177,15 @@ public class Router {
         URL url = baseClass.getResource(fileName);
         if (url == null) throw new RuntimeException("Could not find resource '" + fileName + "'");
 
+        ControllerBuildFactory builderFactory = new ControllerBuildFactory(this, parameters);
+
         FXMLLoader loader = new FXMLLoader(url);
         loader.setControllerFactory(c -> factory);
-        loader.setBuilderFactory(new ControllerBuildFactory(this, url, parameters));
+        loader.setBuilderFactory(builderFactory);
         try {
-            return loader.load();
+            Parent parent = loader.load();
+            builderFactory.getInstantiatedControllers().forEach(controller -> Reflection.callMethodsWithAnnotation(controller, ControllerEvent.onRender.class, parameters));
+            return parent;
         } catch (IOException exception) {
             throw new RuntimeException(exception);
         }

@@ -9,8 +9,6 @@ import javafx.util.BuilderFactory;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.reflect.InvocationTargetException;
-import java.net.URL;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -21,14 +19,12 @@ import java.util.Set;
 public class ControllerBuildFactory implements BuilderFactory {
 
     private final Router router;
-    private final URL fxmlPath;
     private final Map<String, Object> parameters;
 
     private final Set<Object> instances;
 
-    public ControllerBuildFactory(@NotNull Router router, @NotNull URL fxmlPath, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
+    public ControllerBuildFactory(@NotNull Router router, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
         this.router = router;
-        this.fxmlPath = fxmlPath;
         this.parameters = parameters;
         this.instances = new HashSet<>();
     }
@@ -46,11 +42,7 @@ public class ControllerBuildFactory implements BuilderFactory {
         Object instance = router.getProvidedInstance(type);
 
         // Run the controller's onInit methods. onRender methods will be run by the FxFramework.
-        try {
-            Reflection.callMethodsWithAnnotation(instance, ControllerEvent.onInit.class, parameters);
-        } catch (InvocationTargetException | IllegalAccessException e) {
-            throw new RuntimeException("Failed to initialize subcontroller '" + type.getSimpleName() + "' in '" + fxmlPath.getPath() + "'.", e);
-        }
+        Reflection.callMethodsWithAnnotation(instance, ControllerEvent.onInit.class, parameters);
 
         instances.add(instance);
 

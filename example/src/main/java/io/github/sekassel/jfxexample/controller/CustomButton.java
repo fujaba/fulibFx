@@ -18,7 +18,13 @@ public class CustomButton extends Button {
 
 
     @ControllerEvent.onInit
-    public void sout() {
+    public void onInit() {
         System.out.println("Dieser Button wurde initialisiert.");
+    }
+
+    @ControllerEvent.onRender
+    public void onRender() {
+        System.out.println("Dieser Button wurde gerendert.");
+        this.setText("Dieser Button wurde gerendert.");
     }
 }
