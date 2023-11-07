@@ -22,7 +22,7 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package io.github.sekassel.jfxframework.controller.loading;
+package io.github.sekassel.jfxframework.controller.building;
 
 import com.sun.javafx.fxml.BeanAdapter;
 import com.sun.javafx.fxml.ModuleHelper;
@@ -44,7 +44,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import io.github.sekassel.jfxframework.controller.ControllerBuildFactory;
 import javafx.beans.NamedArg;
 import javafx.util.Builder;
 import com.sun.javafx.reflect.ConstructorUtil;

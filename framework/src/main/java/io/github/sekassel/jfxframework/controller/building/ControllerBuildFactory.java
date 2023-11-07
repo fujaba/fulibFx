@@ -1,7 +1,8 @@
-package io.github.sekassel.jfxframework.controller;
+package io.github.sekassel.jfxframework.controller.building;
 
+import io.github.sekassel.jfxframework.controller.ControllerEvent;
+import io.github.sekassel.jfxframework.controller.Router;
 import io.github.sekassel.jfxframework.controller.annotation.Controller;
-import io.github.sekassel.jfxframework.controller.loading.ControllerProxyBuilder;
 import io.github.sekassel.jfxframework.util.reflection.Reflection;
 import javafx.util.Builder;
 import javafx.util.BuilderFactory;
