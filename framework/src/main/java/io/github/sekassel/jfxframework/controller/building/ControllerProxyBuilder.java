@@ -71,9 +71,12 @@ public class ControllerProxyBuilder<T> extends AbstractMap<String, Object> imple
     private static final String SETTER_PREFIX = "set";
     private static final String GETTER_PREFIX = "get";
 
-    public ControllerProxyBuilder(ControllerBuildFactory factory, Class<?> tp) {
+    private final Map<String, Object> parameters;
+
+    public ControllerProxyBuilder(ControllerBuildFactory factory, Class<?> tp, Map<String, Object> parameters) {
         this.type = tp;
         this.buildFactory = factory;
+        this.parameters = parameters;
 
         constructorsMap = new HashMap<>();
         Constructor ctors[] = ConstructorUtil.getConstructors(type);
@@ -495,6 +498,8 @@ public class ControllerProxyBuilder<T> extends AbstractMap<String, Object> imple
 
         ReflectUtil.checkPackageAccess(type);
         retObj = this.buildFactory.getProvidedInstance(type);
+
+        retObj = this.buildFactory.getRouter().initAndRender(retObj.getClass(), retObj, this.parameters);
 
         return retObj;
     }
