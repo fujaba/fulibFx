@@ -32,7 +32,7 @@ public class ControllerBuildFactory implements BuilderFactory {
     @Override
     public Builder<?> getBuilder(Class<?> type) {
         if (type.isAnnotationPresent(Controller.class)) {
-            return new ControllerProxyBuilder<>(this, type);
+            return new ControllerProxyBuilder<>(this, type, parameters);
         } else {
             return null;
         }
@@ -47,6 +47,10 @@ public class ControllerBuildFactory implements BuilderFactory {
         instances.add(instance);
 
         return instance;
+    }
+
+    public Router getRouter() {
+        return router;
     }
 
     public Set<Object> getInstantiatedControllers() {

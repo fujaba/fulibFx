@@ -7,7 +7,6 @@ import io.github.sekassel.jfxframework.controller.annotation.Route;
 import io.github.sekassel.jfxframework.controller.building.ControllerBuildFactory;
 import io.github.sekassel.jfxframework.controller.exception.ControllerDuplicatedRouteException;
 import io.github.sekassel.jfxframework.controller.exception.ControllerInvalidRouteException;
-import io.github.sekassel.jfxframework.controller.exception.ControllerLoadingException;
 import io.github.sekassel.jfxframework.data.TraversableNodeTree;
 import io.github.sekassel.jfxframework.data.TraversableTree;
 import io.github.sekassel.jfxframework.util.Util;
@@ -124,20 +123,24 @@ public class Router {
         } catch (NullPointerException e) {
             throw new RuntimeException("Field '" + provider.getName() + "' in '" + provider.getDeclaringClass().getName() + "' is not initialized.");
         } catch (IllegalAccessException e) {
-            throw new ControllerLoadingException(route, e);
+            throw new RuntimeException("Cannot access field '" + provider.getName() + "' in '" + provider.getDeclaringClass().getName() + "'.", e);
         }
+
+        return initAndRender(controller, instance, parameters);
+    }
+
+    public Parent initAndRender(Class<?> clazz, Object instance, Map<String, Object> parameters) {
 
         // Call the onInit method
         Reflection.callMethodsWithAnnotation(instance, ControllerEvent.onInit.class, parameters);
 
         // Render the controller
         Parent parent;
-        String view = controller.getAnnotation(Controller.class).view();
+        String view = clazz.getAnnotation(Controller.class).view();
 
         // If the controller extends from a javafx Parent, render it
-        if (Parent.class.isAssignableFrom(instance.getClass())) {
+        if (Parent.class.isAssignableFrom(instance.getClass()) && view.isEmpty()) {
             parent = (Parent) instance;
-            if (!view.isEmpty()) throw new RuntimeException("Controller '" + controller.getName() + "' is a javafx parent and cannot have a view specified.");
         }
 
         // If the controller specifies a method as view, call it
@@ -156,8 +159,8 @@ public class Router {
         }
         // If the controller specifies a fxml file, load it
         else {
-            String fxmlPath = view.isEmpty() ? FXML_PATH + Util.transform(controller.getSimpleName()) + ".fxml" : view;
-            parent = load(fxmlPath, instance, parameters);
+            String fxmlPath = view.isEmpty() ? FXML_PATH + Util.transform(clazz.getSimpleName()) + ".fxml" : view;
+            parent = load(fxmlPath, instance, parameters, Parent.class.isAssignableFrom(clazz));
         }
 
         // Call the onRender method
@@ -173,7 +176,7 @@ public class Router {
      * @param factory  The controller factory to use
      * @return A parent representing the fxml file
      */
-    protected @NotNull Parent load(@NotNull String fileName, @NotNull Object factory, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
+    protected @NotNull Parent load(@NotNull String fileName, @NotNull Object factory, @NotNull Map<@NotNull String, @Nullable Object> parameters, boolean setRoot) {
         URL url = baseClass.getResource(fileName);
         if (url == null) throw new RuntimeException("Could not find resource '" + fileName + "'");
 
@@ -182,6 +185,11 @@ public class Router {
         FXMLLoader loader = new FXMLLoader(url);
         loader.setControllerFactory(c -> factory);
         loader.setBuilderFactory(builderFactory);
+
+        if (setRoot) {
+            loader.setRoot(factory);
+        }
+
         try {
             Parent parent = loader.load();
             builderFactory.getInstantiatedControllers().forEach(controller -> Reflection.callMethodsWithAnnotation(controller, ControllerEvent.onRender.class, parameters));
