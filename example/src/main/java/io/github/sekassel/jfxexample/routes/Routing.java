@@ -1,9 +1,7 @@
 package io.github.sekassel.jfxexample.routes;
 
-import io.github.sekassel.jfxexample.controller.BackController;
-import io.github.sekassel.jfxexample.controller.LoginController;
-import io.github.sekassel.jfxexample.controller.MainController;
-import io.github.sekassel.jfxexample.controller.RenderMethodController;
+import io.github.sekassel.jfxexample.controller.*;
+import io.github.sekassel.jfxframework.controller.annotation.Providing;
 import io.github.sekassel.jfxframework.controller.annotation.Route;
 
 import javax.inject.Inject;
@@ -28,6 +26,10 @@ public class Routing {
     @Route(route = "/mainmenu/back/rendermethod")
     @Inject
     public Provider<RenderMethodController> rendermethod;
+
+    @Providing
+    @Inject
+    public Provider<CustomButton> buttonProvider;
 
     @Inject
     public Routing() {
