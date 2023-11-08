@@ -43,7 +43,7 @@ public class TodoController {
 }
 ```
 
-"Within your controller class, you have the ability to define methods that are automatically triggered when the
+Within your controller class, you have the ability to define methods that are automatically triggered when the
 controller is initialized or rendered. These methods should be annotated with either `@ControllerEvent.onInit`
 or `@ControllerEvent.onRender` to
 specify their respective execution points.
