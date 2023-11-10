@@ -11,7 +11,7 @@ import javafx.scene.layout.VBox;
 
 import javax.inject.Inject;
 
-@Controller(id = "todo")
+@Controller(view = "view/todo.fxml")
 public class TodoController extends VBox
 {
 	@FXML
