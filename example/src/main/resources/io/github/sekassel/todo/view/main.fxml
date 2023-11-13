@@ -2,8 +2,15 @@
 
 <?import io.github.sekassel.todo.controller.TodoController?>
 <?import javafx.scene.layout.VBox?>
+<?import io.github.sekassel.todo.controller.For?>
 <VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
       prefHeight="400.0" prefWidth="600.0" spacing="20.0" xmlns="http://javafx.com/javafx/19"
       xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.sekassel.todo.controller.MainController">
+    <For fx:id="todo" items="${controller.todos}">
+        <TodoController/>
+        <!--
+        TODO: javafx.fxml.LoadException: Cannot bind to untyped object. <TodoController todo="${todo.current}"/>
+        -->
+    </For>
     <TodoController/>
 </VBox>

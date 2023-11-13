@@ -2,6 +2,7 @@ package io.github.sekassel.todo.controller;
 
 import io.github.sekassel.jfxframework.controller.ControllerEvent;
 import io.github.sekassel.jfxframework.controller.annotation.Controller;
+import io.github.sekassel.todo.Todo;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.fxml.FXML;
@@ -25,6 +26,12 @@ public class TodoController extends VBox
 	@Inject
 	public TodoController()
 	{
+	}
+
+	public void setTodo(Todo todo)
+	{
+		title.set(todo.getTitle());
+		description.set(todo.getDescription());
 	}
 
 	@ControllerEvent.onRender()
