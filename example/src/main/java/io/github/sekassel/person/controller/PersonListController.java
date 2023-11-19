@@ -28,37 +28,13 @@ public class PersonListController {
             new Person("", "Jason", "Howdey", 34)
     );
 
-    @FXML
-    ObjectProperty<ObservableList<Person>> persons = new SimpleObjectProperty<>(this, "persons", personList);
-
-    StringProperty text = new SimpleStringProperty();
-
-    public String getText() {
-        return text.get();
-    }
-
-    public void setText(String text) {
-        this.text.set(text);
-    }
-
-    public StringProperty textProperty() {
-        return text;
+    public ObservableList<Person> getPersonList()
+    {
+        return personList;
     }
 
     @Inject
     public PersonListController() {
-    }
-
-    public ObservableList<Person> getPersons() {
-        return persons.getValue();
-    }
-
-    public void setPersons(ObservableList<Person> persons) {
-        this.persons.setValue(persons);
-    }
-
-    public ObjectProperty<ObservableList<Person>> personsProperty() {
-        return persons;
     }
 
     @ControllerEvent.onRender

@@ -8,7 +8,7 @@
 
 
 <?import io.github.sekassel.jfxframework.constructs.For?>
-<HBox fx:id="controller" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
+<HBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
       minWidth="-Infinity"
       xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="io.github.sekassel.person.controller.PersonListController">
@@ -27,7 +27,7 @@
         <VBox fx:id="list"/>
         <fx:define>
             <!-- Create a controller for every person in persons and display it in the container -->
-            <For container="$list" list="${controller.persons}" item="${controller.text}" />
+            <For container="$list" list="$controller.personList" item="${label.text}" />
         </fx:define>
     </VBox>
 
