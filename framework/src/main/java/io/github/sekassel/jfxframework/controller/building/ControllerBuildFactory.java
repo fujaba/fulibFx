@@ -34,7 +34,7 @@ public class ControllerBuildFactory implements BuilderFactory {
         if (type.isAnnotationPresent(Controller.class)) {
             return new ControllerProxyBuilder<>(this, type, parameters);
         } else {
-            return null;
+            return null; // Let javafx handle the instantiation
         }
     }
 

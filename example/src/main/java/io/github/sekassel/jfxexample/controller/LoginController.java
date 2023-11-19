@@ -14,6 +14,8 @@ import java.util.Map;
 public class LoginController {
 
     @FXML
+    public TextField otherTextField;
+    @FXML
     private TextField usernameTextField;
 
     @FXML

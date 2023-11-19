@@ -497,9 +497,9 @@ public class ControllerProxyBuilder<T> extends AbstractMap<String, Object> imple
         Object retObj = null;
 
         ReflectUtil.checkPackageAccess(type);
-        retObj = this.buildFactory.getProvidedInstance(type);
 
-        retObj = this.buildFactory.getRouter().initAndRender(retObj.getClass(), retObj, this.parameters);
+        retObj = this.buildFactory.getProvidedInstance(type);
+        retObj = this.buildFactory.getRouter().initAndRender(retObj, this.parameters);
 
         return retObj;
     }

@@ -3,14 +3,13 @@ package io.github.sekassel.jfxframework.util;
 import io.github.sekassel.jfxframework.controller.annotation.Controller;
 import io.github.sekassel.jfxframework.controller.annotation.Route;
 import io.github.sekassel.jfxframework.controller.exception.InvalidRouteFieldException;
+import javafx.scene.Node;
+import javafx.scene.control.Button;
 import org.jetbrains.annotations.Nullable;
 
 import javax.inject.Provider;
-import java.lang.reflect.Field;
-import java.lang.reflect.Parameter;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.Map;
+import java.lang.reflect.*;
+import java.util.*;
 
 public class Util {
 
@@ -90,4 +89,25 @@ public class Util {
         }
         return false;
     }
+
+    /**
+     * Returns all fields of the given class and its superclasses.
+     *
+     * @param clazz The class to get the fields from
+     * @return A set of all fields of the given class and its superclasses
+     */
+    public static Set<Field> getAllFields(Class<?> clazz) {
+
+        Set<Field> fields = new HashSet<>(Arrays.asList(clazz.getDeclaredFields()));
+
+        // Recursively add fields from superclass until it reaches Object class
+        Class<?> superClass = clazz.getSuperclass();
+        if (superClass != null && superClass != Object.class) {
+            fields.addAll(getAllFields(superClass));
+        }
+
+        return fields;
+    }
+
+
 }

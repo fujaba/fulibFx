@@ -20,7 +20,7 @@ public class FxFramework extends Application {
     private static final Scheduler FX_SCHEDULER = Schedulers.from(Platform::runLater);
     private static final Logger LOGGER = Logger.getLogger(FxFramework.class.getName());
 
-    private final Router router = new Router();
+    private static final Router router = new Router();
 
     private Stage stage;
 
@@ -32,7 +32,7 @@ public class FxFramework extends Application {
     public void start(Stage primaryStage) {
         this.stage = primaryStage;
 
-        this.router.setMainClass(this.getClass());
+        router.setMainClass(this.getClass());
 
         Scene scene = new Scene(new Pane()); // Show default scene
 
@@ -55,7 +55,7 @@ public class FxFramework extends Application {
      */
     public @NotNull Parent show(@NotNull String route, @NotNull Map<@NotNull String, @Nullable Object> params) {
         cleanup();
-        Parent parent = this.router.render(route, params);
+        Parent parent = router.render(route, params);
         show(parent);
         return parent;
     }
@@ -73,7 +73,7 @@ public class FxFramework extends Application {
         return this.stage;
     }
 
-    public Router controllerManager() {
-        return this.router;
+    public static Router router() {
+        return router;
     }
 }
