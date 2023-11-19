@@ -1,16 +1,25 @@
 package io.github.sekassel.jfxframework.constructs;
 
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.collections.ObservableList;
 import javafx.scene.Parent;
 
 
 public class For<T> {
 
-
-    private ObservableList<T> list;
+    private SimpleObjectProperty<ObservableList<T>> list = new SimpleObjectProperty<>();
+    private StringProperty item = new SimpleStringProperty();
     private Parent container;
 
     public For() {
+        item.addListener((observable, oldValue, newValue) -> {
+            System.out.println("Item changed from " + oldValue + " to " + newValue);
+        });
+        list.addListener((observable, oldValue, newValue) -> {
+            System.out.println("List changed from " + oldValue + " to " + newValue);
+        });
     }
 
     public Parent getContainer() {
@@ -21,16 +30,28 @@ public class For<T> {
         this.container = container;
     }
 
-    public ObservableList<T> getList() {
+    public SimpleObjectProperty<ObservableList<T>> listProperty() {
         return list;
     }
 
-    public void setList(ObservableList<T> list) {
-        this.list = list;
+    public ObservableList<T> getList() {
+        return list.getValue();
     }
 
-    public void initialize() {
-        System.out.println("init");
+    public void setList(ObservableList<T> list) {
+        this.list.setValue(list);
+    }
+
+    public StringProperty itemProperty() {
+        return item;
+    }
+
+    public String getItem() {
+        return item.getValue();
+    }
+
+    public void setItem(String item) {
+        this.item.setValue(item);
     }
 
 

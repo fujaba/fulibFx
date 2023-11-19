@@ -27,7 +27,7 @@
         <VBox fx:id="list"/>
         <fx:define>
             <!-- Create a controller for every person in persons and display it in the container -->
-            <For container="$list" list="controller.persons" />
+            <For container="$list" list="${controller.persons}" item="${controller.text}" />
         </fx:define>
     </VBox>
 
