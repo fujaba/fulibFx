@@ -7,7 +7,6 @@
 <?import javafx.scene.layout.VBox?>
 
 
-<?import io.github.sekassel.jfxframework.constructs.For?>
 <HBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
       minWidth="-Infinity"
       xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1"
@@ -24,11 +23,10 @@
             <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
         </padding>
         <Label fx:id="label" text="List of Persons"/>
-        <VBox fx:id="list"/>
-        <fx:define>
-            <!-- Create a controller for every person in persons and display it in the container -->
-            <For container="$list" list="$controller.personList" item="${label.text}" />
-        </fx:define>
+        <HBox>
+            <VBox fx:id="nodeList"/>
+            <VBox fx:id="controllerList"/>
+        </HBox>
     </VBox>
 
 </HBox>
