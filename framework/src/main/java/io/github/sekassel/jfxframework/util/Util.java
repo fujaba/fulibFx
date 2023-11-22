@@ -3,8 +3,9 @@ package io.github.sekassel.jfxframework.util;
 import io.github.sekassel.jfxframework.controller.annotation.Controller;
 import io.github.sekassel.jfxframework.controller.annotation.Route;
 import io.github.sekassel.jfxframework.controller.exception.InvalidRouteFieldException;
+import javafx.collections.ObservableList;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
+import javafx.scene.Parent;
 import org.jetbrains.annotations.Nullable;
 
 import javax.inject.Provider;
@@ -107,6 +108,33 @@ public class Util {
         }
 
         return fields;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static ObservableList<Node> getChildrenList(Class<?> clazz, Parent parent) {
+        try {
+            Method getChildren = clazz.getDeclaredMethod("getChildren");
+            getChildren.setAccessible(true);
+            Object childrenList = getChildren.invoke(parent);
+            return (ObservableList<Node>) childrenList;
+        } catch (Exception e) {
+            if (clazz.getSuperclass() == Object.class)
+                throw new RuntimeException("Couldn't access getChildren() method in class or superclass", e);
+            return getChildrenList(clazz.getSuperclass(), parent);
+        }
+    }
+
+    /**
+     * Returns the key for the given value in the given map.
+     *
+     * @param map   The map to search in
+     * @param value The value to search for
+     * @return The key for the given value in the given map or null if the value is not in the map
+     */
+    public static Object keyForValue(Map<?, ?> map, Object value) {
+        Map.Entry<?, ?> keyEntry = map.entrySet().stream().filter(entry -> Objects.equals(entry.getValue(), value)).findFirst().orElse(null);
+        return keyEntry == null ? null : keyEntry.getKey();
+
     }
 
 
