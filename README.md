@@ -398,12 +398,16 @@ public class ForController {
 This setup results in the following outputs:
 
 ```
+Constructor Controller
 onInit Controller
-onInit SubController
-onInit SubSubController
-onRender SubSubController
-onRender SubController
-Initializer ForController
+    Constructor SubController
+    onInit SubController
+        Constructor SubSubController
+        onInit SubSubController
+        onRender SubSubController
+    onRender SubController
+    Constructor ForController
+    Initializer ForController
 onRender Controller
 onInit ForController
 onRender ForController
