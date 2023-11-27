@@ -261,3 +261,150 @@ element like this:
 
 Depending on the parent you extended from, all attributes/properties available for this parent can be set for your
 custom controller element as well.
+
+## 🔁 For-Loops
+
+For-Loops can be used to easily display a node/sub-controller for all items in a list. Whenever an item is added to or 
+removed from the list, the list of nodes updates accordingly.
+
+The easiest form of a For-Loop can be achieved like this:
+
+```java
+For.controller(container, items, ExampleController.class);
+```
+
+This will create an `ExampleController` for each item in the list `items` and add it to the children of the `container` (e.g. a VBox).
+
+Currently, no information is passed to the created controller. In order to pass static information you can add parameters like you would 
+when using the `show`-method using a map. 
+
+```java
+For.controller(container, items, ExampleController.class, Map.of("key", value));
+For.controller(container, items, ExampleController.class, params); // Parameters can be taken from the @Params annotation for example
+```
+
+If you want to pass dynamic information like binding the item to its controller, you can use an `Initializer`. The `Initializer` allows to 
+define actions for initializing each controller based on its item.
+
+```java
+For.controller(container, items, ExampleController.class, (controller, item) -> {
+    controller.setItem(item);
+    controller.foo();
+    controller.bar();
+});
+
+For.controller(container, items, ExampleController.class, ExampleController::setItem); // Short form using method references
+For.controller(container, items, ExampleController.class, Map.of("key", value), ExampleController::setItem); // Static and dynamic information can be passed together
+```
+
+Instead of a controller you can also define a basic JavaFX node to display for every item.
+
+```java
+For.node(container, items, new Button("This is a button!"));
+```
+
+When using nodes, the framework will create a copy of the provided node to display for every item. The copies usually contain all required information except for bindings.
+
+```java
+For.node(container, items, new Button("This is a button!"));
+For.node(container, items, new VBox(new Button("This is a button!"))); // Nodes can have children
+```
+
+Unlike with controllers, it is not possible to pass static information in the form of paramters to nodes, as there is no way of accessing them in the code. However, dynamic
+information in the form of an `Initializer` can be used just like with controllers.
+
+```java
+For.node(container, items, new Button(), (button, item) -> {
+    button.setText("Delete " + item.name();
+    button.setOnAction(event -> items.remove(item));
+});
+```
+
+As JavaFX by itself doesn't support the duplication of nodes, the framework implements its own duplication logic in the form of `Duplicator`s. The framework includes duplicators for most of the
+basic JavaFX elements like Buttons, HBoxes, VBoxes and more. If you need to duplicate an element which isn't supported by default, you can create a custom `Duplicator` and register it in the `Duplicators` class.
+
+## ↘ Call order
+
+Since the framework differentiates between initialization and rendering, different methods annotated with `@ControllerEvent.onInit` or `@ControllerEvent.onRender` are called at different times.
+
+The framework has a general rule of **initialization before rendering**, meaning you cannot access most JavaFX elements (for example nodes defined in an FXML file) in the init methods as the elements aren't loaded before the rendering.
+
+When using sub-controllers or For-Loops, the order of operations is a bit more complex. At first the main controller will be initialized. After the controller has been initialized, all sub-controllers will be loaded and therefore initialized. This will happen recursively until a sub-controller doesn't have any sub-controllers. After that, the sub-controllers will be rendered, going back up to the main controller. The main controller will be rendered, after all the sub-controllers have been rendered.
+
+If a For-Loop is defined in a method annotated with `@Controller.onRender` in any (sub-)controller, the `@Controller.onRender` will (obviously) be called first. After that, the `Initializer` of the for-Controller will be called and then the for-controller will be initialized and then rendered.
+
+#### Example
+
+```java
+@Controller()
+public class Controller {
+
+    // Constructor, elements etc.
+    // This controller has a subcontroller defined in the FXML file
+
+    @ControllerEvent.onInit
+    public void onInit() {
+        System.out.println("onInit Controller");
+    }
+
+    @ControllerEvent.onRender 
+    public void onRender() {
+        System.out.println("onRender Controller");
+        For.controller(container, items, ForController.class, (controller, item) -> System.out.println("Initializer ForController"));
+    }
+    
+}
+```
+
+```java
+@Controller()
+public class SubController {
+
+    // Constructor, elements etc.
+    // This controller has another subcontroller defined in the FXML file
+
+    @ControllerEvent.onInit
+    public void onInit() {
+        System.out.println("onInit SubController");
+    }
+
+    @ControllerEvent.onRender 
+    public void onRender() {
+        System.out.println("onRender SubController");
+    }
+    
+}
+```
+
+```java
+@Controller()
+public class ForController {
+
+    // Constructor, elements etc.
+
+    @ControllerEvent.onInit
+    public void onInit() {
+        System.out.println("onInit ForController");
+    }
+
+    @ControllerEvent.onRender 
+    public void onRender() {
+        System.out.println("onRender ForController");
+    }
+    
+}
+```
+
+This setup results in the following outputs:
+
+```
+onInit Controller
+onInit SubController
+onInit SubSubController
+onRender SubSubController
+onRender SubController
+Initializer ForController
+onRender Controller
+onInit ForController
+onRender ForController
+```
