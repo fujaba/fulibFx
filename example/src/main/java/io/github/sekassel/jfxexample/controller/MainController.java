@@ -14,7 +14,7 @@ import javafx.scene.layout.Pane;
 import javax.inject.Inject;
 import java.util.Map;
 
-@Controller(id = "mainmenu")
+@Controller()
 public class MainController {
 
     @FXML

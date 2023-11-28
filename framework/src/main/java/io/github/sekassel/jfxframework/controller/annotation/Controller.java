@@ -15,7 +15,7 @@ public @interface Controller {
     /**
      * The view that should be rendered when displaying the controller. This can either be a path to an FXML file or a method that returns a {@link javafx.scene.Node}.
      * <p>
-     * If nothing is specified the default naming scheme for an FXML file will be used (ExampleController --> example.fxml).
+     * If nothing is specified and the class doesn't extend from a Parent the default naming scheme for an FXML file will be used (ExampleController --> example.fxml).
      * <p>
      * Example: '#myMethod' will call the method myMethod() in the controller and use the returned {@link javafx.scene.Node} (throwing an exception if the method does not exist or is invalid).
      * <p>
@@ -24,15 +24,5 @@ public @interface Controller {
      * @return The String specifying the view.
      */
     String view() default "";
-
-    /**
-     * The id of the controller.
-     * <p>
-     * If not specified the default naming scheme will be used (io.github.example.ExampleController --> example).
-     *
-     * @return The route of the controller
-     */
-    String id() default "";
-
 
 }
