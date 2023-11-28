@@ -1,7 +1,7 @@
 package io.github.sekassel.person.controller;
 
-import io.github.sekassel.jfxframework.controller.ControllerEvent;
 import io.github.sekassel.jfxframework.controller.annotation.Controller;
+import io.github.sekassel.jfxframework.controller.annotation.ControllerEvent;
 import io.github.sekassel.person.backend.Person;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -33,6 +33,7 @@ public class PersonDisplayController extends VBox {
 
     @Inject
     public PersonDisplayController() {
+        System.out.println("\tPersonDisplayController.constructor");
     }
 
     private List<Person> personList;
@@ -45,6 +46,12 @@ public class PersonDisplayController extends VBox {
 
     @ControllerEvent.onInit
     public void init() {
+        System.out.println("\tPersonDisplayController.onInit");
+    }
+
+    @ControllerEvent.onRender
+    public void render() {
+        System.out.println("\tPersonDisplayController.onRender");
     }
 
     @ControllerEvent.onRender

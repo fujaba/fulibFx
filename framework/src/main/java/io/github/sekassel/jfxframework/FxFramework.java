@@ -55,12 +55,12 @@ public class FxFramework extends Application {
      */
     public @NotNull Parent show(@NotNull String route, @NotNull Map<@NotNull String, @Nullable Object> params) {
         cleanup();
-        Parent parent = router.render(route, params);
-        show(parent);
+        Parent parent = router.renderRoute(route, params);
+        display(parent);
         return parent;
     }
 
-    private void show(@NotNull Parent parent) {
+    private void display(@NotNull Parent parent) {
         stage.getScene().setRoot(parent);
     }
 
@@ -69,7 +69,7 @@ public class FxFramework extends Application {
         return;
     }
 
-    public Stage getStage() {
+    public Stage stage() {
         return this.stage;
     }
 

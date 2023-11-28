@@ -1,9 +1,7 @@
 package io.github.sekassel.jfxframework.controller.building;
 
-import io.github.sekassel.jfxframework.controller.ControllerEvent;
 import io.github.sekassel.jfxframework.controller.Router;
 import io.github.sekassel.jfxframework.controller.annotation.Controller;
-import io.github.sekassel.jfxframework.util.reflection.Reflection;
 import javafx.util.Builder;
 import javafx.util.BuilderFactory;
 import org.jetbrains.annotations.NotNull;
@@ -40,9 +38,6 @@ public class ControllerBuildFactory implements BuilderFactory {
 
     public Object getProvidedInstance(Class<?> type) {
         Object instance = router.getProvidedInstance(type);
-
-        // Run the controller's onInit methods. onRender methods will be run by the FxFramework.
-        Reflection.callMethodsWithAnnotation(instance, ControllerEvent.onInit.class, parameters);
 
         instances.add(instance);
 

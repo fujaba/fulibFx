@@ -1,7 +1,8 @@
 package io.github.sekassel.person.controller;
 
-import io.github.sekassel.jfxframework.controller.ControllerEvent;
+import io.github.sekassel.jfxframework.controller.annotation.ControllerEvent;
 import io.github.sekassel.jfxframework.controller.annotation.Controller;
+import io.github.sekassel.person.PersonApp;
 import io.github.sekassel.person.backend.Person;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -31,6 +32,7 @@ public class PersonController extends HBox {
     @Inject
     public PersonController() {
         super();
+        System.out.println("PersonController.constructor");
     }
 
     public Person getPerson() {
@@ -47,10 +49,12 @@ public class PersonController extends HBox {
 
     @ControllerEvent.onInit
     public void onInit() {
+        System.out.println("PersonController.onInit");
     }
 
     @ControllerEvent.onRender
     public void onRender() {
+        System.out.println("PersonController.onRender");
         firstName.setText(person.firstName());
         lastName.setText(person.lastName());
         image.setImage(new Image(person.image()));

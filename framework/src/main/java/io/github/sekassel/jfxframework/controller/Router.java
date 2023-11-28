@@ -2,6 +2,7 @@ package io.github.sekassel.jfxframework.controller;
 
 import io.github.sekassel.jfxframework.FxFramework;
 import io.github.sekassel.jfxframework.controller.annotation.Controller;
+import io.github.sekassel.jfxframework.controller.annotation.ControllerEvent;
 import io.github.sekassel.jfxframework.controller.annotation.Providing;
 import io.github.sekassel.jfxframework.controller.annotation.Route;
 import io.github.sekassel.jfxframework.controller.building.ControllerBuildFactory;
@@ -103,7 +104,7 @@ public class Router {
      * @param parameters The parameters to pass to the controller
      * @throws ControllerInvalidRouteException If the controller couldn't be found
      */
-    public @NotNull Parent render(@NotNull String route, @NotNull Map<String, Object> parameters) {
+    public @NotNull Parent renderRoute(@NotNull String route, @NotNull Map<String, Object> parameters) {
         // Check if the route exists and has a valid controller
         if (!this.routes.containsPath(route)) throw new ControllerInvalidRouteException(route);
 
@@ -191,9 +192,7 @@ public class Router {
         }
 
         try {
-            Parent parent = loader.load();
-            builderFactory.getInstantiatedControllers().forEach(controller -> Reflection.callMethodsWithAnnotation(controller, ControllerEvent.onRender.class, parameters));
-            return parent;
+            return loader.load();
         } catch (IOException exception) {
             throw new RuntimeException(exception);
         }

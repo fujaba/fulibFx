@@ -26,6 +26,10 @@ import java.util.HashMap;
  */
 public class Duplicators {
 
+    public Duplicators() {
+        // Prevent instantiation
+    }
+
     private static final HashMap<Class<?>, Duplicator<?>> DUPLICATORS = new HashMap<>();
 
     static {

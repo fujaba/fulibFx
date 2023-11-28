@@ -2,7 +2,7 @@ package io.github.sekassel.jfxexample.controller;
 
 import io.github.sekassel.jfxexample.ExampleApp;
 import io.github.sekassel.jfxframework.controller.annotation.Controller;
-import io.github.sekassel.jfxframework.controller.ControllerEvent;
+import io.github.sekassel.jfxframework.controller.annotation.ControllerEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;

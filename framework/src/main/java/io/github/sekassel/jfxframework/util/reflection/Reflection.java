@@ -16,6 +16,10 @@ import java.util.Map;
 
 public class Reflection {
 
+    private Reflection() {
+        // Prevent instantiation
+    }
+
     /**
      * Returns all fields of the given class that are annotated with the given annotation.
      *
