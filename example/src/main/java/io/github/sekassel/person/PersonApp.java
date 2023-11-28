@@ -1,19 +1,19 @@
-package io.github.sekassel.jfxexample;
+package io.github.sekassel.person;
 
-import io.github.sekassel.jfxexample.dagger.MainComponent;
-import io.github.sekassel.jfxexample.dagger.DaggerMainComponent;
+import io.github.sekassel.person.dagger.DaggerMainComponent;
 import io.github.sekassel.jfxframework.FxFramework;
+import io.github.sekassel.person.dagger.MainComponent;
 import javafx.stage.Stage;
 
 import java.util.Map;
 
-public class ExampleApp extends FxFramework {
+public class PersonApp extends FxFramework {
 
-    public static ExampleApp instance;
+    public static PersonApp instance;
 
     private final MainComponent component;
 
-    public ExampleApp() {
+    public PersonApp() {
         super();
         this.component = DaggerMainComponent.builder().mainApp(this).build();
     }
