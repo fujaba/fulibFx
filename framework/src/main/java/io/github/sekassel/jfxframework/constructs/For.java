@@ -25,6 +25,7 @@ import java.util.Map;
  * @param <E> The type of the node
  * @param <T> The type of the items in the list
  */
+// TODO: sorted lists (order controllers the same way as the items)
 public class For<E, T> extends Parent {
 
     // List of items to iterate over
@@ -63,7 +64,9 @@ public class For<E, T> extends Parent {
     };
 
     // The method to call when the controller is created
-    private Initializer<E, T> initializer;
+    private Initializer<E, T> beforeInit;
+
+    private Initializer<E, T> afterRender;
 
     /**
      * Use the factory methods to create a new For loop.
@@ -88,18 +91,18 @@ public class For<E, T> extends Parent {
      * <p>
      * Example: For.create(myVbox, personList, Map.of("argument", value), PersonController.class, PersonController::setPerson);
      *
-     * @param container   The container to add the nodes to
-     * @param list        The list of items to display
-     * @param node        The node to display for each item
-     * @param params      The parameters to pass to the created controller
-     * @param initializer The method to call when the controller is created (useful for setting the item)
-     * @param <T>         The type of the items in the list
-     * @param <E>         The type of the node
+     * @param container  The container to add the nodes to
+     * @param list       The list of items to display
+     * @param node       The node to display for each item
+     * @param params     The parameters to pass to the created controller
+     * @param beforeInit The method to call when the controller is created (useful for setting the item)
+     * @param <T>        The type of the items in the list
+     * @param <E>        The type of the node
      * @return The For loop
      */
-    public static <T, E> For<E, T> controller(@NotNull Parent container, @NotNull ObservableList<@NotNull T> list, @NotNull Class<? extends E> node, @NotNull Map<@NotNull String, @Nullable Object> params, @NotNull Initializer<@NotNull E, @Nullable T> initializer) {
+    public static <T, E> For<E, T> controller(@NotNull Parent container, @NotNull ObservableList<@NotNull T> list, @NotNull Class<? extends E> node, @NotNull Map<@NotNull String, @Nullable Object> params, @NotNull Initializer<@NotNull E, @Nullable T> beforeInit) {
         For<E, T> forLoop = new For<>();
-        forLoop.initializer = initializer;
+        forLoop.beforeInit = beforeInit;
         forLoop.setContainer(container);
         forLoop.setList(list);
         forLoop.setNode(node);
@@ -135,16 +138,16 @@ public class For<E, T> extends Parent {
      * <p>
      * Example: For.create(myVbox, personList, PersonController.class, PersonController::setPerson);
      *
-     * @param container   The container to add the nodes to
-     * @param list        The list of items to display
-     * @param node        The node to display for each item
-     * @param initializer The method to call when the controller is created (useful for setting the item)
-     * @param <T>         The type of the items in the list
-     * @param <E>         The type of the node
+     * @param container  The container to add the nodes to
+     * @param list       The list of items to display
+     * @param node       The node to display for each item
+     * @param beforeInit The method to call when the controller is created (useful for setting the item)
+     * @param <T>        The type of the items in the list
+     * @param <E>        The type of the node
      * @return The For loop
      */
-    public static <T, E> For<E, T> controller(@NotNull Parent container, @NotNull ObservableList<@NotNull T> list, @NotNull Class<? extends E> node, @NotNull Initializer<@NotNull E, @Nullable T> initializer) {
-        return controller(container, list, node, Map.of(), initializer);
+    public static <T, E> For<E, T> controller(@NotNull Parent container, @NotNull ObservableList<@NotNull T> list, @NotNull Class<? extends E> node, @NotNull Initializer<@NotNull E, @Nullable T> beforeInit) {
+        return controller(container, list, node, Map.of(), beforeInit);
     }
 
     /**
@@ -154,17 +157,17 @@ public class For<E, T> extends Parent {
      * <p>
      * Example: For.create(myVbox, myListOfItems, new Label(), (label, item) -> label.setText(item.getName()));
      *
-     * @param container   The container to add the nodes to
-     * @param list        The list of items to display
-     * @param node        The node to display for each item
-     * @param initializer The method to call when the controller is created (useful for setting the item)
-     * @param <T>         The type of the items in the list
-     * @param <E>         The type of the node
+     * @param container  The container to add the nodes to
+     * @param list       The list of items to display
+     * @param node       The node to display for each item
+     * @param beforeInit The method to call when the controller is created (useful for setting the item)
+     * @param <T>        The type of the items in the list
+     * @param <E>        The type of the node
      * @return The For loop
      */
-    public static <T, E> For<E, T> node(@NotNull Parent container, @NotNull ObservableList<@NotNull T> list, @NotNull E node, @NotNull Initializer<@NotNull E, @Nullable T> initializer) {
+    public static <T, E> For<E, T> node(@NotNull Parent container, @NotNull ObservableList<@NotNull T> list, @NotNull E node, @NotNull Initializer<@NotNull E, @Nullable T> beforeInit) {
         For<E, T> forLoop = new For<>();
-        forLoop.initializer = initializer;
+        forLoop.beforeInit = beforeInit;
         forLoop.setContainer(container);
         forLoop.setList(list);
         forLoop.setNode(node);
@@ -243,8 +246,8 @@ public class For<E, T> extends Parent {
             if (clazz.isAnnotationPresent(Controller.class)) {
                 this.nodeProvider = (item) -> {
                     Object instance = FxFramework.router().getProvidedInstance(clazz);
-                    if (initializer != null) {
-                        initializer.initialize((E) instance, item);
+                    if (beforeInit != null) {
+                        beforeInit.initialize((E) instance, item);
                     }
                     return FxFramework.router().initAndRender(instance, this.params);
                 };
@@ -259,8 +262,8 @@ public class For<E, T> extends Parent {
             }
             this.nodeProvider = (item) -> {
                 Node duplicated = Duplicators.duplicate((Node) node);
-                if (initializer != null) {
-                    initializer.initialize((E) duplicated, item);
+                if (beforeInit != null) {
+                    beforeInit.initialize((E) duplicated, item);
                 }
                 return duplicated;
             };
@@ -271,8 +274,8 @@ public class For<E, T> extends Parent {
             if (provided instanceof Node element && !element.getClass().isAnnotationPresent(Controller.class)) {
                 this.nodeProvider = (item) -> {
                     Node providedNode = (Node) provider.get();
-                    if (initializer != null) {
-                        initializer.initialize((E) providedNode, item);
+                    if (beforeInit != null) {
+                        beforeInit.initialize((E) providedNode, item);
                     }
                     return providedNode;
                 };

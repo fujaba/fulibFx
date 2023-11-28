@@ -1,32 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.VBox?>
+<?import io.github.sekassel.person.controller.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
 
-
-<HBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
-      minWidth="-Infinity"
-      xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="io.github.sekassel.person.controller.PersonListController">
-    <VBox alignment="TOP_CENTER" spacing="10.0">
-        <padding>
-            <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
-        </padding>
-        <Label text="Persons"/>
-        <Button mnemonicParsing="false" text="Print current Person."/>
-    </VBox>
-    <VBox alignment="TOP_CENTER" spacing="10.0">
-        <padding>
-            <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
-        </padding>
-        <Label fx:id="label" text="List of Persons"/>
-        <HBox>
-            <VBox fx:id="nodeList"/>
-            <VBox fx:id="controllerList"/>
-        </HBox>
-    </VBox>
-
-</HBox>
+<VBox fx:id="friendMenu" alignment="CENTER" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.sekassel.person.controller.PersonListController">
+    <Label text="Friend List">
+        <font>
+            <Font name="System Bold" size="36.0" />
+        </font>
+    </Label>
+    <HBox alignment="CENTER" spacing="10.0">
+        <VBox fx:id="friendEditor">
+            <Label fx:id="currentLabel" text="Current Friend" />
+            <PersonDisplayController fx:id="currentFriend" />
+        </VBox>
+        <VBox fx:id="friendList">
+            <Label fx:id="personListLabel" text="List of Persons" />
+        </VBox>
+    </HBox>
+</VBox>

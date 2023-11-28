@@ -27,7 +27,6 @@ public class LoginController {
 
     @ControllerEvent.onInit()
     public void init() {
-        System.out.println("LoginController.onInit()");
     }
 
     @ControllerEvent.onRender()

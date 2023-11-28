@@ -2,8 +2,8 @@ package io.github.sekassel.person.routes;
 
 import io.github.sekassel.jfxframework.controller.annotation.Providing;
 import io.github.sekassel.jfxframework.controller.annotation.Route;
-import io.github.sekassel.person.backend.Person;
 import io.github.sekassel.person.controller.PersonController;
+import io.github.sekassel.person.controller.PersonDisplayController;
 import io.github.sekassel.person.controller.PersonListController;
 
 import javax.inject.Inject;
@@ -20,6 +20,10 @@ public class Routing {
     @Providing
     @Inject
     public Provider<PersonController> personProvider;
+
+    @Providing
+    @Inject
+    public Provider<PersonDisplayController> personDisplayProvider;
 
     @Inject
     public Routing() {

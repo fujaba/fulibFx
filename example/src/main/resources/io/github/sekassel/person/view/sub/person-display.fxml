@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+
+<fx:root alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" spacing="2.0" style="-fx-border-color: BLACK;" type="VBox" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.sekassel.person.controller.PersonDisplayController">
+    <padding>
+        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+    </padding>
+    <ImageView fx:id="image" fitHeight="100.0" fitWidth="100.0" pickOnBounds="true" preserveRatio="true" />
+   <TextField fx:id="imageLink" editable="false" promptText="Image link" />
+    <TextField fx:id="firstName" editable="false" promptText="First name" />
+    <TextField fx:id="lastName" editable="false" promptText="Last name" />
+    <TextField fx:id="age" editable="false" promptText="Age" />
+    <Button fx:id="editButton" defaultButton="true" mnemonicParsing="false" onAction="#toggleEdit" text="Edit/Add" />
+   <Button fx:id="saveAsNewButton" disable="true" mnemonicParsing="false" onAction="#saveAsNew" text="Save as new" visible="false" />
+</fx:root>

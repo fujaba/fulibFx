@@ -29,7 +29,6 @@ public class MainController {
 
     @ControllerEvent.onInit()
     public void init(@Param(name = "username") String user) {
-        System.out.println("MainController.onInit() " + user);
     }
 
     @ControllerEvent.onRender()
