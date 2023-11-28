@@ -29,8 +29,6 @@ public class Duplicators {
     private static final HashMap<Class<?>, Duplicator<?>> DUPLICATORS = new HashMap<>();
 
     static {
-        register(String.class, String::new);
-
         register(Button.class, new ButtonDuplicator<>());
         register(HBox.class, new HBoxDuplicator<>());
         register(VBox.class, new VBoxDuplicator<>());
