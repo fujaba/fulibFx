@@ -238,6 +238,10 @@ public class TodoController {
 
     // Empty constructor (for dependency injection etc.)
     public TodoController() {
+    }
+
+    @ControllerEvent.onRender
+    public void addButtonAction() {
         this.backButton.setOnAction(event -> show("../"));
         this.todoButton.setOnAction(event -> show("/todo"));
     }
@@ -400,14 +404,14 @@ This setup results in the following outputs:
 ```
 Constructor Controller
 onInit Controller
-    Constructor SubController
-    onInit SubController
-        Constructor SubSubController
-        onInit SubSubController
-        onRender SubSubController
-    onRender SubController
-    Constructor ForController
-    Initializer ForController
+Constructor SubController
+onInit SubController
+Constructor SubSubController
+onInit SubSubController
+onRender SubSubController
+onRender SubController
+Constructor ForController
+Initializer ForController
 onRender Controller
 onInit ForController
 onRender ForController
