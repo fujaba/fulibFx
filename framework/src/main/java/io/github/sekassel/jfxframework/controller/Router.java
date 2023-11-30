@@ -2,31 +2,23 @@ package io.github.sekassel.jfxframework.controller;
 
 import io.github.sekassel.jfxframework.FxFramework;
 import io.github.sekassel.jfxframework.controller.annotation.Controller;
-import io.github.sekassel.jfxframework.controller.annotation.ControllerEvent;
 import io.github.sekassel.jfxframework.controller.annotation.Providing;
 import io.github.sekassel.jfxframework.controller.annotation.Route;
-import io.github.sekassel.jfxframework.controller.building.ControllerBuildFactory;
 import io.github.sekassel.jfxframework.controller.exception.ControllerDuplicatedRouteException;
 import io.github.sekassel.jfxframework.controller.exception.ControllerInvalidRouteException;
 import io.github.sekassel.jfxframework.data.TraversableNodeTree;
 import io.github.sekassel.jfxframework.data.TraversableTree;
 import io.github.sekassel.jfxframework.util.Util;
 import io.github.sekassel.jfxframework.util.reflection.Reflection;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.inject.Provider;
-import java.io.IOException;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.URL;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-
-import static io.github.sekassel.jfxframework.util.Constants.FXML_PATH;
 
 public class Router {
 
@@ -35,7 +27,6 @@ public class Router {
     private final TraversableTree<Field> routes;
 
     private Object source;
-    private Class<? extends FxFramework> baseClass = FxFramework.class;
 
     public Router() {
         this.providingFields = new ConcurrentHashMap<>();
@@ -59,11 +50,12 @@ public class Router {
 
     /**
      * Registers a field as a provider for loading subcontrollers in FXML files.
+     *
      * @param field The field to register
      */
     private void registerProviding(Field field) {
         if (!field.isAnnotationPresent(Providing.class))
-            throw new RuntimeException("Field '" + field.getName() + "' in class '"+ field.getDeclaringClass().getName() + "' is not annotated with @Providing");
+            throw new RuntimeException("Field '" + field.getName() + "' in class '" + field.getDeclaringClass().getName() + "' is not annotated with @Providing");
         if (this.providingFields.containsKey(field.getType())) {
             FxFramework.logger().warning("Field '" + field.getName() + "' in '" + field.getDeclaringClass().getName() + "' is annotated with @Providing but there is already a field providing an instance of '" + field.getType().getName() + "'. The old field will be used instead.");
             return;
@@ -104,12 +96,12 @@ public class Router {
      * @param parameters The parameters to pass to the controller
      * @throws ControllerInvalidRouteException If the controller couldn't be found
      */
-    public @NotNull Parent renderRoute(@NotNull String route, @NotNull Map<String, Object> parameters) {
+    public @NotNull Parent renderRoute(@NotNull String route, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
         // Check if the route exists and has a valid controller
         if (!this.routes.containsPath(route)) throw new ControllerInvalidRouteException(route);
 
         Field provider = this.routes.traverse(route);
-        Class<?> controller = Util.getProvidedClass(provider);
+        Class<?> controller = Util.getProvidedClass(Objects.requireNonNull(provider));
 
         if (controller == null)
             throw new RuntimeException("Field '" + provider.getName() + "' in '" + provider.getDeclaringClass().getName() + "' is not a valid provider field.");
@@ -127,88 +119,17 @@ public class Router {
             throw new RuntimeException("Cannot access field '" + provider.getName() + "' in '" + provider.getDeclaringClass().getName() + "'.", e);
         }
 
-        return initAndRender(instance, parameters);
-    }
-
-    public Parent initAndRender(Object instance, Map<String, Object> parameters) {
-
-        // Call the onInit method
-        Reflection.callMethodsWithAnnotation(instance, ControllerEvent.onInit.class, parameters);
-
-        // Render the controller
-        Parent parent;
-        String view = instance.getClass().getAnnotation(Controller.class).view();
-
-        // If the controller extends from a javafx Parent, render it
-        if (Parent.class.isAssignableFrom(instance.getClass()) && view.isEmpty()) {
-            parent = (Parent) instance;
-        }
-
-        // If the controller specifies a method as view, call it
-        else if (view.startsWith("#")) {
-            String methodName = view.substring(1);
-            try {
-                Method method = instance.getClass().getDeclaredMethod(methodName);
-                if (!Parent.class.isAssignableFrom(method.getReturnType()))
-                    throw new RuntimeException("Method '" + methodName + "()' in class '" + instance.getClass().getName() + "' does not return a Parent.");
-                parent = (Parent) method.invoke(instance);
-            } catch (NoSuchMethodException e) {
-                throw new RuntimeException("Method '" + methodName + "()' in class '" + instance.getClass().getName() + "' does not exist.");
-            } catch (InvocationTargetException | IllegalAccessException e) {
-                throw new RuntimeException("Method '" + methodName + "()' in class '" + instance.getClass().getName() + "' could not be called.", e);
-            }
-        }
-        // If the controller specifies a fxml file, load it
-        else {
-            String fxmlPath = view.isEmpty() ? FXML_PATH + Util.transform(instance.getClass().getSimpleName()) + ".fxml" : view;
-            parent = load(fxmlPath, instance, parameters, Parent.class.isAssignableFrom(instance.getClass()));
-        }
-
-        // Call the onRender method
-        Reflection.callMethodsWithAnnotation(instance, ControllerEvent.onRender.class, parameters);
-
-        return parent;
+        return FxFramework.manager().initAndRender(instance, parameters);
     }
 
     /**
-     * Loads a fxml file.
+     * Returns the instance of the given type provided by a field annotated with {@link Providing} in the router class.
      *
-     * @param fileName The name of the fxml resource file (with path and file extension)
-     * @param factory  The controller factory to use
-     * @return A parent representing the fxml file
+     * @param type The type of the instance
+     * @return The instance
+     * @throws RuntimeException If no field providing an instance of the given type has been registered
      */
-    protected @NotNull Parent load(@NotNull String fileName, @NotNull Object factory, @NotNull Map<@NotNull String, @Nullable Object> parameters, boolean setRoot) {
-        URL url = baseClass.getResource(fileName);
-        if (url == null) throw new RuntimeException("Could not find resource '" + fileName + "'");
-
-        ControllerBuildFactory builderFactory = new ControllerBuildFactory(this, parameters);
-
-        FXMLLoader loader = new FXMLLoader(url);
-        loader.setControllerFactory(c -> factory);
-        loader.setBuilderFactory(builderFactory);
-
-        if (setRoot) {
-            loader.setRoot(factory);
-        }
-
-        try {
-            return loader.load();
-        } catch (IOException exception) {
-            throw new RuntimeException(exception);
-        }
-    }
-
-    /**
-     * Sets the base class of the application (the class that extends {@link FxFramework}).
-     * This is used to load the fxml files with relative paths.
-     *
-     * @param clazz The base class
-     */
-    public void setMainClass(Class<? extends FxFramework> clazz) {
-        this.baseClass = clazz;
-    }
-
-    public Object getProvidedInstance(Class<?> type) {
+    public @NotNull Object getProvidedInstance(@NotNull Class<?> type) {
         if (!this.providingFields.containsKey(type))
             throw new RuntimeException("No field providing an instance of '" + type.getName() + "' has been registered using @Providing.");
 
@@ -219,4 +140,5 @@ public class Router {
             throw new RuntimeException("Field '" + field.getName() + "' in '" + field.getDeclaringClass().getName() + "' could not be accessed.", e);
         }
     }
+
 }

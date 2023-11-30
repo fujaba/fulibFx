@@ -6,12 +6,16 @@ import io.github.sekassel.jfxframework.controller.exception.InvalidRouteFieldExc
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.Parent;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.inject.Provider;
 import java.lang.reflect.*;
 import java.util.*;
 
+/**
+ * Utility class containing different helper methods for the framework or the user.
+ */
 public class Util {
 
     private Util() {
@@ -28,7 +32,7 @@ public class Util {
      * @param className The name of the class (should be {@link Class#getName()} or {@link Class#getSimpleName()}
      * @return The transformed name
      */
-    public static String transform(String className) {
+    public static @NotNull String transform(@NotNull String className) {
         String[] classes = className.split("\\.");
         return classes[classes.length - 1].replace("Controller", "").toLowerCase();
     }
@@ -40,7 +44,7 @@ public class Util {
      * @param field The field to check
      * @throws InvalidRouteFieldException If the field is not a valid route field
      */
-    public static void requireControllerProvider(Field field) {
+    public static void requireControllerProvider(@NotNull Field field) {
         Class<?> providedClass = getProvidedClass(field);
         if (providedClass == null || !providedClass.isAnnotationPresent(Controller.class))
             throw new InvalidRouteFieldException(field);
@@ -52,7 +56,7 @@ public class Util {
      * @param providerField The provider field
      * @return The class provided by the provider field or null if the field is not a valid provider field
      */
-    public static @Nullable Class<?> getProvidedClass(Field providerField) {
+    public static @Nullable Class<?> getProvidedClass(@NotNull Field providerField) {
         if (providerField.getType() == Provider.class) {
             Type genericType = providerField.getGenericType();
 
@@ -76,7 +80,7 @@ public class Util {
      * @param value        The value type
      * @return True if the parameter is a valid map field with the given key and value types
      */
-    public static boolean isMapWithTypes(Parameter mapParameter, Class<?> key, Class<?> value) {
+    public static boolean isMapWithTypes(@NotNull Parameter mapParameter, @NotNull Class<?> key, @NotNull Class<?> value) {
         if (Map.class.isAssignableFrom(mapParameter.getType())) {
             Type genericType = mapParameter.getParameterizedType();
 
@@ -97,7 +101,7 @@ public class Util {
      * @param clazz The class to get the fields from
      * @return A set of all fields of the given class and its superclasses
      */
-    public static Set<Field> getAllFields(Class<?> clazz) {
+    public static @NotNull Set<Field> getAllFields(@NotNull Class<?> clazz) {
 
         Set<Field> fields = new HashSet<>(Arrays.asList(clazz.getDeclaredFields()));
 
@@ -110,6 +114,15 @@ public class Util {
         return fields;
     }
 
+    /**
+     * Returns the children list of the given parent. This method is used to access the children list of a Parent class
+     * even though the method is not public in the Parent class. This should be used with caution and is mainly used
+     * for duplicating nodes.
+     *
+     * @param clazz  The class to get the children list from
+     * @param parent The parent to get the children list from
+     * @return The children list of the given parent
+     */
     @SuppressWarnings("unchecked")
     public static ObservableList<Node> getChildrenList(Class<?> clazz, Parent parent) {
         try {
@@ -129,13 +142,33 @@ public class Util {
      *
      * @param map   The map to search in
      * @param value The value to search for
+     * @param <T>   The type of the key
+     * @param <E>   The type of the value
      * @return The key for the given value in the given map or null if the value is not in the map
      */
-    public static Object keyForValue(Map<?, ?> map, Object value) {
-        Map.Entry<?, ?> keyEntry = map.entrySet().stream().filter(entry -> Objects.equals(entry.getValue(), value)).findFirst().orElse(null);
+    public static <T, E> @Nullable T keyForValue(@NotNull Map<@NotNull T, @NotNull E> map, @NotNull E value) {
+        Map.Entry<T, E> keyEntry = map.entrySet().stream().filter(entry -> Objects.equals(entry.getValue(), value)).findFirst().orElse(null);
         return keyEntry == null ? null : keyEntry.getKey();
 
     }
 
+    /**
+     * Inserts the given key and value into the given map if the key is not already present or is null.
+     * If the key is already present (not null), the value will not be inserted.
+     * <p>
+     * If the key is already present, the value for the key will be returned.
+     *
+     * @param map   The map to insert the key and value into
+     * @param key   The key to insert
+     * @param value The value to insert
+     * @param <T>   The type of the key
+     * @param <E>   The type of the value
+     * @return The value for the key if the key is already present, the new value otherwise
+     */
+    public static <T, E> @NotNull E putIfNull(@NotNull Map<@NotNull T, @NotNull E> map, @NotNull T key, @NotNull E value) {
+        if (map.containsKey(key) && map.get(key) != null) return map.get(key);
+        map.put(key, value);
+        return value;
+    }
 
 }

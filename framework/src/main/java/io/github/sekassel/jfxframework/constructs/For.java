@@ -249,7 +249,7 @@ public class For<E, T> extends Parent {
                     if (beforeInit != null) {
                         beforeInit.initialize((E) instance, item);
                     }
-                    return FxFramework.router().initAndRender(instance, this.params);
+                    return FxFramework.manager().initAndRender(instance, this.params);
                 };
             } else {
                 throw new IllegalArgumentException("Class '%s' is not annotated with @Controller. Directly provide a node or use '$fxid' to link a node in FXML.".formatted(clazz.getName()));

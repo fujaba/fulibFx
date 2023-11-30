@@ -33,7 +33,7 @@ public class PersonDisplayController extends VBox {
 
     @Inject
     public PersonDisplayController() {
-        System.out.println("\tPersonDisplayController.constructor");
+        System.out.println("PersonDisplayController.constructor");
     }
 
     private List<Person> personList;
@@ -46,12 +46,12 @@ public class PersonDisplayController extends VBox {
 
     @ControllerEvent.onInit
     public void init() {
-        System.out.println("\tPersonDisplayController.onInit");
+        System.out.println("PersonDisplayController.onInit");
     }
 
     @ControllerEvent.onRender
     public void render() {
-        System.out.println("\tPersonDisplayController.onRender");
+        System.out.println("PersonDisplayController.onRender");
     }
 
     @ControllerEvent.onRender
@@ -125,5 +125,10 @@ public class PersonDisplayController extends VBox {
         age.setEditable(false);
         saveAsNewButton.setVisible(true);
         saveAsNewButton.setDisable(false);
+    }
+
+    @ControllerEvent.onDestroy
+    public void onDestroy() {
+        System.out.println("PersonDisplayController.onDestroy");
     }
 }

@@ -1,8 +1,8 @@
 package io.github.sekassel.person.controller;
 
+import io.github.sekassel.jfxframework.controller.Subscriber;
 import io.github.sekassel.jfxframework.controller.annotation.ControllerEvent;
 import io.github.sekassel.jfxframework.controller.annotation.Controller;
-import io.github.sekassel.person.PersonApp;
 import io.github.sekassel.person.backend.Person;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -15,7 +15,7 @@ import javax.inject.Inject;
 import java.util.List;
 
 @Controller(view = "view/sub/person.fxml")
-public class PersonController extends HBox {
+public class PersonController extends HBox implements Subscriber {
 
     @FXML
     public Label firstName;
@@ -50,6 +50,7 @@ public class PersonController extends HBox {
     @ControllerEvent.onInit
     public void onInit() {
         System.out.println("PersonController.onInit");
+        onDestroy(() -> System.out.println("PersonController->Subscriber.onDestroy"));
     }
 
     @ControllerEvent.onRender
@@ -60,5 +61,10 @@ public class PersonController extends HBox {
         image.setImage(new Image(person.image()));
         deleteButton.setOnAction(event -> personList.remove(person));
         deleteButton.setOnMouseClicked(event -> personList.remove(person));
+    }
+
+    @ControllerEvent.onDestroy
+    public void onDestroy() {
+        System.out.println("PersonController.onDestroy");
     }
 }

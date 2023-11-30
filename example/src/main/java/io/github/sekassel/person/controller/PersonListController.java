@@ -72,4 +72,9 @@ public class PersonListController {
 
     }
 
+    @ControllerEvent.onDestroy
+    public void onDestroy() {
+        System.out.println("PersonListController.onDestroy");
+    }
+
 }

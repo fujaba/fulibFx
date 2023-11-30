@@ -44,6 +44,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import io.github.sekassel.jfxframework.FxFramework;
 import javafx.beans.NamedArg;
 import javafx.util.Builder;
 import com.sun.javafx.reflect.ConstructorUtil;
@@ -499,7 +500,7 @@ public class ControllerProxyBuilder<T> extends AbstractMap<String, Object> imple
         ReflectUtil.checkPackageAccess(type);
 
         retObj = this.buildFactory.getProvidedInstance(type);
-        retObj = this.buildFactory.getRouter().initAndRender(retObj, this.parameters);
+        retObj = FxFramework.manager().initAndRender(retObj, this.parameters);
 
         return retObj;
     }
