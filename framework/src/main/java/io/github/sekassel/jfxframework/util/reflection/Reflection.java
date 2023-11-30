@@ -14,6 +14,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Utility class containing different helper methods for reflection.
+ */
 public class Reflection {
 
     private Reflection() {
