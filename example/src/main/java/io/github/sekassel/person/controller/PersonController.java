@@ -1,8 +1,8 @@
 package io.github.sekassel.person.controller;
 
 import io.github.sekassel.jfxframework.controller.Subscriber;
-import io.github.sekassel.jfxframework.controller.annotation.ControllerEvent;
 import io.github.sekassel.jfxframework.controller.annotation.Controller;
+import io.github.sekassel.jfxframework.controller.annotation.ControllerEvent;
 import io.github.sekassel.person.backend.Person;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
