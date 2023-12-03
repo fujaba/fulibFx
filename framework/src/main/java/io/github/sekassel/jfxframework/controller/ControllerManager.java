@@ -1,5 +1,6 @@
 package io.github.sekassel.jfxframework.controller;
 
+import dagger.Lazy;
 import io.github.sekassel.jfxframework.FxFramework;
 import io.github.sekassel.jfxframework.controller.annotation.Controller;
 import io.github.sekassel.jfxframework.controller.annotation.ControllerEvent;
@@ -11,6 +12,8 @@ import javafx.scene.Parent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -26,12 +29,20 @@ import static io.github.sekassel.jfxframework.util.Constants.FXML_PATH;
  * <p>
  * This class is used internally by the framework and should not be used directly.
  */
+@Singleton
 public class ControllerManager {
 
     // Set of controllers that have been initialized and are currently displayed
     private final Set<Object> controllers = new HashSet<>();
     // The base class of the framework, used to load resources (relative to the base class)
     private Class<? extends FxFramework> baseClass;
+
+    @Inject
+    Lazy<Router> router;
+
+    @Inject
+    public ControllerManager() {
+    }
 
     /**
      * Initializes and renders the given controller. Calls the onInit and onRender methods. See {@link #init(Object, Map)} and {@link #render(Object, Map)}.
@@ -147,7 +158,7 @@ public class ControllerManager {
         System.out.println(baseClass);
         if (url == null) throw new RuntimeException("Could not find resource '" + fileName + "'");
 
-        ControllerBuildFactory builderFactory = new ControllerBuildFactory(FxFramework.router(), parameters);
+        ControllerBuildFactory builderFactory = new ControllerBuildFactory(this, router.get(), parameters);
 
         FXMLLoader loader = new FXMLLoader(url);
         loader.setControllerFactory(c -> factory);

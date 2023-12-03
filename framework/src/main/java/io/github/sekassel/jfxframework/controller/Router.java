@@ -1,5 +1,6 @@
 package io.github.sekassel.jfxframework.controller;
 
+import dagger.Lazy;
 import io.github.sekassel.jfxframework.FxFramework;
 import io.github.sekassel.jfxframework.controller.annotation.Controller;
 import io.github.sekassel.jfxframework.controller.annotation.Providing;
@@ -14,20 +15,26 @@ import javafx.scene.Parent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.inject.Inject;
 import javax.inject.Provider;
+import javax.inject.Singleton;
 import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Singleton
 public class Router {
 
     private final Map<Class<?>, Field> providingFields;
-
     private final TraversableTree<Field> routes;
 
     private Object source;
 
+    @Inject
+    Lazy<ControllerManager> manager;
+
+    @Inject
     public Router() {
         this.providingFields = new ConcurrentHashMap<>();
         this.routes = new TraversableNodeTree<>();
@@ -119,7 +126,7 @@ public class Router {
             throw new RuntimeException("Cannot access field '" + provider.getName() + "' in '" + provider.getDeclaringClass().getName() + "'.", e);
         }
 
-        return FxFramework.manager().initAndRender(instance, parameters);
+        return this.manager.get().initAndRender(instance, parameters);
     }
 
     /**

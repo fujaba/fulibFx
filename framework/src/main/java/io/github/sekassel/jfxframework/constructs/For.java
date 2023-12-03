@@ -245,11 +245,11 @@ public class For<E, T> extends Parent {
         if (node instanceof Class<?> clazz) {
             if (clazz.isAnnotationPresent(Controller.class)) {
                 this.nodeProvider = (item) -> {
-                    Object instance = FxFramework.router().getProvidedInstance(clazz);
+                    Object instance = FxFramework.framework().frameworkComponent().router().getProvidedInstance(clazz);
                     if (beforeInit != null) {
                         beforeInit.initialize((E) instance, item);
                     }
-                    return FxFramework.manager().initAndRender(instance, this.params);
+                    return FxFramework.framework().frameworkComponent().controllerManager().initAndRender(instance, this.params);
                 };
             } else {
                 throw new IllegalArgumentException("Class '%s' is not annotated with @Controller. Directly provide a node or use '$fxid' to link a node in FXML.".formatted(clazz.getName()));

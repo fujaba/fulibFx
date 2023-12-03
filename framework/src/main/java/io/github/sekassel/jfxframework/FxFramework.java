@@ -3,6 +3,8 @@ package io.github.sekassel.jfxframework;
 import io.github.sekassel.jfxframework.controller.ControllerManager;
 import io.github.sekassel.jfxframework.controller.Router;
 import io.github.sekassel.jfxframework.controller.annotation.Controller;
+import io.github.sekassel.jfxframework.dagger.DaggerFrameworkComponent;
+import io.github.sekassel.jfxframework.dagger.FrameworkComponent;
 import io.reactivex.rxjava3.core.Scheduler;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import javafx.application.Application;
@@ -17,18 +19,22 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Map;
 import java.util.logging.Logger;
 
-public class FxFramework extends Application {
+public abstract class FxFramework extends Application {
 
     private static final Scheduler FX_SCHEDULER = Schedulers.from(Platform::runLater);
     private static final Logger LOGGER = Logger.getLogger(FxFramework.class.getName());
+    private static FxFramework instance;
 
-    private static final Router router = new Router();
-    private static final ControllerManager controllerManager = new ControllerManager();
-
+    private FrameworkComponent component;
     private Stage stage;
+
+    public FxFramework() {
+        instance = this;
+    }
 
     /**
      * Returns the logger of the framework.
+     *
      * @return The logger
      */
     public static Logger logger() {
@@ -37,6 +43,7 @@ public class FxFramework extends Application {
 
     /**
      * Returns the scheduler of the framework.
+     *
      * @return The scheduler
      */
     public static Scheduler scheduler() {
@@ -44,19 +51,15 @@ public class FxFramework extends Application {
     }
 
     /**
-     * Returns the router of the framework.
-     * @return The router
+     * Returns the current instance of the framework.
+     * <p>
+     * This method is used for internal purposes only where the framework instance is not available via dependency injection.
+     * It is not guaranteed that this method will work in all cases.
+     *
+     * @return The current instance of the framework
      */
-    public static Router router() {
-        return router;
-    }
-
-    /**
-     * Returns the controller manager of the framework.
-     * @return The controller manager
-     */
-    public static ControllerManager manager() {
-        return controllerManager;
+    public static FxFramework framework() {
+        return instance;
     }
 
     /**
@@ -72,26 +75,27 @@ public class FxFramework extends Application {
      * @param params The arguments passed to the controller
      * @return The rendered controller
      */
-    public static @NotNull Parent provide(@NotNull Class<?> clazz, Map<String, Object> params, boolean destroy) {
+    public @NotNull Parent provide(@NotNull Class<?> clazz, Map<String, Object> params, boolean destroy) {
         if (clazz.isAnnotationPresent(Controller.class))
             throw new IllegalArgumentException("Class '%s' is not a controller.".formatted(clazz.getName()));
 
-        Object instance = router.getProvidedInstance(clazz);
+        Object instance = this.component.router().getProvidedInstance(clazz);
 
         // If the controller shall be destroyed, we can just call initAndRender
-        if (destroy) return controllerManager.initAndRender(instance, params);
+        if (destroy) return this.component.controllerManager().initAndRender(instance, params);
 
         // If the controller shall not be destroyed, we have to manually initialize and render it
-        controllerManager.init(instance, params);
-        return controllerManager.render(instance, params);
-
+        this.component.controllerManager().init(instance, params);
+        return this.component.controllerManager().render(instance, params);
     }
 
     @Override
     public void start(Stage primaryStage) {
         this.stage = primaryStage;
 
-        controllerManager.setMainClass(this.getClass());
+        this.component = DaggerFrameworkComponent.builder().framework(this).build();
+
+        this.component.controllerManager().setMainClass(this.getClass());
 
         Scene scene = new Scene(new Pane()); // Show default scene
 
@@ -114,8 +118,9 @@ public class FxFramework extends Application {
      */
     public @NotNull Parent show(@NotNull String route, @NotNull Map<@NotNull String, @Nullable Object> params) {
         cleanup();
-        Parent parent = router.renderRoute(route, params);
+        Parent parent = this.component.router().renderRoute(route, params);
         display(parent);
+        onShow(route, parent, params);
         return parent;
     }
 
@@ -126,7 +131,20 @@ public class FxFramework extends Application {
 
     // Internal helper method
     private void cleanup() {
-        controllerManager.cleanup();
+        this.component.controllerManager().cleanup();
+    }
+
+    /**
+     * Called when the application shows a new controller.
+     * <p>
+     * This method is called after the controller is initialized and rendered.
+     *
+     * @param route    The route of the controller
+     * @param rendered The rendered parent of the controller
+     * @param params   The arguments passed to the controller
+     */
+    protected void onShow(String route, Parent rendered, Map<String, Object> params) {
+        // Override this method
     }
 
     /**
@@ -136,6 +154,29 @@ public class FxFramework extends Application {
      */
     public Stage stage() {
         return this.stage;
+    }
+
+    /**
+     * Returns the currently used component of the application.
+     *
+     * @return The component
+     */
+    public FrameworkComponent frameworkComponent() {
+        return this.component;
+    }
+
+    /**
+     * Returns the router of the application.
+     */
+    public Router router() {
+        return this.component.router();
+    }
+
+    /**
+     * Returns the controller manager of the application.
+     */
+    public ControllerManager manager() {
+        return this.component.controllerManager();
     }
 
 }

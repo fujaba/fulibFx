@@ -1,5 +1,6 @@
 package io.github.sekassel.jfxframework.controller.building;
 
+import io.github.sekassel.jfxframework.controller.ControllerManager;
 import io.github.sekassel.jfxframework.controller.Router;
 import io.github.sekassel.jfxframework.controller.annotation.Controller;
 import javafx.util.Builder;
@@ -16,15 +17,15 @@ import java.util.Set;
  */
 public class ControllerBuildFactory implements BuilderFactory {
 
+    private final ControllerManager controllerManager;
     private final Router router;
+
     private final Map<String, Object> parameters;
 
-    private final Set<Object> instances;
-
-    public ControllerBuildFactory(@NotNull Router router, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
+    public ControllerBuildFactory(@NotNull ControllerManager controllerManager, @NotNull Router router, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
+        this.controllerManager = controllerManager;
         this.router = router;
         this.parameters = parameters;
-        this.instances = new HashSet<>();
     }
 
     @Override
@@ -37,18 +38,10 @@ public class ControllerBuildFactory implements BuilderFactory {
     }
 
     public Object getProvidedInstance(Class<?> type) {
-        Object instance = router.getProvidedInstance(type);
-
-        instances.add(instance);
-
-        return instance;
+        return router.getProvidedInstance(type);
     }
 
-    public Router getRouter() {
-        return router;
-    }
-
-    public Set<Object> getInstantiatedControllers() {
-        return instances;
+    public ControllerManager controllerManager() {
+        return controllerManager;
     }
 }
