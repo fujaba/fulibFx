@@ -18,7 +18,7 @@ public class BackController extends VBox {
         button.setOnAction(event -> back());
 
         Button button1 = new Button("Continue");
-        button1.setOnAction(event -> ExampleApp.instance.show("rendermethod", Map.of()));
+        button1.setOnAction(event -> ExampleApp.instance.show("/history", Map.of()));
 
         this.getChildren().add(button);
         this.getChildren().add(button1);
@@ -26,7 +26,7 @@ public class BackController extends VBox {
 
     @FXML
     public void back() {
-        ExampleApp.instance.show("..", Map.of());
+        ExampleApp.instance.back();
     }
 
 }

@@ -204,4 +204,16 @@ public abstract class FxFramework extends Application {
     public ControllerManager manager() {
         return this.component.controllerManager();
     }
+
+    public void back() {
+        cleanup();
+        Parent parent = router.back();
+        display(parent);
+    }
+
+    public void forward() {
+        cleanup();
+        Parent parent = router.forward();
+        display(parent);
+    }
 }

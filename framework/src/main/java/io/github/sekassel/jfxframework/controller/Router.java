@@ -7,8 +7,7 @@ import io.github.sekassel.jfxframework.controller.annotation.Providing;
 import io.github.sekassel.jfxframework.controller.annotation.Route;
 import io.github.sekassel.jfxframework.controller.exception.ControllerDuplicatedRouteException;
 import io.github.sekassel.jfxframework.controller.exception.ControllerInvalidRouteException;
-import io.github.sekassel.jfxframework.data.TraversableNodeTree;
-import io.github.sekassel.jfxframework.data.TraversableTree;
+import io.github.sekassel.jfxframework.data.*;
 import io.github.sekassel.jfxframework.util.Util;
 import io.github.sekassel.jfxframework.util.reflection.Reflection;
 import javafx.scene.Parent;
@@ -28,6 +27,7 @@ public class Router {
 
     private final Map<Class<?>, Field> providingFields;
     private final TraversableTree<Field> routes;
+    private final TraversableQueue<Tuple<TraversableNodeTree.Node<Field>, Map<String, Object>>> history;
 
     private Object source;
 
@@ -38,6 +38,7 @@ public class Router {
     public Router() {
         this.providingFields = new ConcurrentHashMap<>();
         this.routes = new TraversableNodeTree<>();
+        this.history = new EvictingQueue<>(10);
     }
 
     /**
@@ -108,6 +109,8 @@ public class Router {
         if (!this.routes.containsPath(route)) throw new ControllerInvalidRouteException(route);
 
         Field provider = this.routes.traverse(route);
+        TraversableNodeTree.Node<Field> node = ((TraversableNodeTree<Field>) this.routes).currentNode();
+        this.history.insert(Tuple.of(node, parameters));
         Class<?> controller = Util.getProvidedClass(Objects.requireNonNull(provider));
 
         if (controller == null)
@@ -117,16 +120,17 @@ public class Router {
             throw new RuntimeException("Class " + controller.getName() + " is not annotated with @Controller");
 
         // Get the instance of the controller
-        Object instance;
+        return this.manager.get().initAndRender(getInstanceOfProviderField(provider), parameters);
+    }
+
+    private Object getInstanceOfProviderField(Field provider) {
         try {
-            instance = ((Provider<?>) provider.get(source)).get();
+            return ((Provider<?>) provider.get(source)).get();
         } catch (NullPointerException e) {
             throw new RuntimeException("Field '" + provider.getName() + "' in '" + provider.getDeclaringClass().getName() + "' is not initialized.");
         } catch (IllegalAccessException e) {
             throw new RuntimeException("Cannot access field '" + provider.getName() + "' in '" + provider.getDeclaringClass().getName() + "'.", e);
         }
-
-        return this.manager.get().initAndRender(instance, parameters);
     }
 
     /**
@@ -145,6 +149,28 @@ public class Router {
             return ((Provider<T>) field.get(this.source)).get();
         } catch (IllegalAccessException e) {
             throw new RuntimeException("Field '" + field.getName() + "' in '" + field.getDeclaringClass().getName() + "' could not be accessed.", e);
+        }
+    }
+
+    public Parent back() {
+        try {
+            Tuple<TraversableNodeTree.Node<Field>, Map<String, Object>> tuple = this.history.back();
+            ((TraversableNodeTree<Field>) routes).setCurrentNode(tuple.first());
+            return this.manager.get().initAndRender(getInstanceOfProviderField(tuple.first().value()), tuple.second());
+        } catch (Exception e) {
+            FxFramework.logger().warning("Could not go back to previous controller: " + e.getMessage());
+            return null;
+        }
+    }
+
+    public Parent forward() {
+        try {
+            Tuple<TraversableNodeTree.Node<Field>, Map<String, Object>> tuple = this.history.forward();
+            ((TraversableNodeTree<Field>) routes).setCurrentNode(tuple.first());
+            return this.manager.get().initAndRender(getInstanceOfProviderField(tuple.first().value()), tuple.second());
+        } catch (Exception e) {
+            FxFramework.logger().warning("Could not go forward to next controller: " + e.getMessage());
+            return null;
         }
     }
 

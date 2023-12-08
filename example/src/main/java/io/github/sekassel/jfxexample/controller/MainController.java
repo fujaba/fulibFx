@@ -43,6 +43,6 @@ public class MainController {
 
     @FXML
     public void continueButton(ActionEvent actionEvent) {
-        ExampleApp.instance.show("back", Map.of());
+        ExampleApp.instance.show("back", Map.of("key", "value"));
     }
 }
