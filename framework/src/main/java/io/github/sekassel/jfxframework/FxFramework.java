@@ -5,6 +5,7 @@ import io.github.sekassel.jfxframework.controller.Router;
 import io.github.sekassel.jfxframework.controller.annotation.Controller;
 import io.github.sekassel.jfxframework.dagger.DaggerFrameworkComponent;
 import io.github.sekassel.jfxframework.dagger.FrameworkComponent;
+import io.github.sekassel.jfxframework.util.Util;
 import io.reactivex.rxjava3.core.Scheduler;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import javafx.application.Application;
@@ -64,29 +65,54 @@ public abstract class FxFramework extends Application {
 
     /**
      * Provides an initialized and rendered instance of the given controller class.
+     * This method only works with controllers which extend Parent.
      * <p>
-     * If destroy is false, the method will NOT add the controller to the set of initialized controllers and the
+     * If destroyWithCurrent is false, the method will NOT add the controller to the set of initialized controllers and the
      * controller will not be destroyed when a new main controller is set.
      * <p>
-     * If destroy is true, the controller will be added to the set of initialized controllers and will be destroyed when
+     * If destroyWithCurrent is true, the controller will be added to the set of initialized controllers and will be destroyed when
      * a new main controller is set.
      *
-     * @param clazz  The controller class
-     * @param params The arguments passed to the controller
+     * @param clazz              The controller class
+     * @param params             The arguments passed to the controller
+     * @param destroyWithCurrent Whether the controller shall be destroyed when a new main controller is set
      * @return The rendered controller
      */
-    public @NotNull Parent provide(@NotNull Class<?> clazz, Map<String, Object> params, boolean destroy) {
+    public @NotNull <T> T provide(@NotNull Class<T> clazz, Map<String, Object> params, boolean destroyWithCurrent) {
         if (clazz.isAnnotationPresent(Controller.class))
             throw new IllegalArgumentException("Class '%s' is not a controller.".formatted(clazz.getName()));
 
         Object instance = this.component.router().getProvidedInstance(clazz);
 
         // If the controller shall be destroyed, we can just call initAndRender
-        if (destroy) return this.component.controllerManager().initAndRender(instance, params);
+        if (destroyWithCurrent) {
+            Parent rendered = this.component.controllerManager().initAndRender(instance, params);
+            if (Util.isParentController(rendered)) {
+                return (T) rendered;
+            }
+            throw new IllegalStateException("Providing a controller only works for controllers extending Parent.");
+        }
 
         // If the controller shall not be destroyed, we have to manually initialize and render it
         this.component.controllerManager().init(instance, params);
-        return this.component.controllerManager().render(instance, params);
+        Parent rendered = this.component.controllerManager().render(instance, params);
+        if (Util.isParentController(rendered)) {
+            return (T) rendered;
+        }
+        throw new IllegalStateException("Providing a controller only works for controllers extending Parent.");
+    }
+
+    /**
+     * Destroys a rendered controller extending Parent.
+     *
+     * @param rendered The rendered controller instance
+     * @param <T>      The type of the controller
+     * @return The destroyed controller instance
+     * @throws IllegalArgumentException If the given instance is not a controller extending Parent
+     */
+    public @NotNull <T> T destroy(@NotNull T rendered) {
+        this.component.controllerManager().destroy(rendered);
+        return rendered;
     }
 
     @Override
@@ -178,5 +204,4 @@ public abstract class FxFramework extends Application {
     public ControllerManager manager() {
         return this.component.controllerManager();
     }
-
 }

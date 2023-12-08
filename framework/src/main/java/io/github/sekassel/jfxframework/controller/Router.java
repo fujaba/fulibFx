@@ -136,13 +136,13 @@ public class Router {
      * @return The instance
      * @throws RuntimeException If no field providing an instance of the given type has been registered
      */
-    public @NotNull Object getProvidedInstance(@NotNull Class<?> type) {
+    public @NotNull <T> T getProvidedInstance(@NotNull Class<T> type) {
         if (!this.providingFields.containsKey(type))
             throw new RuntimeException("No field providing an instance of '" + type.getName() + "' has been registered using @Providing.");
 
         Field field = this.providingFields.get(type);
         try {
-            return ((Provider<?>) field.get(this.source)).get();
+            return ((Provider<T>) field.get(this.source)).get();
         } catch (IllegalAccessException e) {
             throw new RuntimeException("Field '" + field.getName() + "' in '" + field.getDeclaringClass().getName() + "' could not be accessed.", e);
         }

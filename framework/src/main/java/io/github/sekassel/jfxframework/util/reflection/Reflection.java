@@ -54,7 +54,10 @@ public class Reflection {
     public static void callMethodsWithAnnotation(@NotNull Object instance, @NotNull Class<? extends Annotation> annotation, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
         for (Method method : Reflection.getMethodsWithAnnotation(instance.getClass(), annotation)) {
             try {
+                boolean accessible = method.canAccess(instance);
+                method.setAccessible(true);
                 method.invoke(instance, getApplicableParameters(method, parameters));
+                method.setAccessible(accessible);
             } catch (IllegalAccessException | InvocationTargetException e) {
                 throw new RuntimeException("Couldn't run method '" + method.getName() + "' annotated with '" + annotation.getName() + "' in '" + instance.getClass().getName() + "'", e);
             }

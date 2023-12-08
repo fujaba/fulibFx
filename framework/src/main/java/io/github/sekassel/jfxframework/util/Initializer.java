@@ -1,20 +1,20 @@
 package io.github.sekassel.jfxframework.util;
 
 /**
- * Functional interface to initialize a node with an item.
+ * Functional interface to initialize an object with an item.
  *
- * @param <T> The type of the node
+ * @param <T> The type of the object
  * @param <E> The type of the item
  */
 @FunctionalInterface
 public interface Initializer<T, E> {
 
     /**
-     * Initializes the node with the given item.
+     * Initializes the object with the given item.
      *
-     * @param node The node to initialize
-     * @param item The item to initialize the node with
+     * @param object The object to initialize
+     * @param item   The item to initialize the object with
      */
-    void initialize(T node, E item);
+    void initialize(T object, E item);
 
 }

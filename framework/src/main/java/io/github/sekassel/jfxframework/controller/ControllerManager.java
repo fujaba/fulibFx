@@ -127,6 +127,9 @@ public class ControllerManager {
      * @param instance The controller instance to destroy
      */
     public void destroy(@NotNull Object instance) {
+        if (!Util.isController(instance))
+            throw new IllegalArgumentException("Class '%s' is not a controller.".formatted(instance.getClass().getName()));
+
         Reflection.callMethodsWithAnnotation(instance, ControllerEvent.onDestroy.class, Map.of());
 
         if (instance instanceof Subscriber) {

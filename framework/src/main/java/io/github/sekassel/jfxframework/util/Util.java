@@ -171,4 +171,28 @@ public class Util {
         return value;
     }
 
+    /**
+     * Checks if an instance is a controller extending a Parent.
+     * <p>
+     * This method is used internally by the framework and shouldn't be required for developers.
+     *
+     * @param instance The instance to check
+     * @return True if the instance is a controller extending a Parent
+     */
+    public static boolean isParentController(@Nullable Object instance) {
+        return instance != null && instance.getClass().isAnnotationPresent(Controller.class) && Parent.class.isAssignableFrom(instance.getClass());
+    }
+
+    /**
+     * Checks if an instance is a controller.
+     * <p>
+     * This method is used internally by the framework and shouldn't be required for developers.
+     *
+     * @param instance The instance to check
+     * @return True if the instance is a controller
+     */
+    public static boolean isController(@Nullable Object instance) {
+        return instance != null && instance.getClass().isAnnotationPresent(Controller.class);
+    }
+
 }

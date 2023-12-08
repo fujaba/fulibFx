@@ -3,6 +3,7 @@ package io.github.sekassel.person.controller;
 import io.github.sekassel.jfxframework.constructs.For;
 import io.github.sekassel.jfxframework.controller.annotation.Controller;
 import io.github.sekassel.jfxframework.controller.annotation.ControllerEvent;
+import io.github.sekassel.person.PersonApp;
 import io.github.sekassel.person.backend.Person;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -14,6 +15,9 @@ import javax.inject.Inject;
 
 @Controller(view = "view/persons.fxml")
 public class PersonListController {
+
+    @Inject
+    PersonApp app;
 
     @FXML
     public VBox friendMenu;
@@ -68,8 +72,6 @@ public class PersonListController {
                 currentFriend.refresh();
             });
         });
-
-
     }
 
     @ControllerEvent.onDestroy
