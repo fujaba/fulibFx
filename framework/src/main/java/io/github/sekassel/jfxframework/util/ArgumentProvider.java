@@ -1,8 +1,8 @@
 package io.github.sekassel.jfxframework.util;
 
 @FunctionalInterface
-public interface ArgumentProvider<T, E> {
+public interface ArgumentProvider<T, A> {
 
-    T get(E argument);
+    T get(A argument);
 
 }
