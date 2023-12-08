@@ -207,13 +207,13 @@ public abstract class FxFramework extends Application {
 
     public void back() {
         cleanup();
-        Parent parent = router.back();
+        Parent parent = this.component.router().back();
         display(parent);
     }
 
     public void forward() {
         cleanup();
-        Parent parent = router.forward();
+        Parent parent = this.component.router().forward();
         display(parent);
     }
 }
