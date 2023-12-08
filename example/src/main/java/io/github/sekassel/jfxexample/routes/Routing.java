@@ -27,6 +27,10 @@ public class Routing {
     @Inject
     public Provider<RenderMethodController> rendermethod;
 
+    @Route(route = "/history")
+    @Inject
+    public Provider<HistoryController> history;
+
     @Providing
     @Inject
     public Provider<CustomButton> buttonProvider;
