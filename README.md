@@ -248,6 +248,25 @@ public class TodoController {
 }
 ```
 
+## ⌚ History
+
+The framework also provides a history of visited routes. The history acts like a stack and can be
+used to go back and forth between previously visited routes. The history is automatically updated when using the `show` 
+method. The history works like the history of a browser, meaning you can go back and forth again, but after going back
+and visiting an alternative route, the routes that were previously in the history will be removed.
+
+The history can be navigated using the `back()` and `forward()` methods of the `FxFramework` class.
+
+## 🤚 Providing controllers
+
+If you want to show a controller without using the routing system with controllers and sub-controllers, you can use the 
+`provide` method of the `FxFramework` class. This method takes a controller class and returns an instance of the controller. 
+This instance can then be used to display the controller using JavaFX. This only works for controllers extending from `Parent`.
+
+Controllers provided this way will not be recognized by the routing system and therefore will not be destroyed automatically.
+If you want to destroy the controller, you have to do it manually, for example by calling `destroy()` on the controller
+in the `FxFramework` class.
+
 ## 🧵 Sub-Controllers
 
 Controllers can be used inside other controllers to create reusable components. This can be done by using the
