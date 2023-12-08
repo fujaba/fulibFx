@@ -34,13 +34,21 @@ public interface Subscriber {
      *
      * @param action the runnable to execute
      */
-    default void onDestroy(@NotNull Runnable action) {
+    default void addDestroyable(@NotNull Runnable action) {
         getDisposables().add(Disposable.fromRunnable(action));
     }
 
     /**
+     * Adds a disposable to be disposed when the controller is destroyed.
+     *
+     * @param disposable the disposable to dispose
+     */
+    default void addDestroyable(@NotNull Disposable disposable) {
+        getDisposables().add(disposable);
+    }
+
+    /**
      * Subscribes to and observes a completable on the FX thread.
-     * This method is only a utility method to avoid boilerplate code.
      *
      * @param completable the completable to subscribe to
      */
@@ -50,7 +58,6 @@ public interface Subscriber {
 
     /**
      * Subscribes to and observes a completable on the FX thread.
-     * This method is only a utility method to avoid boilerplate code.
      *
      * @param completable the completable to subscribe to
      * @param onComplete  the consumer to call on each event
@@ -61,7 +68,6 @@ public interface Subscriber {
 
     /**
      * Subscribes to and observes a completable on the FX thread.
-     * This method is only a utility method to avoid boilerplate code.
      *
      * @param completable the completable to subscribe to
      * @param onError     the consumer to call on an error
@@ -85,7 +91,6 @@ public interface Subscriber {
 
     /**
      * Subscribes to and observes a completable on the FX thread.
-     * This method is only a utility method to avoid boilerplate code.
      *
      * @param observable the observable to subscribe to
      * @param <T>        the type of the items emitted by the Observable
@@ -96,7 +101,6 @@ public interface Subscriber {
 
     /**
      * Subscribes to and observes a completable on the FX thread.
-     * This method is only a utility method to avoid boilerplate code.
      *
      * @param observable the observable to subscribe to
      * @param onNext     the action to call on completion
@@ -108,7 +112,6 @@ public interface Subscriber {
 
     /**
      * Subscribes to and observes a completable on the FX thread.
-     * This method is only a utility method to avoid boilerplate code.
      *
      * @param observable the observable to subscribe to
      * @param onNext     the consumer to call on each event
@@ -128,7 +131,7 @@ public interface Subscriber {
      */
     default <T> void listen(@NotNull ObservableValue<@NotNull T> property, @NotNull ChangeListener<? super @NotNull T> listener) {
         property.addListener(listener);
-        onDestroy(() -> property.removeListener(listener));
+        addDestroyable(() -> property.removeListener(listener));
     }
 
     /**

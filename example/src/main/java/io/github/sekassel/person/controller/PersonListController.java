@@ -1,10 +1,12 @@
 package io.github.sekassel.person.controller;
 
 import io.github.sekassel.jfxframework.constructs.For;
+import io.github.sekassel.jfxframework.controller.Subscriber;
 import io.github.sekassel.jfxframework.controller.annotation.Controller;
 import io.github.sekassel.jfxframework.controller.annotation.ControllerEvent;
 import io.github.sekassel.person.PersonApp;
 import io.github.sekassel.person.backend.Person;
+import io.reactivex.rxjava3.disposables.Disposable;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -14,7 +16,7 @@ import javafx.scene.layout.VBox;
 import javax.inject.Inject;
 
 @Controller(view = "view/persons.fxml")
-public class PersonListController {
+public class PersonListController implements Subscriber {
 
     @Inject
     PersonApp app;
@@ -62,7 +64,7 @@ public class PersonListController {
             this.currentFriend.refresh();
         }
 
-        For.controller(friendList, personList, PersonController.class, (personController, person) -> {
+        Disposable disposable = For.controller(friendList, personList, PersonController.class, (personController, person) -> {
 
             System.out.println("PersonController.beforeInit");
             personController.setPerson(person);
@@ -71,7 +73,9 @@ public class PersonListController {
                 currentFriend.setPerson(person);
                 currentFriend.refresh();
             });
-        });
+        }).disposable();
+
+        addDestroyable(disposable::dispose);
     }
 
     @ControllerEvent.onDestroy

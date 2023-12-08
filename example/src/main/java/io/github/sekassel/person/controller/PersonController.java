@@ -56,7 +56,7 @@ public class PersonController extends HBox implements Subscriber {
     @ControllerEvent.onInit
     public void onInit() {
         System.out.println("PersonController.onInit");
-        onDestroy(() -> System.out.println("PersonController->Subscriber.onDestroy"));
+        addDestroyable(() -> System.out.println("PersonController->Subscriber.onDestroy"));
     }
 
     @ControllerEvent.onRender
