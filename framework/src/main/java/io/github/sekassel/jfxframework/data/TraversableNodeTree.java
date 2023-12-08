@@ -88,6 +88,14 @@ public class TraversableNodeTree<E> implements TraversableTree<E> {
         node.value(value);
     }
 
+    public Node<E> currentNode() {
+        return this.current;
+    }
+
+    public void setCurrentNode(Node<E> node) {
+        this.current = node;
+    }
+
     /**
      * Follows the given path and returns the value at the end of the path.
      * <p>
