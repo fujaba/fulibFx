@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import io.github.sekassel.person.controller.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<VBox fx:id="friendMenu" alignment="CENTER" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.sekassel.person.controller.PersonListController">
+    <Label text="Friend List">
+        <font>
+            <Font name="System Bold" size="36.0" />
+        </font>
+    </Label>
+    <HBox alignment="CENTER" spacing="10.0">
+        <VBox fx:id="friendEditor">
+            <Label fx:id="currentLabel" text="Current Friend" />
+            <PersonDisplayController fx:id="currentFriend" />
+        </VBox>
+        <VBox fx:id="friendList">
+            <Label fx:id="personListLabel" text="List of Persons" />
+        </VBox>
+    </HBox>
+</VBox>

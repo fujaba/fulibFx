@@ -2,12 +2,12 @@ package io.github.sekassel.jfxframework.controller;
 
 import io.github.sekassel.jfxframework.FxFramework;
 import io.github.sekassel.jfxframework.controller.annotation.Controller;
-import io.github.sekassel.jfxframework.controller.annotation.Param;
-import io.github.sekassel.jfxframework.controller.annotation.Params;
+import io.github.sekassel.jfxframework.controller.annotation.ControllerEvent;
+import io.github.sekassel.jfxframework.controller.annotation.Providing;
 import io.github.sekassel.jfxframework.controller.annotation.Route;
+import io.github.sekassel.jfxframework.controller.building.ControllerBuildFactory;
 import io.github.sekassel.jfxframework.controller.exception.ControllerDuplicatedRouteException;
 import io.github.sekassel.jfxframework.controller.exception.ControllerInvalidRouteException;
-import io.github.sekassel.jfxframework.controller.exception.ControllerLoadingException;
 import io.github.sekassel.jfxframework.data.TraversableNodeTree;
 import io.github.sekassel.jfxframework.data.TraversableTree;
 import io.github.sekassel.jfxframework.util.Util;
@@ -19,17 +19,18 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.inject.Provider;
 import java.io.IOException;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static io.github.sekassel.jfxframework.util.Constants.FXML_PATH;
 
 public class Router {
+
+    private final Map<Class<?>, Field> providingFields;
 
     private final TraversableTree<Field> routes;
 
@@ -37,6 +38,7 @@ public class Router {
     private Class<? extends FxFramework> baseClass = FxFramework.class;
 
     public Router() {
+        this.providingFields = new ConcurrentHashMap<>();
         this.routes = new TraversableNodeTree<>();
     }
 
@@ -52,7 +54,24 @@ public class Router {
         this.source = routes;
 
         Reflection.getFieldsWithAnnotation(routes.getClass(), Route.class).forEach(this::registerRoute);
+        Reflection.getFieldsWithAnnotation(routes.getClass(), Providing.class).forEach(this::registerProviding);
+    }
 
+    /**
+     * Registers a field as a provider for loading subcontrollers in FXML files.
+     * @param field The field to register
+     */
+    private void registerProviding(Field field) {
+        if (!field.isAnnotationPresent(Providing.class))
+            throw new RuntimeException("Field '" + field.getName() + "' in class '"+ field.getDeclaringClass().getName() + "' is not annotated with @Providing");
+        if (this.providingFields.containsKey(field.getType())) {
+            FxFramework.logger().warning("Field '" + field.getName() + "' in '" + field.getDeclaringClass().getName() + "' is annotated with @Providing but there is already a field providing an instance of '" + field.getType().getName() + "'. The old field will be used instead.");
+            return;
+        }
+
+        Util.requireControllerProvider(field);
+
+        this.providingFields.put(Util.getProvidedClass(field), field);
     }
 
     /**
@@ -85,7 +104,7 @@ public class Router {
      * @param parameters The parameters to pass to the controller
      * @throws ControllerInvalidRouteException If the controller couldn't be found
      */
-    public @NotNull Parent render(@NotNull String route, @NotNull Map<String, Object> parameters) {
+    public @NotNull Parent renderRoute(@NotNull String route, @NotNull Map<String, Object> parameters) {
         // Check if the route exists and has a valid controller
         if (!this.routes.containsPath(route)) throw new ControllerInvalidRouteException(route);
 
@@ -105,20 +124,24 @@ public class Router {
         } catch (NullPointerException e) {
             throw new RuntimeException("Field '" + provider.getName() + "' in '" + provider.getDeclaringClass().getName() + "' is not initialized.");
         } catch (IllegalAccessException e) {
-            throw new ControllerLoadingException(route, e);
+            throw new RuntimeException("Cannot access field '" + provider.getName() + "' in '" + provider.getDeclaringClass().getName() + "'.", e);
         }
 
+        return initAndRender(instance, parameters);
+    }
+
+    public Parent initAndRender(Object instance, Map<String, Object> parameters) {
+
         // Call the onInit method
-        callMethodsWithAnnotation(route, instance, ControllerEvent.onInit.class, parameters);
+        Reflection.callMethodsWithAnnotation(instance, ControllerEvent.onInit.class, parameters);
 
         // Render the controller
         Parent parent;
-        String view = controller.getAnnotation(Controller.class).view();
+        String view = instance.getClass().getAnnotation(Controller.class).view();
 
         // If the controller extends from a javafx Parent, render it
-        if (Parent.class.isAssignableFrom(instance.getClass())) {
+        if (Parent.class.isAssignableFrom(instance.getClass()) && view.isEmpty()) {
             parent = (Parent) instance;
-            if (!view.isEmpty()) throw new RuntimeException("Controller '" + controller.getName() + "' is a javafx parent and cannot have a view specified.");
         }
 
         // If the controller specifies a method as view, call it
@@ -137,67 +160,14 @@ public class Router {
         }
         // If the controller specifies a fxml file, load it
         else {
-            parent = view.isEmpty() ? load(FXML_PATH + Util.transform(controller.getSimpleName()) + ".fxml", instance) : load(view, instance);
+            String fxmlPath = view.isEmpty() ? FXML_PATH + Util.transform(instance.getClass().getSimpleName()) + ".fxml" : view;
+            parent = load(fxmlPath, instance, parameters, Parent.class.isAssignableFrom(instance.getClass()));
         }
 
         // Call the onRender method
-        callMethodsWithAnnotation(route, instance, ControllerEvent.onRender.class, parameters);
+        Reflection.callMethodsWithAnnotation(instance, ControllerEvent.onRender.class, parameters);
 
         return parent;
-    }
-
-    /**
-     * Calls all methods annotated with a certain annotation in the provided controller.
-     *
-     * @param route      The route of the controller
-     * @param annotation The annotation to look for
-     * @param parameters The parameters to pass to the methods
-     */
-    private void callMethodsWithAnnotation(@NotNull String route, @NotNull Object instance, @NotNull Class<? extends Annotation> annotation, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
-        Reflection.getMethodsWithAnnotation(instance.getClass(), annotation).forEach(method -> {
-            try {
-                method.invoke(instance, applicableParameters(method, parameters));
-            } catch (Exception e) {
-                throw new ControllerLoadingException(route, e);
-            }
-        });
-    }
-
-    /**
-     * Returns an array with all parameters that are applicable to the given method in the correct order.
-     *
-     * @param method     The method to check
-     * @param parameters The values of the parameters
-     * @return An array with all applicable parameters
-     */
-    private @Nullable Object @NotNull [] applicableParameters(@NotNull Method method, @NotNull Map<String, Object> parameters) {
-        return Arrays.stream(method.getParameters())
-                .map(parameter -> {
-                    Param param = parameter.getAnnotation(Param.class);
-                    Params params = parameter.getAnnotation(Params.class);
-
-                    if (param != null && params != null)
-                        throw new RuntimeException("Parameter '" + parameter.getName() + "' in method '" + method.getDeclaringClass().getName() + "#" + method.getName() + "' is annotated with both @Param and @Params");
-
-                    // Check if the parameter is annotated with @Param and if the parameter is of the correct type
-                    if (param != null) {
-                        if (parameters.containsKey(param.name()) && !parameter.getType().isAssignableFrom(parameters.get(param.name()).getClass())) {
-                            throw new RuntimeException("Parameter named '" + param.name() + "' in method '" + method.getDeclaringClass().getName() + "#" + method.getName() + "' is of type " + parameter.getType().getName() + " but the provided value is of type " + parameters.get(param.name()).getClass().getName());
-                        }
-                        return parameters.get(param.name());
-                    }
-
-                    // Check if the parameter is annotated with @Params and if the parameter is of the type Map<String, Object>
-                    if (params != null) {
-                        if (!Util.isMapWithTypes(parameter, String.class, Object.class)) {
-                            throw new RuntimeException("Parameter annotated with @Params in method '" + method.getClass().getName() + "#" + method.getName() + "' is not of type " + Map.class.getName());
-                        }
-                        return parameters;
-                    }
-
-                    return null;
-                })
-                .toArray();
     }
 
     /**
@@ -207,12 +177,20 @@ public class Router {
      * @param factory  The controller factory to use
      * @return A parent representing the fxml file
      */
-    protected @NotNull Parent load(@NotNull String fileName, @NotNull Object factory) {
+    protected @NotNull Parent load(@NotNull String fileName, @NotNull Object factory, @NotNull Map<@NotNull String, @Nullable Object> parameters, boolean setRoot) {
         URL url = baseClass.getResource(fileName);
         if (url == null) throw new RuntimeException("Could not find resource '" + fileName + "'");
 
+        ControllerBuildFactory builderFactory = new ControllerBuildFactory(this, parameters);
+
         FXMLLoader loader = new FXMLLoader(url);
         loader.setControllerFactory(c -> factory);
+        loader.setBuilderFactory(builderFactory);
+
+        if (setRoot) {
+            loader.setRoot(factory);
+        }
+
         try {
             return loader.load();
         } catch (IOException exception) {
@@ -230,4 +208,15 @@ public class Router {
         this.baseClass = clazz;
     }
 
+    public Object getProvidedInstance(Class<?> type) {
+        if (!this.providingFields.containsKey(type))
+            throw new RuntimeException("No field providing an instance of '" + type.getName() + "' has been registered using @Providing.");
+
+        Field field = this.providingFields.get(type);
+        try {
+            return ((Provider<?>) field.get(this.source)).get();
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException("Field '" + field.getName() + "' in '" + field.getDeclaringClass().getName() + "' could not be accessed.", e);
+        }
+    }
 }

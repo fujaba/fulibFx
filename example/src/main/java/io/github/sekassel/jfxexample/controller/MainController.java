@@ -1,7 +1,7 @@
 package io.github.sekassel.jfxexample.controller;
 
 import io.github.sekassel.jfxexample.ExampleApp;
-import io.github.sekassel.jfxframework.controller.ControllerEvent;
+import io.github.sekassel.jfxframework.controller.annotation.ControllerEvent;
 import io.github.sekassel.jfxframework.controller.annotation.Controller;
 import io.github.sekassel.jfxframework.controller.annotation.Param;
 import io.github.sekassel.jfxframework.controller.annotation.Params;
@@ -14,7 +14,7 @@ import javafx.scene.layout.Pane;
 import javax.inject.Inject;
 import java.util.Map;
 
-@Controller(id = "mainmenu")
+@Controller()
 public class MainController {
 
     @FXML
@@ -29,7 +29,6 @@ public class MainController {
 
     @ControllerEvent.onInit()
     public void init(@Param(name = "username") String user) {
-        System.out.println("MainController.onInit() " + user);
     }
 
     @ControllerEvent.onRender()
