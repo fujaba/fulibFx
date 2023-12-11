@@ -30,6 +30,8 @@ public abstract class FxFramework extends Application {
     private Stage stage;
 
     public FxFramework() {
+        if (instance != null)
+            logger().warning("Multiple instances of FxFramework are not supported.");
         instance = this;
     }
 

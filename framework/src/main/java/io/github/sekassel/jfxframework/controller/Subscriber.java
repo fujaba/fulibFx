@@ -1,7 +1,6 @@
 package io.github.sekassel.jfxframework.controller;
 
 import io.github.sekassel.jfxframework.FxFramework;
-import io.github.sekassel.jfxframework.util.Util;
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.Scheduler;
@@ -12,21 +11,38 @@ import io.reactivex.rxjava3.functions.Consumer;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
+import javax.inject.Inject;
 
-public interface Subscriber {
+public class Subscriber {
 
-    HashMap<@NotNull Subscriber, @NotNull CompositeDisposable> disposables = new HashMap<>();
+
+    /**
+     * The composite disposable for this subscriber.
+     * <p>
+     * This field is initialized lazily. Use {@link #disposable()} to access it null-safely.
+     */
+    @Nullable
+    private CompositeDisposable disposable;
+
+    /**
+     * Creates a new subscriber.
+     */
+    @Inject
+    public Subscriber() {
+
+    }
 
     /**
      * Method called by the framework when the controller using this subscriber is destroyed.
      * Internal use only.
      */
-    default void destroy() {
-        if (disposables.containsKey(this))
-            disposables.get(this).dispose();
-        disposables.remove(this);
+    public void destroy() {
+        if (this.disposable != null) {
+            this.disposable.dispose();
+            this.disposable = null;
+        }
     }
 
     /**
@@ -34,8 +50,8 @@ public interface Subscriber {
      *
      * @param action the runnable to execute
      */
-    default void addDestroyable(@NotNull Runnable action) {
-        getDisposables().add(Disposable.fromRunnable(action));
+    public void addDestroyable(@NotNull Runnable action) {
+        disposable().add(Disposable.fromRunnable(action));
     }
 
     /**
@@ -43,8 +59,8 @@ public interface Subscriber {
      *
      * @param disposable the disposable to dispose
      */
-    default void addDestroyable(@NotNull Disposable disposable) {
-        getDisposables().add(disposable);
+    public void addDestroyable(@NotNull Disposable disposable) {
+        disposable().add(disposable);
     }
 
     /**
@@ -52,8 +68,8 @@ public interface Subscriber {
      *
      * @param completable the completable to subscribe to
      */
-    default void subscribe(@NotNull Completable completable) {
-        getDisposables().add(completable.observeOn(FxFramework.scheduler()).subscribe());
+    public void subscribe(@NotNull Completable completable) {
+        disposable().add(completable.observeOn(FxFramework.scheduler()).subscribe());
     }
 
     /**
@@ -62,8 +78,8 @@ public interface Subscriber {
      * @param completable the completable to subscribe to
      * @param onComplete  the consumer to call on each event
      */
-    default void subscribe(@NotNull Completable completable, @NotNull Action onComplete) {
-        getDisposables().add(completable.observeOn(FxFramework.scheduler()).subscribe(onComplete));
+    public void subscribe(@NotNull Completable completable, @NotNull Action onComplete) {
+        disposable().add(completable.observeOn(FxFramework.scheduler()).subscribe(onComplete));
     }
 
     /**
@@ -72,8 +88,8 @@ public interface Subscriber {
      * @param completable the completable to subscribe to
      * @param onError     the consumer to call on an error
      */
-    default void subscribe(@NotNull Completable completable, @NotNull Consumer<? super @NotNull Throwable> onError) {
-        getDisposables().add(completable.doOnError(onError).observeOn(FxFramework.scheduler()).subscribe());
+    public void subscribe(@NotNull Completable completable, @NotNull Consumer<? super @NotNull Throwable> onError) {
+        disposable().add(completable.doOnError(onError).observeOn(FxFramework.scheduler()).subscribe());
     }
 
     /**
@@ -85,8 +101,8 @@ public interface Subscriber {
      * @param subscribeOn the scheduler to subscribe on
      * @param <T>         the type of the items emitted by the Observable
      */
-    default <T> void subscribe(@NotNull Observable<@NotNull T> observable, @NotNull Scheduler subscribeOn, @NotNull Consumer<@NotNull T> onNext, @NotNull Consumer<? super @NotNull Throwable> onError) {
-        getDisposables().add(observable.subscribeOn(subscribeOn).observeOn(FxFramework.scheduler()).subscribe(onNext, onError));
+    public <T> void subscribe(@NotNull Observable<@NotNull T> observable, @NotNull Scheduler subscribeOn, @NotNull Consumer<@NotNull T> onNext, @NotNull Consumer<? super @NotNull Throwable> onError) {
+        disposable().add(observable.subscribeOn(subscribeOn).observeOn(FxFramework.scheduler()).subscribe(onNext, onError));
     }
 
     /**
@@ -95,7 +111,7 @@ public interface Subscriber {
      * @param observable the observable to subscribe to
      * @param <T>        the type of the items emitted by the Observable
      */
-    default <T> void subscribe(@NotNull Observable<@NotNull T> observable) {
+    public <T> void subscribe(@NotNull Observable<@NotNull T> observable) {
         subscribe(observable.ignoreElements());
     }
 
@@ -106,8 +122,8 @@ public interface Subscriber {
      * @param onNext     the action to call on completion
      * @param <T>        the type of the items emitted by the Observable
      */
-    default <T> void subscribe(@NotNull Observable<@NotNull T> observable, @NotNull Consumer<@NotNull T> onNext) {
-        getDisposables().add(observable.observeOn(FxFramework.scheduler()).subscribe(onNext));
+    public <T> void subscribe(@NotNull Observable<@NotNull T> observable, @NotNull Consumer<@NotNull T> onNext) {
+        disposable().add(observable.observeOn(FxFramework.scheduler()).subscribe(onNext));
     }
 
     /**
@@ -118,8 +134,8 @@ public interface Subscriber {
      * @param onError    the consumer to call on an error
      * @param <T>        the type of the items emitted by the Observable
      */
-    default <T> void subscribe(@NotNull Observable<@NotNull T> observable, @NotNull Consumer<@NotNull T> onNext, @NotNull Consumer<? super @NotNull Throwable> onError) {
-        getDisposables().add(observable.observeOn(FxFramework.scheduler()).subscribe(onNext, onError));
+    public <T> void subscribe(@NotNull Observable<@NotNull T> observable, @NotNull Consumer<@NotNull T> onNext, @NotNull Consumer<? super @NotNull Throwable> onError) {
+        disposable().add(observable.observeOn(FxFramework.scheduler()).subscribe(onNext, onError));
     }
 
     /**
@@ -129,7 +145,7 @@ public interface Subscriber {
      * @param listener the listener to add
      * @param <T>      the type of the property value
      */
-    default <T> void listen(@NotNull ObservableValue<@NotNull T> property, @NotNull ChangeListener<? super @NotNull T> listener) {
+    public <T> void listen(@NotNull ObservableValue<@NotNull T> property, @NotNull ChangeListener<? super @NotNull T> listener) {
         property.addListener(listener);
         addDestroyable(() -> property.removeListener(listener));
     }
@@ -139,8 +155,19 @@ public interface Subscriber {
      *
      * @return The composite disposable for this subscriber
      */
-    default @NotNull CompositeDisposable getDisposables() {
-        return Util.putIfNull(disposables, this, new CompositeDisposable());
+    public @NotNull CompositeDisposable disposable() {
+        if (this.disposable == null || this.disposable.isDisposed())
+            this.disposable = new CompositeDisposable();
+        return this.disposable;
+    }
+
+    /**
+     * Returns whether the subscriber has been disposed.
+     *
+     * @return Whether the subscriber has been disposed
+     */
+    public boolean disposed() {
+        return this.disposable == null || this.disposable.isDisposed();
     }
 
 }

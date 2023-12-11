@@ -20,6 +20,7 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import static io.github.sekassel.jfxframework.util.Constants.FXML_PATH;
@@ -122,7 +123,7 @@ public class ControllerManager {
 
     /**
      * Destroys the given controller by calling all methods annotated with {@link ControllerEvent.onDestroy}.
-     * If the controller implements {@link Subscriber}, the {@link Subscriber#destroy()} method will be called.
+     * If the controller has an undestroyed Subscriber field, the destroy method of the subscriber will be called.
      *
      * @param instance The controller instance to destroy
      */
@@ -130,11 +131,22 @@ public class ControllerManager {
         if (!Util.isController(instance))
             throw new IllegalArgumentException("Class '%s' is not a controller.".formatted(instance.getClass().getName()));
 
+        // Call destroy methods
         Reflection.callMethodsWithAnnotation(instance, ControllerEvent.onDestroy.class, Map.of());
 
-        if (instance instanceof Subscriber) {
-            ((Subscriber) instance).destroy();
-        }
+        Reflection.getFieldsOfType(instance.getClass(), Subscriber.class) // Get all Subscriber fields
+                .stream()
+                .map(field -> {
+                    try {
+                        field.setAccessible(true);
+                        return (Subscriber) field.get(instance); // Get the Subscriber instance, if it exists
+                    } catch (IllegalAccessException e) {
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .filter(subscriber -> !subscriber.disposed()) // Filter out disposed subscribers
+                .forEach(Subscriber::destroy); // Call the destroy method of the Subscriber
     }
 
     /**
@@ -158,7 +170,6 @@ public class ControllerManager {
      */
     public @NotNull Parent loadFXML(@NotNull String fileName, @NotNull Object factory, @NotNull Map<@NotNull String, @Nullable Object> parameters, boolean setRoot) {
         URL url = baseClass.getResource(fileName);
-        System.out.println(baseClass);
         if (url == null) throw new RuntimeException("Could not find resource '" + fileName + "'");
 
         ControllerBuildFactory builderFactory = new ControllerBuildFactory(this, router.get(), parameters);

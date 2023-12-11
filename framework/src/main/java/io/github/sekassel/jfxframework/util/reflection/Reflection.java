@@ -35,6 +35,17 @@ public class Reflection {
     }
 
     /**
+     * Returns all fields of the given class that are of the given type.
+     *
+     * @param clazz The class to get the fields from
+     * @param type  The type to filter the fields by
+     * @return A list of fields that are of the given type
+     */
+    public static List<Field> getFieldsOfType(Class<?> clazz, Class<?> type) {
+        return Arrays.stream(clazz.getDeclaredFields()).filter(field -> field.getType().equals(type)).toList();
+    }
+
+    /**
      * Returns all methods of the given class that are annotated with the given annotation.
      *
      * @param clazz      The class to get the methods from

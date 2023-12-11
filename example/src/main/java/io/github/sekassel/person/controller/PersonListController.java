@@ -16,7 +16,7 @@ import javafx.scene.layout.VBox;
 import javax.inject.Inject;
 
 @Controller(view = "view/persons.fxml")
-public class PersonListController implements Subscriber {
+public class PersonListController {
 
     @Inject
     PersonApp app;
@@ -32,6 +32,9 @@ public class PersonListController implements Subscriber {
     public Label currentLabel;
     @FXML
     public VBox friendList;
+
+    @Inject
+    Subscriber subscriber;
 
     @FXML
     public PersonDisplayController currentFriend;
@@ -75,7 +78,7 @@ public class PersonListController implements Subscriber {
             });
         }).disposable();
 
-        addDestroyable(disposable::dispose);
+        subscriber.addDestroyable(disposable::dispose);
     }
 
     @ControllerEvent.onDestroy

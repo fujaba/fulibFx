@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 @Controller(view = "view/sub/person.fxml")
-public class PersonController extends HBox implements Subscriber {
+public class PersonController extends HBox {
 
     @FXML
     public Label firstName;
@@ -28,6 +28,9 @@ public class PersonController extends HBox implements Subscriber {
     public ImageView image;
     @FXML
     public Button deleteButton;
+
+    @Inject
+    Subscriber subscriber;
 
     @Inject
     PersonApp app;
@@ -56,7 +59,7 @@ public class PersonController extends HBox implements Subscriber {
     @ControllerEvent.onInit
     public void onInit() {
         System.out.println("PersonController.onInit");
-        addDestroyable(() -> System.out.println("PersonController->Subscriber.onDestroy"));
+        subscriber.addDestroyable(() -> System.out.println("PersonController->Subscriber.onDestroy"));
     }
 
     @ControllerEvent.onRender
