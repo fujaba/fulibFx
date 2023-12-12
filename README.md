@@ -122,6 +122,12 @@ public class FooController {
 
 ```
 
+If a controller expects and argument but no argument with a suitable name is passed, `null` will be passed instead.
+Any arguments not expected by the controller will be ignored. 
+
+If an argument is provided, but the type doesn't match the type of the field or method parameter, an exception will be 
+thrown.
+
 ## 📷 Views
 
 Each controller is associated with a view, which is composed of one or more nested JavaFX elements (panes, buttons,
