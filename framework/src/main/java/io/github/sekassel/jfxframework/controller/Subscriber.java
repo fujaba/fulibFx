@@ -15,8 +15,13 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.inject.Inject;
 
+/**
+ * A subscriber is used to subscribe to observables and listen to properties.
+ * <p>
+ * The subscriber saves all subscriptions and disposes them when it is destroyed.
+ * Subscribers which are declared with a field in a controller are automatically destroyed when the controller is destroyed.
+ */
 public class Subscriber {
-
 
     /**
      * The composite disposable for this subscriber.

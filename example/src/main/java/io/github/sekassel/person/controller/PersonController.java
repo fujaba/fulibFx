@@ -81,6 +81,7 @@ public class PersonController extends HBox {
 
     @ControllerEvent.onDestroy
     public void onDestroy() {
-        System.out.println("PersonController.onDestroy");
+        subscriber.destroy();
+        System.out.println("PersonController.onDestroy " + this);
     }
 }
