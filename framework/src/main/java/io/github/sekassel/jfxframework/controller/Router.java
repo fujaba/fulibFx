@@ -89,7 +89,10 @@ public class Router {
         Util.requireControllerProvider(field);
 
         Route annotation = field.getAnnotation(Route.class);
-        String route = annotation.route().equals("$name") ? field.getName() : annotation.route();
+        String route = annotation.route().equals("$name") ? "/" + field.getName() : annotation.route();
+
+        // Make sure the route starts with a slash to prevent issues with the traversal
+        route = route.startsWith("/") ? route : "/" + route;
 
         if (this.routes.containsPath(route))
             throw new ControllerDuplicatedRouteException(route, field.getType(), this.routes.get(route).getType());
