@@ -40,17 +40,6 @@ public class Subscriber {
     }
 
     /**
-     * Method called by the framework when the controller using this subscriber is destroyed.
-     * Internal use only.
-     */
-    public void destroy() {
-        if (this.disposable != null) {
-            this.disposable.dispose();
-            this.disposable = null;
-        }
-    }
-
-    /**
      * Adds a runnable to be executed when the controller is destroyed.
      *
      * @param action the runnable to execute
@@ -111,7 +100,7 @@ public class Subscriber {
     }
 
     /**
-     * Subscribes to and observes a completable on the FX thread.
+     * Subscribes to and observes an observable on the FX thread.
      *
      * @param observable the observable to subscribe to
      * @param <T>        the type of the items emitted by the Observable
@@ -121,7 +110,7 @@ public class Subscriber {
     }
 
     /**
-     * Subscribes to and observes a completable on the FX thread.
+     * Subscribes to and observes an observable on the FX thread.
      *
      * @param observable the observable to subscribe to
      * @param onNext     the action to call on completion
@@ -173,6 +162,17 @@ public class Subscriber {
      */
     public boolean disposed() {
         return this.disposable == null || this.disposable.isDisposed();
+    }
+
+    /**
+     * Method called by the framework when the controller using this subscriber is destroyed.
+     * Internal use only.
+     */
+    public void destroy() {
+        if (this.disposable != null) {
+            this.disposable.dispose();
+            this.disposable = null;
+        }
     }
 
 }

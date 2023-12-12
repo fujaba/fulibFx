@@ -43,12 +43,11 @@ public class TodoController {
 }
 ```
 
-### ✨ Special methods
+### ✨ Initialization, rendering and cleanup
 
 Within your controller class, you have the ability to define methods that are automatically triggered when the
-controller is initialized or rendered. These methods should be annotated with either `@ControllerEvent.onInit`
-or `@ControllerEvent.onRender` to
-specify their respective execution points.
+controller is initialized, rendered or destroyed. These methods should be annotated with either `@ControllerEvent.onInit`
+or `@ControllerEvent.onRender` to specify their respective execution points.
 
 ```java
 
@@ -70,6 +69,13 @@ public class TodoController {
         // Called when the controller has been loaded and is ready to be displayed
         System.out.println("Controller rendered");
     }
+
+    @ControllerEvent.onDestory
+    public void thisMethodWillBeCalledOnDestroy() {
+        // Called when the controller is being cleaned up
+        System.out.println("Controller destroyed");
+    }
+    
 }
 ```
 
@@ -79,28 +85,39 @@ this phase, you may not have access to elements defined in the corresponding vie
 On the other hand, the rendering of a controller occurs when the controller is fully loaded and ready to be displayed.
 At this stage, you have full access to all elements defined in the corresponding view.
 
-## 🎫 Parameters
+### 🎫 Parameters
 
-Parameters can be passed to a controller by using the `@Param()` annotation on an argument of the special method.
-When using the `show()` method, you can pass a map of parameters to the method. The framework will then try to match the 
-parameters to the arguments of the method based on their name.
+To pass arguments to a controller, you can provide an additional argument to the show method, consisting of a map of
+Strings and Objects. The Strings specify the argument's name and the Objects are the value of the argument. For example,
+`show("/route/to/controller", Map.of("key", value))` will pass the value `value` to the argument `key`.
+
+To use a passed argument in a field or method, you have to annotate it with `@Param(name = "...")`. The name of the parameter
+will be used to match it to the map of parameters passed to the `show()` method.
+
+In order to pass arguments to the following controller, the method `show("/route/to/controller", Map.of("fofo", myFoo, "baba", myBa))`
+would have to be called.
 
 ```java
 
 @Controller
 public class FooController {
 
-    private Foo bar;
+    private Foo foo;
+    
+    // The parameter 'baba' will be injected into this field before the controller is initialized
+    @Param(name = "baba")
+    private Bar bar;
     
     // Empty constructor (for dependency injection etc.)
     public FooController() {
     }
 
-    @ControllerEvent.onInit
-    public void init(@Param(name = "currentFoo") Foo foo) {
-        // When the controller is shown using a parameter map, the parameter with the name 'currentFoo' will be passed to this method
+    @ControllerEvent.onRender
+    public void render(@Param(name = "fofo") Foo foo) {
+        // The parameter 'fofo' will be passed to this method upon rendering
         this.bar = foo; 
     }
+    
 }
 
 ```
@@ -108,7 +125,7 @@ public class FooController {
 ## 📷 Views
 
 Each controller is associated with a view, which is composed of one or more nested JavaFX elements (panes, buttons,
-labels, etc.). You have three different options to define the view of a controller:
+labels, etc.). You have four different options to define the view of a controller:
 
 ### 📎 Using FXML to define the view
 
@@ -127,6 +144,7 @@ public class TodoController {
     // Empty constructor (for dependency injection etc.)
     public TodoController() {
     }
+    
 }
 ```
 
@@ -151,6 +169,7 @@ public class TodoController extends VBox {
     public TodoController() {
         this.getChildren().add(new Label("Hello World"));
     }
+    
 }
 ```
 
@@ -256,6 +275,9 @@ This setup will result in the following routing tree:
 
 <img src=".github/assets/route-diagram.png" height="300" alt="Routing tree showing main, login, todo and register routes in a tree like structure">
 
+After setting up the router class, register it in the `FxFramework` class by calling the `router().registerRoutes()` method.
+It is recommended to use dependency injection (module/component) to provide a router instance to the method.
+
 ## 🖥 Displaying controllers
 
 To display a controller, you have to call the `show()` method of the `FxFramework` class and pass the route.
@@ -278,8 +300,7 @@ public class TodoApp extends FxFramework {
 
 The route works like a file system and is therefore relative to the currently displayed controller if it doesn't start
 with a '`/`'. If you want to display a controller from the root, you have to start the route with a '`/`'. The route
-also
-supports path traversal (e.g., '`../login`'). This can be used to create a back button.
+also supports path traversal (e.g., '`../login`'). This can be used to create a back button.
 
 ```java
 
@@ -301,6 +322,7 @@ public class TodoController {
         this.backButton.setOnAction(event -> show("../"));
         this.todoButton.setOnAction(event -> show("/todo"));
     }
+    
 }
 ```
 
@@ -321,6 +343,56 @@ element like this:
 
 Depending on the parent you extended from, all attributes/properties available for this parent can be set for your
 custom controller element as well.
+
+## 🚮 Destroying controllers
+
+When a controller is no longer needed, it should be destroyed to free up resources. This will automatically happen when
+a new controller is shown using the `show()` method. However, if you for example subscribe to observables, the framework 
+will not clear them up them automatically. You should therefore save the disposables of your subscriptions and dispose them
+when the controller is destroyed. 
+
+This can be done by creating a `CompositeDisposable`, adding all disposables to it and then calling `compositeDisposable.dispose()` 
+in a `@ControllerEvent.onDestroy` annotated method. 
+
+The framework also provides utility classes for dealing with subscriptions and other mechanisms requiring cleanup. 
+By creating a new `Subscriber` instance (or by using dependency injection to provide one) and using its utility methods, 
+you can easily manage subscriptions without having to worry about disposing them. When the subscriber exists in form of
+a field in the controller, it will be automatically disposed when the controller is destroyed. Otherwise it has to be manually
+destroyed by calling `subscriber.dispose()`.
+
+```java
+
+@Controller
+public class TodoController {
+
+    @Inject
+    Subscriber subscriber;
+    
+    @Inject
+    TodoService todoService;
+
+    // Empty constructor (for dependency injection etc.)
+    @Inject
+    public TodoController() {
+    }
+
+    @ontrollerEvent.onRender
+    public void onRender() {
+        this.subscriber.subscribe(this.todoService.getTodos(), todos -> {
+            // Do something with the todos
+        }); 
+        this.subscriber.addDestroyable(() -> {
+            // Add custom logic to be executed when the controller is destroyed
+        });
+    }
+    
+    @ControllerEvent.onDestroy
+    public void onDestroy() {
+        this.subscriber.destroy();
+    }
+    
+}
+```
 
 ## 🔁 For-Loops
 
@@ -388,6 +460,10 @@ As JavaFX by itself doesn't support the duplication of nodes, the framework impl
 form of `Duplicator`s. The framework includes duplicators for most of the
 basic JavaFX elements like Buttons, HBoxes, VBoxes and more. If you need to duplicate an element which isn't supported
 by default, you can create a custom `Duplicator` and register it in the `Duplicators` class.
+
+In order to destroy controllers generated by the For-loops, you can use the `dispose()` method of the `For` class or add
+the return value of the `disposable()` method to your list of disposables.
+
 
 ## ↘ Call order
 
