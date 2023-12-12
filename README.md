@@ -38,7 +38,8 @@ be defined and annotate it with `@Controller`.
 @Controller
 public class TodoController {
 
-    // Empty constructor (for dependency injection etc.)
+    // Default constructor (for dependency injection etc.)
+    @Inject
     public TodoController() {
     }
     
@@ -56,7 +57,8 @@ or `@ControllerEvent.onRender` to specify their respective execution points.
 @Controller
 public class TodoController {
 
-    // Empty constructor (for dependency injection etc.)
+    // Default constructor (for dependency injection etc.)
+    @Inject
     public TodoController() {
     }
 
@@ -110,7 +112,8 @@ public class FooController {
     @Param(name = "baba")
     private Bar bar;
     
-    // Empty constructor (for dependency injection etc.)
+    // Default constructor (for dependency injection etc.)
+    @Inject
     public FooController() {
     }
 
@@ -149,7 +152,8 @@ that the entered path will always be relative to the path of your app class in t
 @Controller(view = "view/todo.fxml")
 public class TodoController {
 
-    // Empty constructor (for dependency injection etc.)
+    // Default constructor (for dependency injection etc.)
+    @Inject
     public TodoController() {
     }
     
@@ -173,7 +177,8 @@ complex views should not be created this way. Instead, you should use the `fx:ro
 @Controller
 public class TodoController extends VBox {
 
-    // Empty constructor (for dependency injection etc.)
+    // Default constructor (for dependency injection etc.)
+    @Inject
     public TodoController() {
         this.getChildren().add(new Label("Hello World"));
     }
@@ -196,7 +201,8 @@ additional functionality. This will also be very helpful when using the controll
 @Controller(view = "view/todo.fxml")
 public class TodoController extends VBox {
 
-    // Empty constructor (for dependency injection etc.)
+    // Default constructor (for dependency injection etc.)
+    @Inject
     public TodoController() {
     }
 }
@@ -227,7 +233,8 @@ You can define the method you want to use by setting the method in the `@Control
 @Controller(view = "#renderThis")
 public class TodoController {
 
-    // Empty constructor (for dependency injection etc.)
+    // Default constructor (for dependency injection etc.)
+    @Inject
     public TodoController() {
     }
 
@@ -272,8 +279,9 @@ public class Routing {
     @Route // Route name will be '/todo'
     public Provider<TodoController> todo;
 
+    @Inject
     public Routing() {
-        // Empty constructor (for dependency injection etc.)
+        // Default constructor (for dependency injection etc.)
     }
 
 }
@@ -292,6 +300,7 @@ To display a controller, you have to call the `show()` method of the `FxFramewor
 
 ```java
 public class TodoApp extends FxFramework {
+    
     @Override
     public void start(Stage primaryStage) {
         try {
@@ -303,6 +312,7 @@ public class TodoApp extends FxFramework {
             e.printStackTrace(); // Error logging
         }
     }
+    
 }
 ```
 
@@ -321,7 +331,8 @@ public class TodoController {
     @FXML
     Button todoButton; // Button is specified in the FXML file
 
-    // Empty constructor (for dependency injection etc.)
+    // Default constructor (for dependency injection etc.)
+    @Inject
     public TodoController() {
     }
 
@@ -405,7 +416,7 @@ public class TodoController {
     @Inject
     TodoService todoService;
 
-    // Empty constructor (for dependency injection etc.)
+    // Default constructor (for dependency injection etc.)
     @Inject
     public TodoController() {
     }
@@ -526,7 +537,7 @@ called and then the for-controller will be initialized and then rendered.
 public class ExampleController {
 
     // Constructor, elements etc.
-    // This controller has a subcontroller defined in the FXML file
+    // This controller has a sub-controller defined in the FXML file
 
     @ControllerEvent.onInit
     public void onInit() {
@@ -548,7 +559,7 @@ public class ExampleController {
 public class SubController {
 
     // Constructor, elements etc.
-    // This controller has another subcontroller defined in the FXML file
+    // This controller has another sub-controller defined in the FXML file
 
     @ControllerEvent.onInit
     public void onInit() {
