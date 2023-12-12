@@ -24,6 +24,7 @@ public class TodoApp extends FxFramework {
             e.printStackTrace(); // Error logging
         }
     }
+    
 }
 ```
 
@@ -40,6 +41,7 @@ public class TodoController {
     // Empty constructor (for dependency injection etc.)
     public TodoController() {
     }
+    
 }
 ```
 
