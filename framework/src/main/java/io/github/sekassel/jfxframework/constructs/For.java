@@ -35,22 +35,18 @@ public class For<N, I> extends Parent {
     private final SimpleObjectProperty<ObservableList<I>> list = new SimpleObjectProperty<>();
     // The nodes that are currently displayed for each item
     private final HashMap<I, Node> nodes = new HashMap<>();
-    CompositeDisposable disposable = new CompositeDisposable();
+    // The disposable that is used to destroy the For loop and all controllers
+    CompositeDisposable disposable;
     // The node to display for each iteration
     private Object node;
-
     // The container to add the nodes to
     private Parent container;
-
     // The provider to create the node for each item
     private ArgumentProvider<Node, I> nodeProvider;
-
     // The parameters to pass to the controller
     private Map<String, Object> params;
-
     // The children of the container (saved for performance)
     private ObservableList<Node> children;
-
     // Listener to the list property to update the children when the list changes
     ListChangeListener<I> listChangeListener = change -> {
         while (change.next()) {
@@ -65,8 +61,6 @@ public class For<N, I> extends Parent {
             }
         }
     };
-
-
     // Listener to the list property to update the children when the list changes
     ChangeListener<ObservableList<I>> listPropertyListener = (observable, oldValue, newValue) -> {
         if (oldValue != null) {
@@ -87,7 +81,7 @@ public class For<N, I> extends Parent {
         list.addListener(listPropertyListener);
 
         // This will be called when the For loop is destroyed. Controllers will be added to the disposable automatically.
-        this.disposable.add(Disposable.fromRunnable(() -> {
+        this.disposable().add(Disposable.fromRunnable(() -> {
 
             // Clear all listeners
             if (!list.isNull().get()) {
@@ -273,7 +267,7 @@ public class For<N, I> extends Parent {
             if (clazz.isAnnotationPresent(Controller.class)) {
                 this.nodeProvider = (item) -> {
                     Object instance = FxFramework.framework().frameworkComponent().router().getProvidedInstance(clazz);
-                    this.disposable.add(Disposable.fromRunnable(() -> FxFramework.framework().manager().destroy(instance)));
+                    this.disposable().add(Disposable.fromRunnable(() -> FxFramework.framework().manager().destroy(instance)));
                     if (beforeInit != null) {
                         beforeInit.initialize((N) instance, item);
                     }
@@ -384,8 +378,21 @@ public class For<N, I> extends Parent {
      *
      * @return The disposable
      */
-    public Disposable disposable() {
+    public @NotNull CompositeDisposable disposable() {
+        if (disposable == null || disposable.isDisposed()) {
+            disposable = new CompositeDisposable();
+        }
         return disposable;
     }
+
+    /**
+     * Destroys the For loop and all controllers.
+     */
+    public void dispose() {
+        if (disposable != null) {
+            disposable.dispose();
+        }
+    }
+
 
 }
