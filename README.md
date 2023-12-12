@@ -326,6 +326,13 @@ public class TodoController {
 }
 ```
 
+The `show()` method could be overwritten to provide additional functionality like having multiple screens on top of each 
+other (e.g. a sidebar or toolbar) or to add custom display logic.
+
+If you just want to listen to a controller being displayed and don't want to change the display logic, you can use the
+overwrite the `onShow()` method instead.
+
+
 ## ⌚ History
 
 The framework also provides a history of visited routes. The history acts like a stack and can be

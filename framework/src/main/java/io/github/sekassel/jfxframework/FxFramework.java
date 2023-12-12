@@ -76,6 +76,24 @@ public abstract class FxFramework extends Application {
      * a new main controller is set.
      *
      * @param clazz              The controller class
+     * @param destroyWithCurrent Whether the controller shall be destroyed when a new main controller is set
+     * @return The rendered controller
+     */
+    public @NotNull <T> T provide(@NotNull Class<T> clazz, boolean destroyWithCurrent) {
+        return provide(clazz, Map.of(), destroyWithCurrent);
+    }
+
+    /**
+     * Provides an initialized and rendered instance of the given controller class.
+     * This method only works with controllers which extend Parent.
+     * <p>
+     * If destroyWithCurrent is false, the method will NOT add the controller to the set of initialized controllers and the
+     * controller will not be destroyed when a new main controller is set.
+     * <p>
+     * If destroyWithCurrent is true, the controller will be added to the set of initialized controllers and will be destroyed when
+     * a new main controller is set.
+     *
+     * @param clazz              The controller class
      * @param params             The arguments passed to the controller
      * @param destroyWithCurrent Whether the controller shall be destroyed when a new main controller is set
      * @return The rendered controller
@@ -137,8 +155,19 @@ public abstract class FxFramework extends Application {
         System.exit(0);
     }
 
+
     /**
-     * Initializes and renders a controller.
+     * Initializes, renders and displays a controller.
+     *
+     * @param route  The route of the controller to render
+     * @return The rendered parent of the controller
+     */
+    public @NotNull Parent show(@NotNull String route) {
+        return show(route, Map.of());
+    }
+
+    /**
+     * Initializes, renders and displays a controller.
      *
      * @param route  The route of the controller to render
      * @param params The arguments passed to the controller
@@ -153,12 +182,12 @@ public abstract class FxFramework extends Application {
     }
 
     // Internal helper method
-    private void display(@NotNull Parent parent) {
+    protected void display(@NotNull Parent parent) {
         stage.getScene().setRoot(parent);
     }
 
     // Internal helper method
-    private void cleanup() {
+    protected void cleanup() {
         this.component.controllerManager().cleanup();
     }
 
