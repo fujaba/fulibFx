@@ -43,10 +43,11 @@ public class TodoController {
 }
 ```
 
+### ✨ Initialization, rendering and cleanup
+
 Within your controller class, you have the ability to define methods that are automatically triggered when the
-controller is initialized or rendered. These methods should be annotated with either `@ControllerEvent.onInit`
-or `@ControllerEvent.onRender` to
-specify their respective execution points.
+controller is initialized, rendered or destroyed. These methods should be annotated with either `@ControllerEvent.onInit`
+or `@ControllerEvent.onRender` to specify their respective execution points.
 
 ```java
 
@@ -68,6 +69,13 @@ public class TodoController {
         // Called when the controller has been loaded and is ready to be displayed
         System.out.println("Controller rendered");
     }
+
+    @ControllerEvent.onDestory
+    public void thisMethodWillBeCalledOnDestroy() {
+        // Called when the controller is being cleaned up
+        System.out.println("Controller destroyed");
+    }
+    
 }
 ```
 
@@ -77,10 +85,47 @@ this phase, you may not have access to elements defined in the corresponding vie
 On the other hand, the rendering of a controller occurs when the controller is fully loaded and ready to be displayed.
 At this stage, you have full access to all elements defined in the corresponding view.
 
+### 🎫 Parameters
+
+To pass arguments to a controller, you can provide an additional argument to the show method, consisting of a map of
+Strings and Objects. The Strings specify the argument's name and the Objects are the value of the argument. For example,
+`show("/route/to/controller", Map.of("key", value))` will pass the value `value` to the argument `key`.
+
+To use a passed argument in a field or method, you have to annotate it with `@Param(name = "...")`. The name of the parameter
+will be used to match it to the map of parameters passed to the `show()` method.
+
+In order to pass arguments to the following controller, the method `show("/route/to/controller", Map.of("fofo", myFoo, "baba", myBa))`
+would have to be called.
+
+```java
+
+@Controller
+public class FooController {
+
+    private Foo foo;
+    
+    // The parameter 'baba' will be injected into this field before the controller is initialized
+    @Param(name = "baba")
+    private Bar bar;
+    
+    // Empty constructor (for dependency injection etc.)
+    public FooController() {
+    }
+
+    @ControllerEvent.onRender
+    public void render(@Param(name = "fofo") Foo foo) {
+        // The parameter 'fofo' will be passed to this method upon rendering
+        this.bar = foo; 
+    }
+    
+}
+
+```
+
 ## 📷 Views
 
 Each controller is associated with a view, which is composed of one or more nested JavaFX elements (panes, buttons,
-labels, etc.). You have three different options to define the view of a controller:
+labels, etc.). You have four different options to define the view of a controller:
 
 ### 📎 Using FXML to define the view
 
@@ -88,7 +133,7 @@ Create an FXML file with a name based on the controller class (e.g., `TodoContro
 the 'resources' directory at the same path as your app class.
 
 You can also define a custom FXML path to load instead by setting the `view` path in the `@Controller` annotation. Note
-that the entered path will always be relative to the path of your app class in the 'resources' directory.
+that the entered path will always be relative to the path of your app class in the `resources/` directory.
 
 ```java
 
@@ -99,17 +144,21 @@ public class TodoController {
     // Empty constructor (for dependency injection etc.)
     public TodoController() {
     }
+    
 }
 ```
 
 When displaying this controller, the framework will automatically load the corresponding FXML file and set it as the
 view.
 
+This method is only viable for displaying main controllers as sub controllers have to be a JavaFX element. Therefore, it
+is recommended to use one of the following methods.
+
 ### ☁ Using JavaFX elements to define the view
 
 If the controller class extends from a JavaFX Parent (or any class extending from Parent), the view will be set to the
 element the controller represents. You can use this to create simple views without the need for an FXML file. More
-complex views should either use the FXML method or combine both methods.
+complex views should not be created this way. Instead, you should use the `fx:root` tag (see below).
 
 ```java
 
@@ -120,16 +169,42 @@ public class TodoController extends VBox {
     public TodoController() {
         this.getChildren().add(new Label("Hello World"));
     }
+    
 }
 ```
 
 When displaying this controller, the framework will automatically set the view to the VBox element, including all the
 modifications like added children, etc.
 
-This method can be combined with the FXML method by extending from a JavaFX Parent and specifying an FXML with
-a [root node](https://openjfx.io/javadoc/20/javafx.fxml/javafx/fxml/doc-files/introduction_to_fxml.html#root_elements).
-This way you can use the FXML file to define a more complex view and the JavaFX element to add additional
-functionality. This will also be very helpful when using the controller as a sub-controller.
+### 💾 Using JavaFX Root elements (recommended)
+
+The previously mentioned methods can be combined by using
+the [`fx:root` tag](https://openjfx.io/javadoc/20/javafx.fxml/javafx/fxml/doc-files/introduction_to_fxml.html#root_elements)
+in the FXML file. This way you can use the FXML file to define a more complex view and the JavaFX element to add
+additional functionality. This will also be very helpful when using the controller as a sub-controller.
+
+```java
+
+@Controller(view = "view/todo.fxml")
+public class TodoController extends VBox {
+
+    // Empty constructor (for dependency injection etc.)
+    public TodoController() {
+    }
+}
+```
+
+```xml
+
+<fx:root type="VBox" fx:controller="io.github.sekassel.todo.TodoController">
+    <Label text="TODO"/>
+    <Label fx:id="todoLabel"/>
+    <Button fx:id="deleteButton" mnemonicParsing="false" text="Remove"/>
+</fx:root>
+```
+
+When displaying this controller, the framework will automatically load the corresponding FXML file and set your
+controller as the controller of the root element. The root element will then be set as the view of the controller.
 
 ### ⚙ Using a method to define the view
 
@@ -200,6 +275,9 @@ This setup will result in the following routing tree:
 
 <img src=".github/assets/route-diagram.png" height="300" alt="Routing tree showing main, login, todo and register routes in a tree like structure">
 
+After setting up the router class, register it in the `FxFramework` class by calling the `router().registerRoutes()` method.
+It is recommended to use dependency injection (module/component) to provide a router instance to the method.
+
 ## 🖥 Displaying controllers
 
 To display a controller, you have to call the `show()` method of the `FxFramework` class and pass the route.
@@ -222,8 +300,7 @@ public class TodoApp extends FxFramework {
 
 The route works like a file system and is therefore relative to the currently displayed controller if it doesn't start
 with a '`/`'. If you want to display a controller from the root, you have to start the route with a '`/`'. The route
-also
-supports path traversal (e.g., '`../login`'). This can be used to create a back button.
+also supports path traversal (e.g., '`../login`'). This can be used to create a back button.
 
 ```java
 
@@ -245,6 +322,7 @@ public class TodoController {
         this.backButton.setOnAction(event -> show("../"));
         this.todoButton.setOnAction(event -> show("/todo"));
     }
+    
 }
 ```
 
@@ -285,9 +363,59 @@ element like this:
 Depending on the parent you extended from, all attributes/properties available for this parent can be set for your
 custom controller element as well.
 
+## 🚮 Destroying controllers
+
+When a controller is no longer needed, it should be destroyed to free up resources. This will automatically happen when
+a new controller is shown using the `show()` method. However, if you for example subscribe to observables, the framework 
+will not clear them up them automatically. You should therefore save the disposables of your subscriptions and dispose them
+when the controller is destroyed. 
+
+This can be done by creating a `CompositeDisposable`, adding all disposables to it and then calling `compositeDisposable.dispose()` 
+in a `@ControllerEvent.onDestroy` annotated method. 
+
+The framework also provides utility classes for dealing with subscriptions and other mechanisms requiring cleanup. 
+By creating a new `Subscriber` instance (or by using dependency injection to provide one) and using its utility methods, 
+you can easily manage subscriptions without having to worry about disposing them. When the subscriber exists in form of
+a field in the controller, it will be automatically disposed when the controller is destroyed. Otherwise it has to be manually
+destroyed by calling `subscriber.dispose()`.
+
+```java
+
+@Controller
+public class TodoController {
+
+    @Inject
+    Subscriber subscriber;
+    
+    @Inject
+    TodoService todoService;
+
+    // Empty constructor (for dependency injection etc.)
+    @Inject
+    public TodoController() {
+    }
+
+    @ontrollerEvent.onRender
+    public void onRender() {
+        this.subscriber.subscribe(this.todoService.getTodos(), todos -> {
+            // Do something with the todos
+        }); 
+        this.subscriber.addDestroyable(() -> {
+            // Add custom logic to be executed when the controller is destroyed
+        });
+    }
+    
+    @ControllerEvent.onDestroy
+    public void onDestroy() {
+        this.subscriber.destroy();
+    }
+    
+}
+```
+
 ## 🔁 For-Loops
 
-For-Loops can be used to easily display a node/sub-controller for all items in a list. Whenever an item is added to or 
+For-Loops can be used to easily display a node/sub-controller for all items in a list. Whenever an item is added to or
 removed from the list, the list of nodes updates accordingly.
 
 The easiest form of a For-Loop can be achieved like this:
@@ -296,17 +424,19 @@ The easiest form of a For-Loop can be achieved like this:
 For.controller(container, items, ExampleController.class);
 ```
 
-This will create an `ExampleController` for each item in the list `items` and add it to the children of the `container` (e.g. a VBox).
+This will create an `ExampleController` for each item in the list `items` and add it to the children of
+the `container` (e.g. a VBox).
 
-Currently, no information is passed to the created controller. In order to pass static information you can add parameters like you would 
-when using the `show`-method using a map. 
+Currently, no information is passed to the created controller. In order to pass static information you can add
+parameters like you would when using the `show`-method using a map.
 
 ```java
 For.controller(container, items, ExampleController.class, Map.of("key", value));
 For.controller(container, items, ExampleController.class, params); // Parameters can be taken from the @Params annotation for example
 ```
 
-If you want to pass dynamic information like binding the item to its controller, you can use an `Initializer`. The `Initializer` allows to 
+If you want to pass dynamic information like binding the item to its controller, you can use an `Initializer`.
+The `Initializer` allows to
 define actions for initializing each controller based on its item.
 
 ```java
@@ -326,14 +456,16 @@ Instead of a controller you can also define a basic JavaFX node to display for e
 For.node(container, items, new Button("This is a button!"));
 ```
 
-When using nodes, the framework will create a copy of the provided node to display for every item. The copies usually contain all required information except for bindings.
+When using nodes, the framework will create a copy of the provided node to display for every item. The copies usually
+contain all required information except for bindings.
 
 ```java
 For.node(container, items, new Button("This is a button!"));
 For.node(container, items, new VBox(new Button("This is a button!"))); // Nodes can have children
 ```
 
-Unlike with controllers, it is not possible to pass static information in the form of paramters to nodes, as there is no way of accessing them in the code. However, dynamic
+Unlike with controllers, it is not possible to pass static information in the form of paramters to nodes, as there is no
+way of accessing them in the code. However, dynamic
 information in the form of an `Initializer` can be used just like with controllers.
 
 ```java
@@ -343,22 +475,38 @@ For.node(container, items, new Button(), (button, item) -> {
 });
 ```
 
-As JavaFX by itself doesn't support the duplication of nodes, the framework implements its own duplication logic in the form of `Duplicator`s. The framework includes duplicators for most of the
-basic JavaFX elements like Buttons, HBoxes, VBoxes and more. If you need to duplicate an element which isn't supported by default, you can create a custom `Duplicator` and register it in the `Duplicators` class.
+As JavaFX by itself doesn't support the duplication of nodes, the framework implements its own duplication logic in the
+form of `Duplicator`s. The framework includes duplicators for most of the
+basic JavaFX elements like Buttons, HBoxes, VBoxes and more. If you need to duplicate an element which isn't supported
+by default, you can create a custom `Duplicator` and register it in the `Duplicators` class.
+
+In order to destroy controllers generated by the For-loops, you can use the `dispose()` method of the `For` class or add
+the return value of the `disposable()` method to your list of disposables.
+
 
 ## ↘ Call order
 
-Since the framework differentiates between initialization and rendering, different methods annotated with `@ControllerEvent.onInit` or `@ControllerEvent.onRender` are called at different times.
+Since the framework differentiates between initialization and rendering, different methods annotated
+with `@ControllerEvent.onInit` or `@ControllerEvent.onRender` are called at different times.
 
-The framework has a general rule of **initialization before rendering**, meaning you cannot access most JavaFX elements (for example nodes defined in an FXML file) in the init methods as the elements aren't loaded before the rendering.
+The framework has a general rule of **initialization before rendering**, meaning you cannot access most JavaFX
+elements (for example nodes defined in an FXML file) in the init methods as the elements aren't loaded before the
+rendering.
 
-When using sub-controllers or For-Loops, the order of operations is a bit more complex. At first the main controller will be initialized. After the controller has been initialized, all sub-controllers will be loaded and therefore initialized. This will happen recursively until a sub-controller doesn't have any sub-controllers. After that, the sub-controllers will be rendered, going back up to the main controller. The main controller will be rendered, after all the sub-controllers have been rendered.
+When using sub-controllers or For-Loops, the order of operations is a bit more complex. At first the main controller
+will be initialized. After the controller has been initialized, all sub-controllers will be loaded and therefore
+initialized. This will happen recursively until a sub-controller doesn't have any sub-controllers. After that, the
+sub-controllers will be rendered, going back up to the main controller. The main controller will be rendered, after all
+the sub-controllers have been rendered.
 
-If a For-Loop is defined in a method annotated with `@Controller.onRender` in any (sub-)controller, the `@Controller.onRender` will (obviously) be called first. After that, the `Initializer` of the for-Controller will be called and then the for-controller will be initialized and then rendered.
+If a For-Loop is defined in a method annotated with `@Controller.onRender` in any (sub-)controller,
+the `@Controller.onRender` will (obviously) be called first. After that, the `Initializer` of the for-Controller will be
+called and then the for-controller will be initialized and then rendered.
 
 #### Example
 
 ```java
+
 @Controller()
 public class Controller {
 
@@ -370,16 +518,17 @@ public class Controller {
         System.out.println("onInit Controller");
     }
 
-    @ControllerEvent.onRender 
+    @ControllerEvent.onRender
     public void onRender() {
         System.out.println("onRender Controller");
         For.controller(container, items, ForController.class, (controller, item) -> System.out.println("Initializer ForController"));
     }
-    
+
 }
 ```
 
 ```java
+
 @Controller()
 public class SubController {
 
@@ -391,15 +540,16 @@ public class SubController {
         System.out.println("onInit SubController");
     }
 
-    @ControllerEvent.onRender 
+    @ControllerEvent.onRender
     public void onRender() {
         System.out.println("onRender SubController");
     }
-    
+
 }
 ```
 
 ```java
+
 @Controller()
 public class ForController {
 
@@ -410,11 +560,11 @@ public class ForController {
         System.out.println("onInit ForController");
     }
 
-    @ControllerEvent.onRender 
+    @ControllerEvent.onRender
     public void onRender() {
         System.out.println("onRender ForController");
     }
-    
+
 }
 ```
 

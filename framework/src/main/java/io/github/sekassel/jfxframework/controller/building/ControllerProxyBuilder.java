@@ -44,6 +44,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import io.github.sekassel.jfxframework.FxFramework;
+import io.github.sekassel.jfxframework.controller.ControllerManager;
+import io.github.sekassel.jfxframework.controller.Router;
 import javafx.beans.NamedArg;
 import javafx.util.Builder;
 import com.sun.javafx.reflect.ConstructorUtil;
@@ -52,7 +55,7 @@ import com.sun.javafx.reflect.ReflectUtil;
 /**
  * Using this builder assumes that some of the constructors of desired class
  * with arguments are annotated with NamedArg annotation.
- *
+ * <p>
  * This builder is slightly modified in order to support provided instances.
  */
 public class ControllerProxyBuilder<T> extends AbstractMap<String, Object> implements Builder<T> {
@@ -499,7 +502,7 @@ public class ControllerProxyBuilder<T> extends AbstractMap<String, Object> imple
         ReflectUtil.checkPackageAccess(type);
 
         retObj = this.buildFactory.getProvidedInstance(type);
-        retObj = this.buildFactory.getRouter().initAndRender(retObj, this.parameters);
+        retObj = this.buildFactory.controllerManager().initAndRender(retObj, this.parameters);
 
         return retObj;
     }

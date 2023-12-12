@@ -1,7 +1,7 @@
 package io.github.sekassel.jfxexample;
 
-import io.github.sekassel.jfxexample.dagger.MainComponent;
 import io.github.sekassel.jfxexample.dagger.DaggerMainComponent;
+import io.github.sekassel.jfxexample.dagger.MainComponent;
 import io.github.sekassel.jfxframework.FxFramework;
 import javafx.stage.Stage;
 

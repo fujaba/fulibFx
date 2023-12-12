@@ -26,10 +26,6 @@ import java.util.HashMap;
  */
 public class Duplicators {
 
-    public Duplicators() {
-        // Prevent instantiation
-    }
-
     private static final HashMap<Class<?>, Duplicator<?>> DUPLICATORS = new HashMap<>();
 
     static {
@@ -43,10 +39,29 @@ public class Duplicators {
         register(ImageView.class, new ImageViewDuplicator<>());
     }
 
+    public Duplicators() {
+        // Prevent instantiation
+    }
+
+    /**
+     * Registers a {@link Duplicator} for the given class.
+     *
+     * @param clazz      The class to register the {@link Duplicator} for
+     * @param duplicator The {@link Duplicator} to register
+     * @param <T>        The type of the class
+     */
     public static <T> void register(Class<T> clazz, Duplicator<T> duplicator) {
         DUPLICATORS.put(clazz, duplicator);
     }
 
+    /**
+     * Duplicates the given object using the registered {@link Duplicator}.
+     *
+     * @param object The object to duplicate
+     * @param <T>    The type of the object
+     * @return The duplicated object
+     * @throws IllegalArgumentException If no {@link Duplicator} is registered for the given object
+     */
     public static <T> T duplicate(T object) {
         if (object == null) {
             return null;

@@ -1,7 +1,7 @@
 package io.github.sekassel.person;
 
-import io.github.sekassel.person.dagger.DaggerMainComponent;
 import io.github.sekassel.jfxframework.FxFramework;
+import io.github.sekassel.person.dagger.DaggerMainComponent;
 import io.github.sekassel.person.dagger.MainComponent;
 import javafx.stage.Stage;
 

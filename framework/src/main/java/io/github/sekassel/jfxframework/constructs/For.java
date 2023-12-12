@@ -6,7 +6,10 @@ import io.github.sekassel.jfxframework.duplicate.Duplicators;
 import io.github.sekassel.jfxframework.util.ArgumentProvider;
 import io.github.sekassel.jfxframework.util.Initializer;
 import io.github.sekassel.jfxframework.util.Util;
+import io.reactivex.rxjava3.disposables.CompositeDisposable;
+import io.reactivex.rxjava3.disposables.Disposable;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
@@ -22,25 +25,25 @@ import java.util.Map;
  * A For loop for use in Code. Creates a node for each item in a list and adds them to the children of a container.
  * This allows you to easily display a list of items in a container like a friend list or a list of products.
  *
- * @param <E> The type of the node
- * @param <T> The type of the items in the list
+ * @param <N> The type of the node
+ * @param <I> The type of the items in the list
  */
 // TODO: sorted lists (order controllers the same way as the items)
-public class For<E, T> extends Parent {
+public class For<N, I> extends Parent {
 
     // List of items to iterate over
-    private final SimpleObjectProperty<ObservableList<T>> list = new SimpleObjectProperty<>();
-    // The nodes that are currently displayed
-    private final HashMap<Object, Node> nodes = new HashMap<>();
-
+    private final SimpleObjectProperty<ObservableList<I>> list = new SimpleObjectProperty<>();
+    // The nodes that are currently displayed for each item
+    private final HashMap<I, Node> nodes = new HashMap<>();
+    CompositeDisposable disposable = new CompositeDisposable();
     // The node to display for each iteration
     private Object node;
 
     // The container to add the nodes to
     private Parent container;
 
-    // The provider for the node
-    private ArgumentProvider<Node, T> nodeProvider;
+    // The provider to create the node for each item
+    private ArgumentProvider<Node, I> nodeProvider;
 
     // The parameters to pass to the controller
     private Map<String, Object> params;
@@ -49,37 +52,61 @@ public class For<E, T> extends Parent {
     private ObservableList<Node> children;
 
     // Listener to the list property to update the children when the list changes
-    ListChangeListener<T> listChangeListener = change -> {
+    ListChangeListener<I> listChangeListener = change -> {
         while (change.next()) {
             if (change.wasAdded()) {
-                for (T item : change.getAddedSubList()) {
+                for (I item : change.getAddedSubList()) {
                     add(item);
                 }
             } else if (change.wasRemoved()) {
-                for (T item : change.getRemoved()) {
+                for (I item : change.getRemoved()) {
                     remove(item);
                 }
             }
         }
     };
 
-    // The method to call when the controller is created
-    private Initializer<E, T> beforeInit;
 
-    private Initializer<E, T> afterRender;
+    // Listener to the list property to update the children when the list changes
+    ChangeListener<ObservableList<I>> listPropertyListener = (observable, oldValue, newValue) -> {
+        if (oldValue != null) {
+            oldValue.removeListener(listChangeListener);
+        }
+        if (newValue != null) {
+            newValue.addListener(listChangeListener);
+        }
+    };
+
+    // The method to call when the controller is created
+    private Initializer<N, I> beforeInit;
 
     /**
      * Use the factory methods to create a new For loop.
      */
     private For() {
-        list.addListener((observable, oldValue, newValue) -> {
-            if (oldValue != null) {
-                oldValue.removeListener(listChangeListener);
+        list.addListener(listPropertyListener);
+
+        // This will be called when the For loop is destroyed. Controllers will be added to the disposable automatically.
+        this.disposable.add(Disposable.fromRunnable(() -> {
+
+            // Clear all listeners
+            if (!list.isNull().get()) {
+                this.list.getValue().removeListener(listChangeListener);
+                this.list.setValue(null);
             }
-            if (newValue != null) {
-                newValue.addListener(listChangeListener);
-            }
-        });
+            this.list.removeListener(listPropertyListener);
+
+            // Cleanup
+            this.children.clear();
+            this.nodes.clear();
+            this.children = null;
+
+            this.node = null;
+            this.nodeProvider = null;
+            this.params = null;
+            this.container = null;
+
+        }));
     }
 
     /**
@@ -96,12 +123,12 @@ public class For<E, T> extends Parent {
      * @param node       The node to display for each item
      * @param params     The parameters to pass to the created controller
      * @param beforeInit The method to call when the controller is created (useful for setting the item)
-     * @param <T>        The type of the items in the list
-     * @param <E>        The type of the node
+     * @param <I>        The type of the items in the list
+     * @param <N>        The type of the node
      * @return The For loop
      */
-    public static <T, E> For<E, T> controller(@NotNull Parent container, @NotNull ObservableList<@NotNull T> list, @NotNull Class<? extends E> node, @NotNull Map<@NotNull String, @Nullable Object> params, @NotNull Initializer<@NotNull E, @Nullable T> beforeInit) {
-        For<E, T> forLoop = new For<>();
+    public static <N, I> For<N, I> controller(@NotNull Parent container, @NotNull ObservableList<@NotNull I> list, @NotNull Class<? extends N> node, @NotNull Map<@NotNull String, @Nullable Object> params, @NotNull Initializer<@NotNull N, @Nullable I> beforeInit) {
+        For<N, I> forLoop = new For<>();
         forLoop.beforeInit = beforeInit;
         forLoop.setContainer(container);
         forLoop.setList(list);
@@ -120,11 +147,11 @@ public class For<E, T> extends Parent {
      * @param container The container to add the nodes to
      * @param list      The list of items to display
      * @param node      The node to display for each item
-     * @param <T>       The type of the items in the list
-     * @param <E>       The type of the node
+     * @param <I>       The type of the items in the list
+     * @param <N>       The type of the node
      * @return The For loop
      */
-    public static <T, E> For<E, T> controller(@NotNull Parent container, @NotNull ObservableList<@NotNull T> list, @NotNull Class<? extends E> node) {
+    public static <N, I> For<N, I> controller(@NotNull Parent container, @NotNull ObservableList<@NotNull I> list, @NotNull Class<? extends N> node) {
         return controller(container, list, node, Map.of(), (controller, item) -> {
         });
     }
@@ -142,11 +169,11 @@ public class For<E, T> extends Parent {
      * @param list       The list of items to display
      * @param node       The node to display for each item
      * @param beforeInit The method to call when the controller is created (useful for setting the item)
-     * @param <T>        The type of the items in the list
-     * @param <E>        The type of the node
+     * @param <I>        The type of the items in the list
+     * @param <N>        The type of the node
      * @return The For loop
      */
-    public static <T, E> For<E, T> controller(@NotNull Parent container, @NotNull ObservableList<@NotNull T> list, @NotNull Class<? extends E> node, @NotNull Initializer<@NotNull E, @Nullable T> beforeInit) {
+    public static <N, I> For<N, I> controller(@NotNull Parent container, @NotNull ObservableList<@NotNull I> list, @NotNull Class<? extends N> node, @NotNull Initializer<@NotNull N, @Nullable I> beforeInit) {
         return controller(container, list, node, Map.of(), beforeInit);
     }
 
@@ -161,12 +188,12 @@ public class For<E, T> extends Parent {
      * @param list       The list of items to display
      * @param node       The node to display for each item
      * @param beforeInit The method to call when the controller is created (useful for setting the item)
-     * @param <T>        The type of the items in the list
-     * @param <E>        The type of the node
+     * @param <I>        The type of the items in the list
+     * @param <N>        The type of the node
      * @return The For loop
      */
-    public static <T, E> For<E, T> node(@NotNull Parent container, @NotNull ObservableList<@NotNull T> list, @NotNull E node, @NotNull Initializer<@NotNull E, @Nullable T> beforeInit) {
-        For<E, T> forLoop = new For<>();
+    public static <I, N> For<N, I> node(@NotNull Parent container, @NotNull ObservableList<@NotNull I> list, @NotNull N node, @NotNull Initializer<@NotNull N, @Nullable I> beforeInit) {
+        For<N, I> forLoop = new For<>();
         forLoop.beforeInit = beforeInit;
         forLoop.setContainer(container);
         forLoop.setList(list);
@@ -184,11 +211,11 @@ public class For<E, T> extends Parent {
      * @param container The container to add the nodes to
      * @param list      The list of items to display
      * @param node      The node to display for each item
-     * @param <T>       The type of the items in the list
-     * @param <E>       The type of the node
+     * @param <I>       The type of the items in the list
+     * @param <N>       The type of the node
      * @return The For loop
      */
-    public static <T, E> For<E, T> node(@NotNull Parent container, @NotNull ObservableList<@NotNull T> list, @NotNull E node) {
+    public static <N, I> For<N, I> node(@NotNull Parent container, @NotNull ObservableList<@NotNull I> list, @NotNull N node) {
         return node(container, list, node, (controller, item) -> {
         });
     }
@@ -208,15 +235,15 @@ public class For<E, T> extends Parent {
         init();
     }
 
-    public SimpleObjectProperty<ObservableList<T>> listProperty() {
+    public SimpleObjectProperty<ObservableList<I>> listProperty() {
         return list;
     }
 
-    public ObservableList<T> getList() {
+    public ObservableList<I> getList() {
         return list.getValue();
     }
 
-    public void setList(ObservableList<T> list) {
+    public void setList(ObservableList<I> list) {
         this.list.setValue(list);
 
         init();
@@ -245,16 +272,19 @@ public class For<E, T> extends Parent {
         if (node instanceof Class<?> clazz) {
             if (clazz.isAnnotationPresent(Controller.class)) {
                 this.nodeProvider = (item) -> {
-                    Object instance = FxFramework.router().getProvidedInstance(clazz);
+                    Object instance = FxFramework.framework().frameworkComponent().router().getProvidedInstance(clazz);
+                    this.disposable.add(Disposable.fromRunnable(() -> FxFramework.framework().manager().destroy(instance)));
                     if (beforeInit != null) {
-                        beforeInit.initialize((E) instance, item);
+                        beforeInit.initialize((N) instance, item);
                     }
-                    return FxFramework.router().initAndRender(instance, this.params);
+                    FxFramework.framework().frameworkComponent().controllerManager().init(instance, this.params);
+                    return FxFramework.framework().frameworkComponent().controllerManager().render(instance, this.params);
                 };
             } else {
                 throw new IllegalArgumentException("Class '%s' is not annotated with @Controller. Directly provide a node or use '$fxid' to link a node in FXML.".formatted(clazz.getName()));
             }
         }
+
         // If a node is provided, duplicate it
         else if (node instanceof Node) {
             if (node.getClass().isAnnotationPresent(Controller.class)) {
@@ -263,11 +293,12 @@ public class For<E, T> extends Parent {
             this.nodeProvider = (item) -> {
                 Node duplicated = Duplicators.duplicate((Node) node);
                 if (beforeInit != null) {
-                    beforeInit.initialize((E) duplicated, item);
+                    beforeInit.initialize((N) duplicated, item);
                 }
                 return duplicated;
             };
         }
+
         // If a provider is provided, use the provided element
         else if (node instanceof Provider<?> provider) {
             Object provided = provider.get();
@@ -275,7 +306,7 @@ public class For<E, T> extends Parent {
                 this.nodeProvider = (item) -> {
                     Node providedNode = (Node) provider.get();
                     if (beforeInit != null) {
-                        beforeInit.initialize((E) providedNode, item);
+                        beforeInit.initialize((N) providedNode, item);
                     }
                     return providedNode;
                 };
@@ -304,7 +335,7 @@ public class For<E, T> extends Parent {
         }
 
         clearUnused();
-        for (T item : this.list.getValue()) {
+        for (I item : this.list.getValue()) {
             Node node = this.nodeProvider.get(item);
             this.nodes.put(item, node);
             this.children.add(node);
@@ -316,7 +347,7 @@ public class For<E, T> extends Parent {
      *
      * @param item The item to remove
      */
-    private void remove(T item) {
+    private void remove(I item) {
         Node node = this.nodes.get(item);
         this.nodes.remove(item);
         this.children.remove(node);
@@ -327,7 +358,7 @@ public class For<E, T> extends Parent {
      *
      * @param item The item to add
      */
-    private void add(T item) {
+    private void add(I item) {
         if (this.nodes.containsKey(item)) {
             throw new IllegalArgumentException("Item '%s' is already in the list".formatted(item));
         }
@@ -340,12 +371,21 @@ public class For<E, T> extends Parent {
      * Removes all nodes that are not in the list anymore.
      */
     private void clearUnused() {
-        for (T item : this.list.getValue()) {
+        for (I item : this.list.getValue()) {
             if (!nodes.containsKey(item)) {
                 children.remove(nodes.get(item));
                 nodes.remove(item);
             }
         }
+    }
+
+    /**
+     * Returns the disposable that is used to destroy the For loop and all controllers.
+     *
+     * @return The disposable
+     */
+    public Disposable disposable() {
+        return disposable;
     }
 
 }

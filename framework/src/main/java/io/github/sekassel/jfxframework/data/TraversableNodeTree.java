@@ -24,6 +24,7 @@ public class TraversableNodeTree<E> implements TraversableTree<E> {
         this.root = new Node<>("", null, null, null);
         this.current = this.root;
     }
+
     @Override
     public @Nullable E root() {
         return this.root.value();
