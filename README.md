@@ -515,7 +515,7 @@ called and then the for-controller will be initialized and then rendered.
 ```java
 
 @Controller()
-public class Controller {
+public class ExampleController {
 
     // Constructor, elements etc.
     // This controller has a subcontroller defined in the FXML file
@@ -578,8 +578,8 @@ public class ForController {
 This setup results in the following outputs:
 
 ```
-Constructor Controller
-onInit Controller
+Constructor ExampleController
+onInit ExampleController
 Constructor SubController
 onInit SubController
 Constructor SubSubController
@@ -588,7 +588,7 @@ onRender SubSubController
 onRender SubController
 Constructor ForController
 Initializer ForController
-onRender Controller
+onRender ExampleController
 onInit ForController
 onRender ForController
 ```
