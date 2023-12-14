@@ -29,10 +29,10 @@ public class Router {
     private final TraversableTree<Field> routes;
     private final TraversableQueue<Tuple<TraversableNodeTree.Node<Field>, Map<String, Object>>> history;
 
-    private Object source;
-
     @Inject
     Lazy<ControllerManager> manager;
+
+    private Object source;
 
     @Inject
     public Router() {
@@ -107,7 +107,7 @@ public class Router {
      * @param parameters The parameters to pass to the controller
      * @throws ControllerInvalidRouteException If the controller couldn't be found
      */
-    public @NotNull Parent renderRoute(@NotNull String route, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
+    public @NotNull Tuple<Object, Parent> renderRoute(@NotNull String route, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
         // Check if the route exists and has a valid controller
         if (!this.routes.containsPath(route)) throw new ControllerInvalidRouteException(route);
 
@@ -123,7 +123,10 @@ public class Router {
             throw new RuntimeException("Class " + controller.getName() + " is not annotated with @Controller");
 
         // Get the instance of the controller
-        return this.manager.get().initAndRender(getInstanceOfProviderField(provider), parameters);
+        Object controllerInstance = getInstanceOfProviderField(provider);
+        Parent renderedParent =  this.manager.get().initAndRender(controllerInstance, parameters);
+
+        return Tuple.of(controllerInstance, renderedParent);
     }
 
     private Object getInstanceOfProviderField(Field provider) {
@@ -155,26 +158,44 @@ public class Router {
         }
     }
 
+    /**
+     * Goes back to the previous controller in the history.
+     *
+     * @return The rendered controller
+     */
     public Parent back() {
         try {
             Tuple<TraversableNodeTree.Node<Field>, Map<String, Object>> tuple = this.history.back();
             ((TraversableNodeTree<Field>) routes).setCurrentNode(tuple.first());
             return this.manager.get().initAndRender(getInstanceOfProviderField(tuple.first().value()), tuple.second());
         } catch (Exception e) {
-            FxFramework.logger().warning("Could not go back to previous controller: " + e.getMessage());
             return null;
         }
     }
 
+    /**
+     * Goes forward to the next controller in the history.
+     *
+     * @return The rendered controller
+     */
     public Parent forward() {
         try {
             Tuple<TraversableNodeTree.Node<Field>, Map<String, Object>> tuple = this.history.forward();
             ((TraversableNodeTree<Field>) routes).setCurrentNode(tuple.first());
             return this.manager.get().initAndRender(getInstanceOfProviderField(tuple.first().value()), tuple.second());
         } catch (Exception e) {
-            FxFramework.logger().warning("Could not go forward to next controller: " + e.getMessage());
             return null;
         }
     }
 
+
+    /**
+     * Returns the current field and its parameters.
+     * This is used internally for reloading the current controller.
+     *
+     * @return The current field and its parameters
+     */
+    public Tuple<Field, Map<String, Object>> current() {
+        return Tuple.of(this.history.current().first().value(), this.history.current().second());
+    }
 }

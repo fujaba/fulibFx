@@ -1,6 +1,7 @@
 plugins {
     id "java"
     id "org.openjfx.javafxplugin" version "0.0.13"
+    id "com.github.johnrengelman.shadow" version "7.0.0"
 }
 
 configurations {
@@ -83,9 +84,9 @@ jar {
 
     manifest {
         attributes(
-                'Manifest-Version': version,
+                'Manifest-Version': 1.0,
                 'Class-Path': '.',
-                "Main-Class": projectMainClass
+                "Main-Class": "io.github.sekassel.person.Main"
         )
     }
 

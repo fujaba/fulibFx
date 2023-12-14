@@ -10,7 +10,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.inject.Provider;
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.*;
+import java.nio.file.Files;
 import java.util.*;
 
 /**
@@ -193,6 +196,26 @@ public class Util {
      */
     public static boolean isController(@Nullable Object instance) {
         return instance != null && instance.getClass().isAnnotationPresent(Controller.class);
+    }
+
+    /**
+     * Returns the content of the given file as a string.
+     *
+     * @param file The file to read
+     * @return The content of the given file as a string or null if the file couldn't be read
+     */
+    public static @Nullable String getContent(File file) {
+        try {
+            return Files.readString(file.toPath());
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
+    public static @NotNull File getResourceAsLocalFile(Class<?> clazz, String resource) {
+        String classPath = clazz.getPackageName().replace(".", "/");
+        // TODO: Make class path dynamic
+        return new File("example/src/main/resources/" + classPath + "/" + resource);
     }
 
 }

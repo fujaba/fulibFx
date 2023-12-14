@@ -14,9 +14,10 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Map;
@@ -169,8 +170,22 @@ public class ControllerManager {
      * @return A parent representing the fxml file
      */
     public @NotNull Parent loadFXML(@NotNull String fileName, @NotNull Object factory, @NotNull Map<@NotNull String, @Nullable Object> parameters, boolean setRoot) {
+
         URL url = baseClass.getResource(fileName);
-        if (url == null) throw new RuntimeException("Could not find resource '" + fileName + "'");
+        if (url == null) {
+            throw new RuntimeException("Could not find resource '" + fileName + "'");
+        }
+
+        File file = Util.getResourceAsLocalFile(baseClass, fileName);
+
+        // If the file exists, use it instead of the resource (development mode, allows for hot reloading)
+        if (file.exists()) {
+            try {
+                url = file.toURI().toURL();
+            } catch (MalformedURLException e) {
+                throw new RuntimeException("File '" + file.getAbsolutePath() + "' exists, but could not be converted to URL.", e);
+            }
+        }
 
         ControllerBuildFactory builderFactory = new ControllerBuildFactory(this, router.get(), parameters);
 
@@ -189,7 +204,12 @@ public class ControllerManager {
         }
     }
 
+    /**
+     * Sets the base class of the framework.
+     * @param clazz The base class
+     */
     public void setMainClass(Class<? extends FxFramework> clazz) {
         this.baseClass = clazz;
     }
+
 }

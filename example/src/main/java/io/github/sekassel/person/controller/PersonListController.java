@@ -9,7 +9,9 @@ import io.github.sekassel.person.backend.Person;
 import io.reactivex.rxjava3.disposables.Disposable;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 
@@ -18,12 +20,14 @@ import javax.inject.Inject;
 @Controller(view = "view/persons.fxml")
 public class PersonListController {
 
+
     @Inject
     PersonApp app;
 
     @FXML
     public VBox friendMenu;
-
+    @FXML
+    public Button refreshButton;
     @FXML
     public Label personListLabel;
     @FXML
@@ -86,4 +90,8 @@ public class PersonListController {
         System.out.println("PersonListController.onDestroy");
     }
 
+    public void refresh(ActionEvent actionEvent) {
+        PersonApp.instance.refresh();
+        System.out.println("Reload");
+    }
 }

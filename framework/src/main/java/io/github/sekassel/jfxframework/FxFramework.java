@@ -5,6 +5,7 @@ import io.github.sekassel.jfxframework.controller.Router;
 import io.github.sekassel.jfxframework.controller.annotation.Controller;
 import io.github.sekassel.jfxframework.dagger.DaggerFrameworkComponent;
 import io.github.sekassel.jfxframework.dagger.FrameworkComponent;
+import io.github.sekassel.jfxframework.data.Tuple;
 import io.github.sekassel.jfxframework.util.Util;
 import io.reactivex.rxjava3.core.Scheduler;
 import io.reactivex.rxjava3.schedulers.Schedulers;
@@ -26,8 +27,14 @@ public abstract class FxFramework extends Application {
     private static final Logger LOGGER = Logger.getLogger(FxFramework.class.getName());
     private static FxFramework instance;
 
+    // The component holding the required dependencies like router, controller manager, etc.
     private FrameworkComponent component;
+
+    // The stage of the application
     private Stage stage;
+
+    // The instance of the current main controller (last controller displayed with show())
+    private Object currentMainController;
 
     public FxFramework() {
         if (instance != null)
@@ -159,7 +166,7 @@ public abstract class FxFramework extends Application {
     /**
      * Initializes, renders and displays a controller.
      *
-     * @param route  The route of the controller to render
+     * @param route The route of the controller to render
      * @return The rendered parent of the controller
      */
     public @NotNull Parent show(@NotNull String route) {
@@ -175,13 +182,19 @@ public abstract class FxFramework extends Application {
      */
     public @NotNull Parent show(@NotNull String route, @NotNull Map<@NotNull String, @Nullable Object> params) {
         cleanup();
-        Parent parent = this.component.router().renderRoute(route, params);
-        display(parent);
-        onShow(route, parent, params);
-        return parent;
+        Tuple<Object, Parent> rendered = this.component.router().renderRoute(route, params);
+        this.currentMainController = rendered.first();
+        display(rendered.second());
+        onShow(route, rendered.second(), params);
+        return rendered.second();
     }
 
-    // Internal helper method
+    /**
+     * Displays the given parent. Will be called when showing a main controller or when reloading the currently displayed controller.
+     * This method can be overridden to add custom behavior like multiple controllers on top of each other.
+     *
+     * @param parent The parent to display
+     */
     protected void display(@NotNull Parent parent) {
         stage.getScene().setRoot(parent);
     }
@@ -236,6 +249,9 @@ public abstract class FxFramework extends Application {
         return this.component.controllerManager();
     }
 
+    /**
+     * Returns to the previous controller in the history if possible.
+     */
     public void back() {
         cleanup();
         Parent parent = this.component.router().back();
@@ -243,10 +259,37 @@ public abstract class FxFramework extends Application {
             display(parent);
     }
 
+    /**
+     * Forwards to the next controller in the history if possible.
+     */
     public void forward() {
         cleanup();
         Parent parent = this.component.router().forward();
         if (parent != null)
             display(parent);
     }
+
+    /**
+     * Refreshes the current controller.
+     * <p>
+     * The controller will be cleaned up and then re-initialized and re-rendered.
+     * This method will re-use the current route and parameters and not update the history.
+     */
+    public void refresh() {
+        cleanup();
+        Map<String, Object> params = this.component.router().current().second(); // Use the same parameters as before
+        this.manager().init(currentMainController, params); // Re-initialize the controller
+        Parent parent = this.manager().render(currentMainController, params); // Re-render the controller
+        display(parent); // Display the controller
+    }
+
+    /**
+     * Returns the instance of the current main controller.
+     *
+     * @return The instance of the currently displayed controller
+     */
+    public Object currentMainController() {
+        return currentMainController;
+    }
+
 }
