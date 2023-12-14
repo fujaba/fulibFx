@@ -3,6 +3,7 @@ package io.github.sekassel.jfxframework.dagger;
 import dagger.BindsInstance;
 import dagger.Component;
 import io.github.sekassel.jfxframework.FxFramework;
+import io.github.sekassel.jfxframework.controller.AutoRefresher;
 import io.github.sekassel.jfxframework.controller.ControllerManager;
 import io.github.sekassel.jfxframework.controller.Router;
 
@@ -17,6 +18,9 @@ public interface FrameworkComponent {
 
     @Singleton
     FxFramework framework();
+
+    @Singleton
+    AutoRefresher autoRefresher();
 
     @Singleton
     ControllerManager controllerManager();

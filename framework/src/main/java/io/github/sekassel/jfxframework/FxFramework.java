@@ -1,5 +1,6 @@
 package io.github.sekassel.jfxframework;
 
+import io.github.sekassel.jfxframework.controller.AutoRefresher;
 import io.github.sekassel.jfxframework.controller.ControllerManager;
 import io.github.sekassel.jfxframework.controller.Router;
 import io.github.sekassel.jfxframework.controller.annotation.Controller;
@@ -159,6 +160,7 @@ public abstract class FxFramework extends Application {
     @Override
     public void stop() {
         cleanup();
+        autoRefresher().close();
         System.exit(0);
     }
 
@@ -247,6 +249,13 @@ public abstract class FxFramework extends Application {
      */
     public ControllerManager manager() {
         return this.component.controllerManager();
+    }
+
+    /**
+     * Returns auto refresher of the application.
+     */
+    public AutoRefresher autoRefresher() {
+        return this.component.autoRefresher();
     }
 
     /**
