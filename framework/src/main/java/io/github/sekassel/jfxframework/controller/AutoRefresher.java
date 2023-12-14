@@ -9,7 +9,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.IOException;
 import java.nio.file.*;
-import java.util.concurrent.atomic.AtomicLong;
 
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 
