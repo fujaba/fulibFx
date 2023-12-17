@@ -135,6 +135,7 @@ public class ControllerManager {
         // Call destroy methods
         Reflection.callMethodsWithAnnotation(instance, ControllerEvent.onDestroy.class, Map.of());
 
+        // TODO: Only enable this in development mode
         Reflection.getFieldsOfType(instance.getClass(), Subscriber.class) // Get all Subscriber fields
                 .stream()
                 .map(field -> {

@@ -82,7 +82,7 @@ public class PersonListController {
             });
         }).disposable();
 
-        subscriber.addDestroyable(disposable::dispose);
+        subscriber.addDestroyable(disposable);
     }
 
     @ControllerEvent.onDestroy

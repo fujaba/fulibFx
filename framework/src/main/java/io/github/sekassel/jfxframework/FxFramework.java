@@ -159,6 +159,7 @@ public abstract class FxFramework extends Application {
 
     @Override
     public void stop() {
+        this.currentMainController = null;
         cleanup();
         autoRefresher().close();
         System.exit(0);

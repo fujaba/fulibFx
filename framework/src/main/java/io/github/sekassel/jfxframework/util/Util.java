@@ -202,13 +202,13 @@ public class Util {
      * Returns the content of the given file as a string.
      *
      * @param file The file to read
-     * @return The content of the given file as a string or null if the file couldn't be read
+     * @return The content of the given file as a string or an empty string if the file couldn't be read
      */
-    public static @Nullable String getContent(File file) {
+    public static @NotNull String getContent(@NotNull File file) {
         try {
             return Files.readString(file.toPath());
         } catch (IOException e) {
-            return null;
+            return "";
         }
     }
 
