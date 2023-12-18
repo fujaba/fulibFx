@@ -1,0 +1,74 @@
+<svg width="287px" height="253px"
+ viewBox="0.00 0.00 287.00 253.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1.0 1.0) rotate(0) translate(4 249)">
+<title>io.github.sekassel.uno.model</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-249 283,-249 283,4 -4,4"/>
+<!-- Card -->
+<g id="node1" class="node">
+<title>Card</title>
+<polygon fill="none" stroke="black" points="8.5,-42.5 8.5,-64.5 271.5,-64.5 271.5,-42.5 8.5,-42.5"/>
+<text text-anchor="start" x="126.39" y="-48.9" font-family="Times,serif" font-size="14.00">Card</text>
+<polygon fill="none" stroke="black" points="8.5,-3.5 8.5,-42.5 271.5,-42.5 271.5,-3.5 8.5,-3.5"/>
+<text text-anchor="start" x="11.5" y="-26.9" font-family="Times,serif" font-size="14.00">type :io.github.sekassel.uno.util.CardType</text>
+<text text-anchor="start" x="11.5" y="-10.1" font-family="Times,serif" font-size="14.00">color :io.github.sekassel.uno.util.CardColor</text>
+</g>
+<!-- Game -->
+<g id="node2" class="node">
+<title>Game</title>
+<polygon fill="none" stroke="black" points="32.5,-131 32.5,-153 145.5,-153 145.5,-131 32.5,-131"/>
+<text text-anchor="start" x="72.29" y="-137.4" font-family="Times,serif" font-size="14.00">Game</text>
+<polygon fill="none" stroke="black" points="32.5,-109 32.5,-131 145.5,-131 145.5,-109 32.5,-109"/>
+<text text-anchor="start" x="35.5" y="-115.4" font-family="Times,serif" font-size="14.00">clockwise :boolean</text>
+</g>
+<!-- Card&#45;&gt;Game -->
+<g id="edge4" class="edge">
+<title>Card&#45;&gt;Game</title>
+<path fill="none" stroke="black" d="M114.88,-69.08C108.07,-80.86 101.2,-93.88 96.03,-104.84"/>
+<text text-anchor="middle" x="80.87" y="-92.24" font-family="Times,serif" font-size="14.00">game</text>
+<text text-anchor="middle" x="94.87" y="-73.28" font-family="Times,serif" font-size="14.00">cards *</text>
+</g>
+<!-- Player -->
+<g id="node3" class="node">
+<title>Player</title>
+<polygon fill="none" stroke="black" points="101.5,-219 101.5,-241 178.5,-241 178.5,-219 101.5,-219"/>
+<text text-anchor="start" x="122.12" y="-225.4" font-family="Times,serif" font-size="14.00">Player</text>
+<polygon fill="none" stroke="black" points="101.5,-197 101.5,-219 178.5,-219 178.5,-197 101.5,-197"/>
+<text text-anchor="start" x="104.5" y="-203.4" font-family="Times,serif" font-size="14.00">name :String</text>
+</g>
+<!-- Card&#45;&gt;Player -->
+<g id="edge5" class="edge">
+<title>Card&#45;&gt;Player</title>
+<path fill="none" stroke="black" d="M144.53,-69.25C147.92,-80.44 151.58,-93.08 153.5,-105 157.18,-127.82 157.64,-134.26 153.5,-157 151.29,-169.14 146.79,-182 143.05,-192.76"/>
+<text text-anchor="middle" x="125.56" y="-180.16" font-family="Times,serif" font-size="14.00">owner</text>
+<text text-anchor="middle" x="164.55" y="-73.45" font-family="Times,serif" font-size="14.00">cards *</text>
+</g>
+<!-- Game&#45;&gt;Card -->
+<g id="edge1" class="edge">
+<title>Game&#45;&gt;Card</title>
+<path fill="none" stroke="black" d="M108.12,-104.84C114.79,-93.88 121.97,-80.86 127.87,-69.08"/>
+<text text-anchor="middle" x="111.16" y="-73.28" font-family="Times,serif" font-size="14.00">currentCard</text>
+<text text-anchor="middle" x="102.87" y="-92.24" font-family="Times,serif" font-size="14.00"> *</text>
+</g>
+<!-- Game&#45;&gt;Player -->
+<g id="edge3" class="edge">
+<title>Game&#45;&gt;Player</title>
+<path fill="none" stroke="black" d="M97.31,-157.34C103.23,-168.54 111.03,-181.67 118.38,-192.84"/>
+<text text-anchor="middle" x="80.68" y="-180.24" font-family="Times,serif" font-size="14.00">currentPlayer</text>
+<text text-anchor="middle" x="92.06" y="-161.54" font-family="Times,serif" font-size="14.00"> *</text>
+</g>
+<!-- Game&#45;&gt;Player -->
+<g id="edge6" class="edge">
+<title>Game&#45;&gt;Player</title>
+<path fill="none" stroke="black" d="M109.74,-157.34C117.1,-168.54 124.88,-181.67 130.79,-192.84"/>
+<text text-anchor="middle" x="156.25" y="-180.24" font-family="Times,serif" font-size="14.00">players *</text>
+<text text-anchor="middle" x="124.9" y="-161.54" font-family="Times,serif" font-size="14.00">game</text>
+</g>
+<!-- Player&#45;&gt;Card -->
+<g id="edge2" class="edge">
+<title>Player&#45;&gt;Card</title>
+<path fill="none" stroke="black" d="M159.66,-192.76C164.79,-182 169.29,-169.14 171.5,-157 175.64,-134.26 175.18,-127.82 171.5,-105 169.58,-93.08 165.92,-80.44 161.61,-69.25"/>
+<text text-anchor="middle" x="195.04" y="-73.45" font-family="Times,serif" font-size="14.00">currentCard</text>
+<text text-anchor="middle" x="164.91" y="-180.16" font-family="Times,serif" font-size="14.00"> *</text>
+</g>
+</g>
+</svg>

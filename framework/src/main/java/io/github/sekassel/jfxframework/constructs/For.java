@@ -34,7 +34,7 @@ public class For<N, I> extends Parent {
     // List of items to iterate over
     private final SimpleObjectProperty<ObservableList<I>> list = new SimpleObjectProperty<>();
     // The nodes that are currently displayed for each item
-    private final HashMap<I, Node> nodes = new HashMap<>();
+    private final HashMap<I, Node> itemsToNodes = new HashMap<>();
     // The disposable that is used to destroy the For loop and all controllers
     CompositeDisposable disposable;
     // The node to display for each iteration
@@ -47,20 +47,31 @@ public class For<N, I> extends Parent {
     private Map<String, Object> params;
     // The children of the container (saved for performance)
     private ObservableList<Node> children;
-    // Listener to the list property to update the children when the list changes
+
+    // Listener to add to the list to update the order of the children when the list changes
     ListChangeListener<I> listChangeListener = change -> {
         while (change.next()) {
-            if (change.wasAdded()) {
-                for (I item : change.getAddedSubList()) {
-                    add(item);
+            if (change.wasPermutated()) {
+                // Update the order of the children
+                for (int i = change.getFrom(); i < change.getTo(); i++) {
+                    children.set(i, children.set(change.getPermutation(i), children.get(i)));
                 }
-            } else if (change.wasRemoved()) {
+            }
+            if (change.wasRemoved()) {
                 for (I item : change.getRemoved()) {
                     remove(item);
                 }
             }
+            if (change.wasAdded()) {
+                int i = 0;
+                // Add the new items in the correct order
+                for (I item : change.getAddedSubList()) {
+                    add(item, change.getFrom() + i++);
+                }
+            }
         }
     };
+
     // Listener to the list property to update the children when the list changes
     ChangeListener<ObservableList<I>> listPropertyListener = (observable, oldValue, newValue) -> {
         if (oldValue != null) {
@@ -92,7 +103,7 @@ public class For<N, I> extends Parent {
 
             // Cleanup
             this.children.clear();
-            this.nodes.clear();
+            this.itemsToNodes.clear();
             this.children = null;
 
             this.node = null;
@@ -331,7 +342,7 @@ public class For<N, I> extends Parent {
         clearUnused();
         for (I item : this.list.getValue()) {
             Node node = this.nodeProvider.get(item);
-            this.nodes.put(item, node);
+            this.itemsToNodes.put(item, node);
             this.children.add(node);
         }
     }
@@ -342,23 +353,24 @@ public class For<N, I> extends Parent {
      * @param item The item to remove
      */
     private void remove(I item) {
-        Node node = this.nodes.get(item);
-        this.nodes.remove(item);
+        Node node = this.itemsToNodes.get(item);
+        this.itemsToNodes.remove(item);
         this.children.remove(node);
     }
 
     /**
      * Adds the node for the given item to the container.
      *
-     * @param item The item to add
+     * @param item  The item to add
+     * @param index The index to add the item at
      */
-    private void add(I item) {
-        if (this.nodes.containsKey(item)) {
+    private void add(I item, int index) {
+        if (this.itemsToNodes.containsKey(item)) {
             throw new IllegalArgumentException("Item '%s' is already in the list".formatted(item));
         }
         Node node = nodeProvider.get(item);
-        nodes.put(item, node);
-        children.add(node);
+        itemsToNodes.put(item, node);
+        children.add(index, node);
     }
 
     /**
@@ -366,9 +378,9 @@ public class For<N, I> extends Parent {
      */
     private void clearUnused() {
         for (I item : this.list.getValue()) {
-            if (!nodes.containsKey(item)) {
-                children.remove(nodes.get(item));
-                nodes.remove(item);
+            if (!itemsToNodes.containsKey(item)) {
+                children.remove(itemsToNodes.get(item));
+                itemsToNodes.remove(item);
             }
         }
     }

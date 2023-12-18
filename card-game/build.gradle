@@ -1,0 +1,137 @@
+plugins {
+    id "java"
+    id "org.openjfx.javafxplugin" version "0.0.13"
+    id "com.github.johnrengelman.shadow" version "7.0.0"
+    id "org.fulib.fulibGradle" version "0.5.0"
+}
+
+configurations {
+    internal
+    implementation.extendsFrom(internal)
+}
+
+// JavaFX dependencies
+javafx {
+    version = "20"
+    modules = ["javafx.controls", "javafx.graphics", "javafx.fxml", "javafx.media"]
+}
+
+// Project dependencies
+dependencies {
+
+    // https://mvnrepository.com/artifact/org.jetbrains/annotations
+    implementation "org.jetbrains:annotations:24.0.1"
+
+    // JFxFramework
+    implementation project(":framework")
+
+    // https://mvnrepository.com/artifact/com.google.dagger/dagger
+    implementation group: "com.google.dagger", name: "dagger", version: "2.42"
+
+    // https://mvnrepository.com/artifact/com.google.dagger/dagger-compiler
+    annotationProcessor group: "com.google.dagger", name: "dagger-compiler", version: "2.42"
+
+    // https://mvnrepository.com/artifacts/fr.brouillard.oss/cssfx
+    implementation group: "fr.brouillard.oss", name: "cssfx", version: "11.5.1"
+
+    // https://mvnrepository.com/artifact/com.squareup.retrofit2/retrofit
+    implementation group: "com.squareup.retrofit2", name: "retrofit", version: "2.9.0"
+
+    // https://mvnrepository.com/artifact/com.squareup.retrofit2/adapter-rxjava3
+    implementation group: "com.squareup.retrofit2", name: "adapter-rxjava3", version: "2.9.0"
+
+    // https://mvnrepository.com/artifact/com.squareup.retrofit2/converter-jackson
+    implementation group: "com.squareup.retrofit2", name: "converter-jackson", version: "2.9.0"
+
+    // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
+    implementation group: "com.fasterxml.jackson.core", name: "jackson-core", version: "2.13.3"
+
+    // https://mvnrepository.com/artifact/io.reactivex.rxjava3/rxjava
+    implementation group: "io.reactivex.rxjava3", name: "rxjava", version: "3.1.4"
+
+    // https://mvnrepository.com/artifact/org.glassfish.tyrus.bundles/tyrus-standalone-client/1.9
+    implementation group: "org.glassfish.tyrus.bundles", name: "tyrus-standalone-client", version: "1.9"
+
+    // https://mvnrepository.com/artifact/javax.websocket/javax.websocket-api/1.1
+    compileOnly group: "javax.websocket", name: "javax.websocket-api", version: "1.1"
+
+    // https://mvnrepository.com/artifact/org.glassfish.tyrus/tyrus-client/1.15
+    implementation group: "org.glassfish.tyrus", name: "tyrus-client", version: "1.15"
+
+    // https://mvnrepository.com/artifact/org.glassfish.tyrus/tyrus-container-grizzly-client/1.15
+    implementation group: "org.glassfish.tyrus", name: "tyrus-container-grizzly-client", version: "1.15"
+
+    // https://mvnrepository.com/artifact/org.fulib/fulibScenarios
+    fulibScenarios group: "org.fulib", name: "fulibScenarios", version: "1.7.0"
+
+    // https://mvnrepository.com/artifact/org.slf4j/slf4j-simple
+    fulibScenarios group: "org.slf4j", name: "slf4j-simple", version: "1.7.36"
+
+    // https://mvnrepository.com/artifact/org.fulib/fulibTools
+    testImplementation group: "org.fulib", name: "fulibTools", version: "1.5.1"
+
+    // https://mvnrepository.com/artifact/org.fulib/fulibTables
+    testImplementation group: "org.fulib", name: "fulibTables", version: "1.4.0"
+}
+
+java {
+    sourceCompatibility = getVersionForMajor(javaSourceVersion)
+    targetCompatibility = getVersionForMajor(javaTargetVersion)
+
+    if (generateSourcesJar) {
+        withSourcesJar()
+    }
+    if (generateJavadocJar) {
+        withJavadocJar()
+    }
+}
+
+sourcesJar {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}
+
+jar {
+    from {
+        configurations.internal.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+
+    manifest {
+        attributes(
+                "Manifest-Version": 1.0,
+                "Class-Path": ".",
+                "Main-Class": "io.github.sekassel.person.Main"
+        )
+    }
+
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+compileJava { options.encoding = "UTF-8" }
+javadoc { options.encoding = "UTF-8" }
+
+repositories {
+    mavenCentral()
+    maven {
+        name = "jitpack"
+        url = "https://jitpack.io"
+    }
+}
+
+group projectGroup
+version projectVersion
+
+// Include local jar dependencies
+dependencies {
+    implementation fileTree(dir: "libs/implementation", include: "*.jar")
+    internal fileTree(dir: "libs/internal", include: "*.jar")
+}
+
+static JavaVersion getVersionForMajor(String version) {
+    return JavaVersion.values().find { (it.majorVersion == version) }
+}
+
+generateScenarioSource {
+    classDiagramSVG = false
+}
+
+generateScenarioSource.mustRunAfter(sourcesJar)
