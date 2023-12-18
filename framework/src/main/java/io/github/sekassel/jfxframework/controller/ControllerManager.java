@@ -5,6 +5,7 @@ import io.github.sekassel.jfxframework.FxFramework;
 import io.github.sekassel.jfxframework.controller.annotation.Controller;
 import io.github.sekassel.jfxframework.controller.annotation.ControllerEvent;
 import io.github.sekassel.jfxframework.controller.building.ControllerBuildFactory;
+import io.github.sekassel.jfxframework.data.Tuple;
 import io.github.sekassel.jfxframework.util.Util;
 import io.github.sekassel.jfxframework.util.reflection.Reflection;
 import javafx.fxml.FXMLLoader;
@@ -135,20 +136,25 @@ public class ControllerManager {
         // Call destroy methods
         Reflection.callMethodsWithAnnotation(instance, ControllerEvent.onDestroy.class, Map.of());
 
-        // TODO: Only enable this in development mode
-        Reflection.getFieldsOfType(instance.getClass(), Subscriber.class) // Get all Subscriber fields
-                .stream()
-                .map(field -> {
-                    try {
-                        field.setAccessible(true);
-                        return (Subscriber) field.get(instance); // Get the Subscriber instance, if it exists
-                    } catch (IllegalAccessException e) {
-                        return null;
-                    }
-                })
-                .filter(Objects::nonNull)
-                .filter(subscriber -> !subscriber.disposed()) // Filter out disposed subscribers
-                .forEach(Subscriber::destroy); // Call the destroy method of the Subscriber
+        // In development mode, check for undestroyed subscribers
+        if (Util.runningInDev()) {
+            Reflection.getFieldsOfType(instance.getClass(), Subscriber.class) // Get all Subscriber fields
+                    .stream()
+                    .map(field -> {
+                        try {
+                            field.setAccessible(true);
+                            return Tuple.of(field, (Subscriber) field.get(instance)); // Get the Subscriber instance, if it exists
+                        } catch (IllegalAccessException e) {
+                            return null;
+                        }
+                    })
+                    .filter(Objects::nonNull)
+                    .filter(tuple -> tuple.first() != null)
+                    .filter(tuple -> !tuple.second().disposed()) // Filter out disposed subscribers
+                    .forEach(tuple ->
+                            FxFramework.logger().warning("Found undestroyed subscriber '%s' in class '%s'.".formatted(tuple.first().getName(), instance.getClass().getName()))
+                    );
+        }
     }
 
     /**

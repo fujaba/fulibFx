@@ -4,7 +4,6 @@ import io.github.sekassel.jfxframework.FxFramework;
 import io.github.sekassel.jfxframework.controller.annotation.Controller;
 import io.github.sekassel.jfxframework.duplicate.Duplicators;
 import io.github.sekassel.jfxframework.util.ArgumentProvider;
-import io.github.sekassel.jfxframework.util.Initializer;
 import io.github.sekassel.jfxframework.util.Util;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.disposables.Disposable;
@@ -20,6 +19,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.inject.Provider;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiConsumer;
 
 /**
  * A For loop for use in Code. Creates a node for each item in a list and adds them to the children of a container.
@@ -72,7 +72,7 @@ public class For<N, I> extends Parent {
     };
 
     // The method to call when the controller is created
-    private Initializer<N, I> beforeInit;
+    private BiConsumer<N, I> beforeInit;
 
     /**
      * Use the factory methods to create a new For loop.
@@ -121,7 +121,7 @@ public class For<N, I> extends Parent {
      * @param <N>        The type of the node
      * @return The For loop
      */
-    public static <N, I> For<N, I> controller(@NotNull Parent container, @NotNull ObservableList<@NotNull I> list, @NotNull Class<? extends N> node, @NotNull Map<@NotNull String, @Nullable Object> params, @NotNull Initializer<@NotNull N, @Nullable I> beforeInit) {
+    public static <N, I> For<N, I> controller(@NotNull Parent container, @NotNull ObservableList<@NotNull I> list, @NotNull Class<? extends N> node, @NotNull Map<@NotNull String, @Nullable Object> params, @NotNull BiConsumer<@NotNull N, @Nullable I> beforeInit) {
         For<N, I> forLoop = new For<>();
         forLoop.beforeInit = beforeInit;
         forLoop.setContainer(container);
@@ -167,7 +167,7 @@ public class For<N, I> extends Parent {
      * @param <N>        The type of the node
      * @return The For loop
      */
-    public static <N, I> For<N, I> controller(@NotNull Parent container, @NotNull ObservableList<@NotNull I> list, @NotNull Class<? extends N> node, @NotNull Initializer<@NotNull N, @Nullable I> beforeInit) {
+    public static <N, I> For<N, I> controller(@NotNull Parent container, @NotNull ObservableList<@NotNull I> list, @NotNull Class<? extends N> node, @NotNull BiConsumer<@NotNull N, @Nullable I> beforeInit) {
         return controller(container, list, node, Map.of(), beforeInit);
     }
 
@@ -186,7 +186,7 @@ public class For<N, I> extends Parent {
      * @param <N>        The type of the node
      * @return The For loop
      */
-    public static <I, N> For<N, I> node(@NotNull Parent container, @NotNull ObservableList<@NotNull I> list, @NotNull N node, @NotNull Initializer<@NotNull N, @Nullable I> beforeInit) {
+    public static <I, N> For<N, I> node(@NotNull Parent container, @NotNull ObservableList<@NotNull I> list, @NotNull N node, @NotNull BiConsumer<@NotNull N, @Nullable I> beforeInit) {
         For<N, I> forLoop = new For<>();
         forLoop.beforeInit = beforeInit;
         forLoop.setContainer(container);
@@ -269,7 +269,7 @@ public class For<N, I> extends Parent {
                     Object instance = FxFramework.framework().frameworkComponent().router().getProvidedInstance(clazz);
                     this.disposable().add(Disposable.fromRunnable(() -> FxFramework.framework().manager().destroy(instance)));
                     if (beforeInit != null) {
-                        beforeInit.initialize((N) instance, item);
+                        beforeInit.accept((N) instance, item);
                     }
                     FxFramework.framework().frameworkComponent().controllerManager().init(instance, this.params);
                     return FxFramework.framework().frameworkComponent().controllerManager().render(instance, this.params);
@@ -287,7 +287,7 @@ public class For<N, I> extends Parent {
             this.nodeProvider = (item) -> {
                 Node duplicated = Duplicators.duplicate((Node) node);
                 if (beforeInit != null) {
-                    beforeInit.initialize((N) duplicated, item);
+                    beforeInit.accept((N) duplicated, item);
                 }
                 return duplicated;
             };
@@ -300,7 +300,7 @@ public class For<N, I> extends Parent {
                 this.nodeProvider = (item) -> {
                     Node providedNode = (Node) provider.get();
                     if (beforeInit != null) {
-                        beforeInit.initialize((N) providedNode, item);
+                        beforeInit.accept((N) providedNode, item);
                     }
                     return providedNode;
                 };

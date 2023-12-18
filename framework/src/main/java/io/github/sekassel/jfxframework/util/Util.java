@@ -1,5 +1,7 @@
 package io.github.sekassel.jfxframework.util;
 
+import com.sun.tools.javac.Main;
+import io.github.sekassel.jfxframework.FxFramework;
 import io.github.sekassel.jfxframework.controller.annotation.Controller;
 import io.github.sekassel.jfxframework.controller.annotation.Route;
 import io.github.sekassel.jfxframework.controller.exception.InvalidRouteFieldException;
@@ -14,6 +16,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.*;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 
 /**
@@ -214,8 +217,32 @@ public class Util {
 
     public static @NotNull File getResourceAsLocalFile(Class<?> clazz, String resource) {
         String classPath = clazz.getPackageName().replace(".", "/");
-        // TODO: Make class path dynamic
-        return new File("example/src/main/resources/" + classPath + "/" + resource);
+        Path path = Path.of(FxFramework.resourcesPath());
+        return path.resolve(classPath).resolve(resource).toFile();
+    }
+
+    /**
+     * Checks if the framework is running in development mode. This is the case if the INDEV environment variable is set to true.
+     * <p>
+     * Since people are dumb and might not set the variable correctly, it also checks if the intellij launcher is used.
+     * @return True if the framework is running in development mode
+     */
+    public static boolean runningInDev() {
+        return System.getenv().getOrDefault(Constants.INDEV_ENVIRONMENT_VARIABLE, "false").equalsIgnoreCase("true") || runningInIntelliJ();
+    }
+
+    /**
+     * Checks if the framework is running in IntelliJ.
+     * This is not reliable as disabling the idea launcher in the run configuration will result in this method returning false.
+     *
+     * @return True if the framework is running in IntelliJ
+     */
+    public static boolean runningInIntelliJ() {
+        try {
+            return Main.class.getClassLoader().loadClass("com.intellij.rt.execution.application.AppMainV2") != null;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
     }
 
 }

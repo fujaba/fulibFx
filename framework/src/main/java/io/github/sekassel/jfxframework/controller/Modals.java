@@ -1,7 +1,6 @@
 package io.github.sekassel.jfxframework.controller;
 
 import io.github.sekassel.jfxframework.FxFramework;
-import io.github.sekassel.jfxframework.util.Initializer;
 import javafx.event.EventHandler;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -11,6 +10,7 @@ import javafx.stage.Stage;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
+import java.util.function.BiConsumer;
 
 public class Modals {
 
@@ -30,7 +30,7 @@ public class Modals {
      * @param <T>             the type of the controller
      * @return the modal stage
      */
-    public static <T> Stage showModal(Stage currentStage, Class<T> controllerClazz, Initializer<Stage, T> initializer) {
+    public static <T> Stage showModal(Stage currentStage, Class<T> controllerClazz, BiConsumer<Stage, T> initializer) {
         return showModal(currentStage, controllerClazz, initializer, Map.of(), true);
     }
 
@@ -80,14 +80,14 @@ public class Modals {
      * @param <T>             the type of the controller
      * @return the modal stage
      */
-    public static <T> Stage showModal(Stage currentStage, Class<T> controllerClazz, Initializer<Stage, T> initializer, Map<String, Object> params, boolean destroyOnClose) {
+    public static <T> Stage showModal(Stage currentStage, Class<T> controllerClazz, BiConsumer<Stage, T> initializer, Map<String, Object> params, boolean destroyOnClose) {
         T controller = FxFramework.framework().router().getProvidedInstance(controllerClazz);
         ModalStage modalStage = new ModalStage(() -> {
             if (destroyOnClose)
                 FxFramework.framework().manager().destroy(controller);
         });
 
-        initializer.initialize(modalStage, controller);
+        initializer.accept(modalStage, controller);
 
         Parent rendered = FxFramework.framework().manager().initAndRender(controller, params);
 

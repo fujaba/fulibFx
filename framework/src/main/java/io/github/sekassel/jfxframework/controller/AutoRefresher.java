@@ -31,6 +31,11 @@ public class AutoRefresher {
 
     public void setup(String directory) {
 
+        if (!Util.runningInDev()) {
+            FxFramework.logger().warning("AutoRefresher is only meant to be used in development mode! Not starting.");
+            return;
+        }
+
         this.enabled = true;
 
         try {

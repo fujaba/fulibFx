@@ -8,7 +8,7 @@
 <?import javafx.scene.layout.VBox?>
 <fx:root alignment="CENTER" spacing="5.0" style="-fx-border-radius: 2; -fx-border-color: BLACK;" type="HBox" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.sekassel.person.controller.PersonController">
    <padding>
-      <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
+      <Insets bottom="2.0" left="2.0" right="2.0" top="2.0"  />
    </padding>
    <ImageView fx:id="image" fitHeight="25.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true" smooth="false" />
    <VBox>

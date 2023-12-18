@@ -28,6 +28,8 @@ public abstract class FxFramework extends Application {
     private static final Logger LOGGER = Logger.getLogger(FxFramework.class.getName());
     private static FxFramework instance;
 
+    private static String resourcesPath = "src/main/resources/";
+
     // The component holding the required dependencies like router, controller manager, etc.
     private FrameworkComponent component;
 
@@ -44,7 +46,7 @@ public abstract class FxFramework extends Application {
     }
 
     /**
-     * Returns the logger of the framework.
+     * Returns the framework's logger.
      *
      * @return The logger
      */
@@ -71,6 +73,24 @@ public abstract class FxFramework extends Application {
      */
     public static FxFramework framework() {
         return instance;
+    }
+
+    /**
+     * Returns the path to the 'resources' directory.
+     * @return The path to the resources directory
+     */
+    public static @NotNull String resourcesPath() {
+        return resourcesPath;
+    }
+
+    /**
+     * Sets the path to the 'resources' directory. If your 'resources' directory differs from "src/main/resources", you can set it here.
+     * <p>
+     * If your project is contained in another directory (e.g. gradle submodule), you can set the path to the 'resources' directory here.
+     * @param path The path to the resources directory (e.g. "example/src/main/resources")
+     */
+    public static void setResourcesPath(@NotNull String path) {
+        resourcesPath = path;
     }
 
     /**
@@ -148,7 +168,6 @@ public abstract class FxFramework extends Application {
         this.stage = primaryStage;
 
         this.component = DaggerFrameworkComponent.builder().framework(this).build();
-
         this.component.controllerManager().setMainClass(this.getClass());
 
         Scene scene = new Scene(new Pane()); // Show default scene

@@ -460,9 +460,8 @@ For.controller(container, items, ExampleController.class, Map.of("key", value));
 For.controller(container, items, ExampleController.class, params); // Parameters can be taken from the @Params annotation for example
 ```
 
-If you want to pass dynamic information like binding the item to its controller, you can use an `Initializer`.
-The `Initializer` allows to
-define actions for initializing each controller based on its item.
+If you want to pass dynamic information like binding the item to its controller, you can use an `BiConsumer`.
+The `BiConsumer` allows to define actions for initializing each controller based on its item.
 
 ```java
 For.controller(container, items, ExampleController.class, (controller, item) -> {
@@ -490,8 +489,8 @@ For.node(container, items, new VBox(new Button("This is a button!"))); // Nodes 
 ```
 
 Unlike with controllers, it is not possible to pass static information in the form of paramters to nodes, as there is no
-way of accessing them in the code. However, dynamic
-information in the form of an `Initializer` can be used just like with controllers.
+way of accessing them in the code. However, dynamic information in the form of an `BiConsumer` can be used just like with 
+controllers.
 
 ```java
 For.node(container, items, new Button(), (button, item) -> {
@@ -525,8 +524,8 @@ sub-controllers will be rendered, going back up to the main controller. The main
 the sub-controllers have been rendered.
 
 If a For-Loop is defined in a method annotated with `@Controller.onRender` in any (sub-)controller,
-the `@Controller.onRender` will (obviously) be called first. After that, the `Initializer` of the for-Controller will be
-called and then the for-controller will be initialized and then rendered.
+the `@Controller.onRender` will (obviously) be called first. After that, the initializer (`BiConsumer`) of the 
+for-Controller will be called and then the for-controller will be initialized and then rendered.
 
 #### Example
 
