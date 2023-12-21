@@ -14,7 +14,7 @@ import javax.inject.Singleton;
 @Singleton
 public class Routing {
 
-    @Route(route = "")
+    @Route(value = "")
     @Inject
     public Provider<PersonListController> personList;
 

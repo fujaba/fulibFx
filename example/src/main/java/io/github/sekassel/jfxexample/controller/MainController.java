@@ -27,12 +27,8 @@ public class MainController {
     public MainController() {
     }
 
-    @ControllerEvent.onInit()
-    public void init(@Param(name = "username") String user) {
-    }
-
     @ControllerEvent.onRender()
-    public void setText(@Param(name = "username") String username, @Param(name = "password") String password) {
+    public void setText(@Param(value = "username") String username, @Param(value = "password") String password) {
         welcomeLabel.setText("Welcome " + username + ", your password is " + password);
     }
 
@@ -42,7 +38,7 @@ public class MainController {
     }
 
     @FXML
-    public void continueButton(ActionEvent actionEvent) {
+    public void continueButton() {
         ExampleApp.instance.show("back", Map.of("key", "value"));
     }
 }

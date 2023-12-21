@@ -1,7 +1,6 @@
 package io.github.sekassel.uno.service;
 
 import io.github.sekassel.uno.Constants;
-import io.github.sekassel.uno.Returnable;
 import io.github.sekassel.uno.model.Card;
 import io.github.sekassel.uno.model.Game;
 import io.github.sekassel.uno.model.Player;
@@ -9,34 +8,25 @@ import io.github.sekassel.uno.util.CardColor;
 import io.github.sekassel.uno.util.CardType;
 import io.github.sekassel.uno.util.Utils;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+@Singleton
 public class GameService {
 
-    private final CardService cardService;
-    private final BotService botService;
+    @Inject
+    CardService cardService;
+    @Inject
+    BotService botService;
+
     private final Random random;
 
-    public GameService(Random random) {
-        this.random = random;
-        this.cardService = new CardService(random);
-        this.botService = new BotService(this);
-    }
-
-    public static Returnable<Card> getCard() {
-        return new Returnable<>(Returnable.ReturnStatus.SUCCESS, new Card());
-    }
-
-    public static void main(String[] args) {
-        Returnable<Card> card = getCard();
-        if (card.getStatus().equals(Returnable.ReturnStatus.SUCCESS)) {
-            System.out.println(card.getValue());
-        }
-
-        System.out.println(card.getValueOrElse(new Card()));
-
+    @Inject
+    public GameService() {
+        this.random = new Random();
     }
 
     /**

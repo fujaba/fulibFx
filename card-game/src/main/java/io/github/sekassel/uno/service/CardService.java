@@ -6,14 +6,18 @@ import io.github.sekassel.uno.model.Player;
 import io.github.sekassel.uno.util.CardColor;
 import io.github.sekassel.uno.util.CardType;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.Random;
 
+@Singleton
 public class CardService {
 
     private final Random random;
 
-    public CardService(Random random) {
-        this.random = random;
+    @Inject
+    public CardService() {
+        this.random = new Random();
     }
 
     /**

@@ -1,10 +1,12 @@
 package io.github.sekassel.uno.model;
-import java.util.Objects;
+
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Collections;
 import java.util.Collection;
+import java.util.Objects;
 
 public class Player
 {
@@ -15,7 +17,7 @@ public class Player
    private String name;
    private Game game;
    protected PropertyChangeSupport listeners;
-   private List<Card> cards;
+   private ObservableList<Card> cards;
    private Card currentCard;
 
    public String getName()
@@ -63,16 +65,16 @@ public class Player
       return this;
    }
 
-   public List<Card> getCards()
+   public ObservableList<Card> getCards()
    {
-      return this.cards != null ? Collections.unmodifiableList(this.cards) : Collections.emptyList();
+      return this.cards != null ? cards : FXCollections.emptyObservableList();
    }
 
    public Player withCards(Card value)
    {
       if (this.cards == null)
       {
-         this.cards = new ArrayList<>();
+         this.cards = FXCollections.observableArrayList();
       }
       if (!this.cards.contains(value))
       {

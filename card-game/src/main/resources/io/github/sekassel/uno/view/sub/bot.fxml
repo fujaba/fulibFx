@@ -5,7 +5,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox fx:id="botBox" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
+<fx:root type="VBox" fx:id="botBox" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
       minWidth="-Infinity" prefHeight="150.0" prefWidth="100.0" spacing="5.0" xmlns="http://javafx.com/javafx/19"
       xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.sekassel.uno.controller.BotController">
    <padding>
@@ -31,4 +31,4 @@
          <Font name="Cooper Black" size="14.0"/>
       </font>
    </Label>
-</VBox>
+</fx:root>

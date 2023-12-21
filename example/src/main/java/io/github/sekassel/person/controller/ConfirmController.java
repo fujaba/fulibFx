@@ -37,13 +37,13 @@ public class ConfirmController extends VBox {
     }
 
     @ControllerEvent.onRender
-    private void onRender(@Param(name = "person") Person person) {
+    private void onRender(@Param(value = "person") Person person) {
         System.out.println("ConfirmController.onRender");
         this.label.setText("Do you want to delete %s?".formatted(person.firstName() + " " + person.lastName()));
     }
 
     @ControllerEvent.onInit
-    private void onInit(@Param(name = "person") Person person) {
+    private void onInit(@Param(value = "person") Person person) {
         System.out.println("ConfirmController.onInit");
     }
 

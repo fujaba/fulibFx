@@ -11,23 +11,23 @@ import javax.inject.Singleton;
 @Singleton
 public class Routing {
 
-    @Route(route = "")
+    @Route(value = "")
     @Inject
     public Provider<LoginController> login;
 
-    @Route(route = "/mainmenu")
+    @Route(value = "/mainmenu")
     @Inject
     public Provider<MainController> main;
 
-    @Route(route = "/mainmenu/back")
+    @Route(value = "/mainmenu/back")
     @Inject
     public Provider<BackController> back;
 
-    @Route(route = "/mainmenu/back/rendermethod")
+    @Route(value = "/mainmenu/back/rendermethod")
     @Inject
     public Provider<RenderMethodController> rendermethod;
 
-    @Route(route = "/history")
+    @Route(value = "/history")
     @Inject
     public Provider<HistoryController> history;
 

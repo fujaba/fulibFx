@@ -1,34 +1,41 @@
 package io.github.sekassel.uno.controller;
 
+import io.github.sekassel.jfxframework.controller.Subscriber;
+import io.github.sekassel.jfxframework.controller.annotation.Controller;
+import io.github.sekassel.jfxframework.controller.annotation.ControllerEvent;
 import io.github.sekassel.uno.Constants;
 import io.github.sekassel.uno.model.Card;
 import io.github.sekassel.uno.model.Player;
+import io.github.sekassel.uno.service.GameService;
 import io.github.sekassel.uno.util.Utils;
 import javafx.fxml.FXML;
-import javafx.scene.Parent;
 import javafx.scene.control.Label;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 
-import java.beans.PropertyChangeListener;
+import javax.inject.Inject;
 
-public class CardController implements Controller {
+@Controller(view = "view/sub/card.fxml")
+public class CardController extends VBox implements Titleable {
 
     public static final String CARD_TITLE = "Uno - Card";
-
-    private final Card card;
-    private final IngameController parent;
 
     @FXML
     public VBox cardScreen;
     @FXML
     public Label cardTypeLabel;
 
-    public CardController(IngameController parent, Card card) {
-        this.parent = parent;
-        this.card = card;
+    @Inject
+    GameService gameService;
+
+    @Inject
+    Subscriber subscriber;
+
+    private Card card;
+
+    @Inject
+    public CardController() {
     }
 
     @Override
@@ -36,22 +43,14 @@ public class CardController implements Controller {
         return CARD_TITLE;
     }
 
-    @Override
-    public void init() {
-        // Nothing to init here
-    }
+    @ControllerEvent.onRender
+    public void render() {
 
-    @Override
-    public Parent render() {
-        Parent rendered = loadControllerScreen(this, "view/card.fxml");
-
-        rendered.setId((this.card.getColor() + "_" + this.card.getType()).toLowerCase());
+        cardScreen.setId((this.card.getColor() + "_" + this.card.getType()).toLowerCase());
 
         setupPropertyChangeListeners();
         setupSelection();
         setColor();
-
-        return rendered;
     }
 
     /**
@@ -59,7 +58,7 @@ public class CardController implements Controller {
      */
     private void setupPropertyChangeListeners() {
         // Change the card color if the card color changes (wild cards)
-        this.card.listeners().addPropertyChangeListener(Card.PROPERTY_COLOR, event -> setColor());
+        subscriber.listen(card.listeners(), Card.PROPERTY_COLOR, event -> setColor());
     }
 
     /**
@@ -73,7 +72,7 @@ public class CardController implements Controller {
             return;
         }
 
-        cardScreen.setOnMouseClicked(event -> parent.getApp().getGameService().selectCard(this.card));
+        cardScreen.setOnMouseClicked(event -> gameService.selectCard(this.card));
     }
 
     /**
@@ -86,6 +85,7 @@ public class CardController implements Controller {
 
     /**
      * Highlights a card or removes the highlight from a card.
+     *
      * @param highlight Whether the card should be highlighted
      */
     public void highlight(boolean highlight) {
@@ -93,29 +93,20 @@ public class CardController implements Controller {
         cardTypeLabel.setUnderline(highlight);
     }
 
-    @Override
-    public void destroy() {
-        // Remove all registered card listeners
-        for (PropertyChangeListener listener : this.card.listeners().getPropertyChangeListeners()) {
-            this.card.listeners().removePropertyChangeListener(listener);
-        }
-    }
-
     /**
-     * Returns the current screen (main pane for the controller).
-     * This can be called before render() has been called to change things before the rendering.
-     * It can also be used to get the pane without rendering again.
+     * Sets the card that should be displayed.
      *
-     * @return The current screen (main pane for the controller)
+     * @param card The card that should be displayed
      */
-    public Pane getAsPane() {
-        return this.cardScreen;
+    public CardController setCard(Card card) {
+        this.card = card;
+        return this;
     }
 
-    /**
-     * @return The card this controller displays.
-     */
-    public Card getCard() {
-        return this.card;
+    @ControllerEvent.onDestroy
+    public void destroy() {
+        // Remove the card from the game
+        this.subscriber.destroy();
     }
+
 }

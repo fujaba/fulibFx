@@ -1,5 +1,6 @@
 package io.github.sekassel.uno.service;
 
+import dagger.Lazy;
 import io.github.sekassel.uno.Constants;
 import io.github.sekassel.uno.model.Card;
 import io.github.sekassel.uno.model.Player;
@@ -7,18 +8,23 @@ import io.github.sekassel.uno.util.CardColor;
 import io.github.sekassel.uno.util.Utils;
 import javafx.application.Platform;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.swing.*;
 import java.util.List;
 import java.util.Random;
 
+@Singleton
 public class BotService {
 
     private final Random random;
-    private final GameService gameService;
 
-    public BotService(GameService gameService) {
-        this.random = gameService.getRandom();
-        this.gameService = gameService;
+    @Inject
+    Lazy<GameService> gameService;
+
+    @Inject
+    public BotService() {
+        this.random = new Random();
     }
 
     /**
@@ -56,9 +62,9 @@ public class BotService {
 
         // If no card can be selected, draw a card
         if (selected == null) {
-            Card drawn = this.gameService.handoutCards(bot, 1).get(0);
+            Card drawn = this.gameService.get().handoutCards(bot, 1).get(0);
             if (!drawn.canBeOnTopOf(bot.getGame().getCurrentCard())) {
-                this.gameService.selectNextPlayer(bot.getGame(), 1);
+                this.gameService.get().selectNextPlayer(bot.getGame(), 1);
                 Utils.playSound(Constants.SOUND_FAIL);
                 return;
             }
@@ -71,7 +77,7 @@ public class BotService {
         color = color == CardColor.WILD ? Utils.getRandomColor(this.random) : null;
 
         // Play the card
-        gameService.playRound(selected, color);
+        gameService.get().playRound(selected, color);
     }
 
     /**
@@ -82,10 +88,4 @@ public class BotService {
         player.removeYou();
     }
 
-    /**
-     * @return The currently used random instance.
-     */
-    public Random getRandom() {
-        return this.random;
-    }
 }

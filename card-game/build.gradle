@@ -2,7 +2,6 @@ plugins {
     id "java"
     id "org.openjfx.javafxplugin" version "0.0.13"
     id "com.github.johnrengelman.shadow" version "7.0.0"
-    id "org.fulib.fulibGradle" version "0.5.0"
 }
 
 configurations {
@@ -60,18 +59,6 @@ dependencies {
 
     // https://mvnrepository.com/artifact/org.glassfish.tyrus/tyrus-container-grizzly-client/1.15
     implementation group: "org.glassfish.tyrus", name: "tyrus-container-grizzly-client", version: "1.15"
-
-    // https://mvnrepository.com/artifact/org.fulib/fulibScenarios
-    fulibScenarios group: "org.fulib", name: "fulibScenarios", version: "1.7.0"
-
-    // https://mvnrepository.com/artifact/org.slf4j/slf4j-simple
-    fulibScenarios group: "org.slf4j", name: "slf4j-simple", version: "1.7.36"
-
-    // https://mvnrepository.com/artifact/org.fulib/fulibTools
-    testImplementation group: "org.fulib", name: "fulibTools", version: "1.5.1"
-
-    // https://mvnrepository.com/artifact/org.fulib/fulibTables
-    testImplementation group: "org.fulib", name: "fulibTables", version: "1.4.0"
 }
 
 java {
@@ -129,9 +116,3 @@ dependencies {
 static JavaVersion getVersionForMajor(String version) {
     return JavaVersion.values().find { (it.majorVersion == version) }
 }
-
-generateScenarioSource {
-    classDiagramSVG = false
-}
-
-generateScenarioSource.mustRunAfter(sourcesJar)

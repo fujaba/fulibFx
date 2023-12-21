@@ -43,6 +43,7 @@ public class Card
 
    public Card setOwner(Player value)
    {
+
       if (this.owner == value)
       {
          return this;

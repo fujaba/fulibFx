@@ -1,6 +1,5 @@
 package io.github.sekassel.jfxframework.util;
 
-import com.sun.tools.javac.Main;
 import io.github.sekassel.jfxframework.FxFramework;
 import io.github.sekassel.jfxframework.controller.annotation.Controller;
 import io.github.sekassel.jfxframework.controller.annotation.Route;
@@ -217,7 +216,7 @@ public class Util {
 
     public static @NotNull File getResourceAsLocalFile(Class<?> clazz, String resource) {
         String classPath = clazz.getPackageName().replace(".", "/");
-        Path path = Path.of(FxFramework.resourcesPath());
+        Path path = FxFramework.resourcesPath();
         return path.resolve(classPath).resolve(resource).toFile();
     }
 
@@ -228,21 +227,7 @@ public class Util {
      * @return True if the framework is running in development mode
      */
     public static boolean runningInDev() {
-        return System.getenv().getOrDefault(Constants.INDEV_ENVIRONMENT_VARIABLE, "false").equalsIgnoreCase("true") || runningInIntelliJ();
-    }
-
-    /**
-     * Checks if the framework is running in IntelliJ.
-     * This is not reliable as disabling the idea launcher in the run configuration will result in this method returning false.
-     *
-     * @return True if the framework is running in IntelliJ
-     */
-    public static boolean runningInIntelliJ() {
-        try {
-            return Main.class.getClassLoader().loadClass("com.intellij.rt.execution.application.AppMainV2") != null;
-        } catch (ClassNotFoundException e) {
-            return false;
-        }
+        return System.getenv().getOrDefault(Constants.INDEV_ENVIRONMENT_VARIABLE, "false").equalsIgnoreCase("true");
     }
 
 }

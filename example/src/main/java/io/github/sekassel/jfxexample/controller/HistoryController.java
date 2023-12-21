@@ -40,7 +40,7 @@ public class HistoryController extends VBox {
     }
 
     @ControllerEvent.onRender
-    public void onRender(@Param(name = "counter") Integer counter) {
+    public void onRender(@Param(value = "counter") Integer counter) {
         label.setText(String.format("History: %s", counter));
     }
 }
