@@ -4,6 +4,7 @@ import dagger.Lazy;
 import io.github.sekassel.jfxframework.FxFramework;
 import io.github.sekassel.jfxframework.controller.annotation.Controller;
 import io.github.sekassel.jfxframework.controller.annotation.ControllerEvent;
+import io.github.sekassel.jfxframework.controller.annotation.RenderController;
 import io.github.sekassel.jfxframework.controller.building.ControllerBuildFactory;
 import io.github.sekassel.jfxframework.data.Tuple;
 import io.github.sekassel.jfxframework.util.Util;
@@ -37,11 +38,12 @@ public class ControllerManager {
 
     // Set of controllers that have been initialized and are currently displayed
     private final Set<Object> controllers = new HashSet<>();
-    // The base class of the framework, used to load resources (relative to the base class)
-    private Class<? extends FxFramework> baseClass;
 
     @Inject
     Lazy<Router> router;
+
+    // The base class of the framework, used to load resources (relative to the base class)
+    private Class<? extends FxFramework> baseClass;
 
     @Inject
     public ControllerManager() {
@@ -68,6 +70,7 @@ public class ControllerManager {
     }
 
     public void init(Object instance, Map<String, Object> parameters) {
+        Reflection.fillParametersIntoFields(instance, parameters);
         Reflection.callMethodsWithAnnotation(instance, ControllerEvent.onInit.class, parameters);
     }
 
@@ -92,6 +95,19 @@ public class ControllerManager {
         Parent parent;
         String view = instance.getClass().getAnnotation(Controller.class).view();
 
+        // Initialize and render all sub-controllers specified in fields annotated with @RenderController
+        Reflection.getFieldsWithAnnotation(instance.getClass(), RenderController.class).stream().map(field -> {
+            try {
+                boolean accessible = field.canAccess(instance);
+                field.setAccessible(true);
+                Object subController = field.get(instance);
+                field.setAccessible(accessible);
+                return subController;
+            } catch (IllegalAccessException e) {
+                return null;
+            }
+        }).filter(Objects::nonNull).filter(fieldInstance -> fieldInstance.getClass().isAnnotationPresent(Controller.class)).filter(Objects::nonNull).forEach(subController -> initAndRender(subController, parameters));
+
         // If the controller extends from a javafx Parent, render it
         if (Parent.class.isAssignableFrom(instance.getClass()) && view.isEmpty()) {
             parent = (Parent) instance;
@@ -111,7 +127,7 @@ public class ControllerManager {
                 throw new RuntimeException("Method '" + methodName + "()' in class '" + instance.getClass().getName() + "' could not be called.", e);
             }
         }
-        // If the controller specifies a fxml file, load it
+        // If the controller specifies a fxml file, load it. This will also load sub-controllers specified in the FXML file
         else {
             String fxmlPath = view.isEmpty() ? FXML_PATH + Util.transform(instance.getClass().getSimpleName()) + ".fxml" : view;
             parent = loadFXML(fxmlPath, instance, parameters, Parent.class.isAssignableFrom(instance.getClass()));
@@ -213,6 +229,7 @@ public class ControllerManager {
 
     /**
      * Sets the base class of the framework.
+     *
      * @param clazz The base class
      */
     public void setMainClass(Class<? extends FxFramework> clazz) {

@@ -75,6 +75,31 @@ public class Reflection {
         }
     }
 
+    public static void fillParametersIntoFields(@NotNull Object instance, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
+        for (Field field : Reflection.getFieldsWithAnnotation(instance.getClass(), Param.class)) {
+            try {
+                boolean accessible = field.canAccess(instance);
+                field.setAccessible(true);
+                field.set(instance, parameters.get(field.getAnnotation(Param.class).value()));
+                field.setAccessible(accessible);
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+                throw new RuntimeException("Couldn't fill parameter '" + field.getAnnotation(Param.class).value() + "' into field '" + field.getName() + "' in '" + instance.getClass().getName() + "'", e);
+            }
+        }
+
+        for (Field field : Reflection.getFieldsWithAnnotation(instance.getClass(), Params.class)) {
+            try {
+                boolean accessible = field.canAccess(instance);
+                field.setAccessible(true);
+                field.set(instance, parameters);
+                field.setAccessible(accessible);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException("Couldn't fill parameters into field '" + field.getName() + "' in '" + instance.getClass().getName() + "'", e);
+            }
+        }
+    }
+
     /**
      * Returns an array with all parameters that are applicable to the given method in the correct order.
      * <p>
@@ -96,10 +121,10 @@ public class Reflection {
 
             // Check if the parameter is annotated with @Param and if the parameter is of the correct type
             if (param != null) {
-                if (parameters.containsKey(param.name()) && !parameter.getType().isAssignableFrom(parameters.get(param.name()).getClass())) {
-                    throw new RuntimeException("Parameter named '" + param.name() + "' in method '" + method.getDeclaringClass().getName() + "#" + method.getName() + "' is of type " + parameter.getType().getName() + " but the provided value is of type " + parameters.get(param.name()).getClass().getName());
+                if (parameters.containsKey(param.value()) && !parameter.getType().isAssignableFrom(parameters.get(param.value()).getClass())) {
+                    throw new RuntimeException("Parameter named '" + param.value() + "' in method '" + method.getDeclaringClass().getName() + "#" + method.getName() + "' is of type " + parameter.getType().getName() + " but the provided value is of type " + parameters.get(param.value()).getClass().getName());
                 }
-                return parameters.get(param.name());
+                return parameters.get(param.value());
             }
 
             // Check if the parameter is annotated with @Params and if the parameter is of the type Map<String, Object>
