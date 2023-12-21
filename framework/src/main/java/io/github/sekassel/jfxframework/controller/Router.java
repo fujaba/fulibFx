@@ -32,7 +32,7 @@ public class Router {
     @Inject
     Lazy<ControllerManager> manager;
 
-    private Object source;
+    private Object routerObject;
 
     @Inject
     public Router() {
@@ -47,10 +47,10 @@ public class Router {
      * @param routes The class to register the routes from
      */
     public void registerRoutes(@NotNull Object routes) {
-        if (this.source != null)
-            throw new IllegalStateException("%s has already been registered as the router class.".formatted(this.source.getClass().getName()));
+        if (this.routerObject != null)
+            throw new IllegalStateException("%s has already been registered as the router class.".formatted(this.routerObject.getClass().getName()));
 
-        this.source = routes;
+        this.routerObject = routes;
 
         Reflection.getFieldsWithAnnotation(routes.getClass(), Route.class).forEach(this::registerRoute);
         Reflection.getFieldsWithAnnotation(routes.getClass(), Providing.class).forEach(this::registerProviding);
@@ -89,7 +89,7 @@ public class Router {
         Util.requireControllerProvider(field);
 
         Route annotation = field.getAnnotation(Route.class);
-        String route = annotation.route().equals("$name") ? "/" + field.getName() : annotation.route();
+        String route = annotation.value().equals("$name") ? "/" + field.getName() : annotation.value();
 
         // Make sure the route starts with a slash to prevent issues with the traversal
         route = route.startsWith("/") ? route : "/" + route;
@@ -131,7 +131,8 @@ public class Router {
 
     private Object getInstanceOfProviderField(Field provider) {
         try {
-            return ((Provider<?>) provider.get(source)).get();
+            provider.setAccessible(true);
+            return ((Provider<?>) provider.get(routerObject)).get();
         } catch (NullPointerException e) {
             throw new RuntimeException("Field '" + provider.getName() + "' in '" + provider.getDeclaringClass().getName() + "' is not initialized.");
         } catch (IllegalAccessException e) {
@@ -152,7 +153,7 @@ public class Router {
 
         Field field = this.providingFields.get(type);
         try {
-            return ((Provider<T>) field.get(this.source)).get();
+            return ((Provider<T>) field.get(this.routerObject)).get();
         } catch (IllegalAccessException e) {
             throw new RuntimeException("Field '" + field.getName() + "' in '" + field.getDeclaringClass().getName() + "' could not be accessed.", e);
         }

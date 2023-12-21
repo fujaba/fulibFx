@@ -20,6 +20,6 @@ public @interface Route {
      *
      * @return The route at which the controller should be registered.
      */
-    String route() default "$name";
+    String value() default "$name";
 
 }

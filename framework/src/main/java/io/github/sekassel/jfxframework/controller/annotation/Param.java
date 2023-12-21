@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
  * Annotation used to mark controller parameters.
  * Used by the {@link Router} to inject parameters into controllers.
  */
-@Target(ElementType.PARAMETER)
+@Target({ElementType.PARAMETER, ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Param {
 
@@ -20,6 +20,6 @@ public @interface Param {
      *
      * @return The name of the parameter.
      */
-    String name();
+    String value();
 
 }

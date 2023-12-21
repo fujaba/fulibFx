@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
  * Annotation used to mark controller parameters in which the {@link Router} should inject the parameter map.
  * Used by the {@link Router} to inject parameters into controllers.
  */
-@Target(ElementType.PARAMETER)
+@Target({ElementType.PARAMETER, ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Params {
 }

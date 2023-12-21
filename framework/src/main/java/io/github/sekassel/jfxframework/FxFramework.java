@@ -19,6 +19,7 @@ import javafx.stage.Stage;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -28,7 +29,7 @@ public abstract class FxFramework extends Application {
     private static final Logger LOGGER = Logger.getLogger(FxFramework.class.getName());
     private static FxFramework instance;
 
-    private static String resourcesPath = "src/main/resources/";
+    private static Path resourcesPath = Path.of("src/main/resources");
 
     // The component holding the required dependencies like router, controller manager, etc.
     private FrameworkComponent component;
@@ -77,9 +78,10 @@ public abstract class FxFramework extends Application {
 
     /**
      * Returns the path to the 'resources' directory.
+     *
      * @return The path to the resources directory
      */
-    public static @NotNull String resourcesPath() {
+    public static @NotNull Path resourcesPath() {
         return resourcesPath;
     }
 
@@ -87,14 +89,15 @@ public abstract class FxFramework extends Application {
      * Sets the path to the 'resources' directory. If your 'resources' directory differs from "src/main/resources", you can set it here.
      * <p>
      * If your project is contained in another directory (e.g. gradle submodule), you can set the path to the 'resources' directory here.
+     *
      * @param path The path to the resources directory (e.g. "example/src/main/resources")
      */
-    public static void setResourcesPath(@NotNull String path) {
+    public static void setResourcesPath(@NotNull Path path) {
         resourcesPath = path;
     }
 
     /**
-     * Provides an initialized and rendered instance of the given controller class.
+     * Initializes and renders a controller instance.
      * This method only works with controllers which extend Parent.
      * <p>
      * If destroyWithCurrent is false, the method will NOT add the controller to the set of initialized controllers and the
@@ -103,16 +106,16 @@ public abstract class FxFramework extends Application {
      * If destroyWithCurrent is true, the controller will be added to the set of initialized controllers and will be destroyed when
      * a new main controller is set.
      *
-     * @param clazz              The controller class
+     * @param controller         The controller instance
      * @param destroyWithCurrent Whether the controller shall be destroyed when a new main controller is set
      * @return The rendered controller
      */
-    public @NotNull <T> T provide(@NotNull Class<T> clazz, boolean destroyWithCurrent) {
-        return provide(clazz, Map.of(), destroyWithCurrent);
+    public @NotNull <T> T initAndRender(@NotNull T controller, boolean destroyWithCurrent) {
+        return initAndRender(controller, Map.of(), destroyWithCurrent);
     }
 
     /**
-     * Provides an initialized and rendered instance of the given controller class.
+     * Initializes and renders a controller instance.
      * This method only works with controllers which extend Parent.
      * <p>
      * If destroyWithCurrent is false, the method will NOT add the controller to the set of initialized controllers and the
@@ -121,20 +124,18 @@ public abstract class FxFramework extends Application {
      * If destroyWithCurrent is true, the controller will be added to the set of initialized controllers and will be destroyed when
      * a new main controller is set.
      *
-     * @param clazz              The controller class
+     * @param controller         The controller instance
      * @param params             The arguments passed to the controller
      * @param destroyWithCurrent Whether the controller shall be destroyed when a new main controller is set
      * @return The rendered controller
      */
-    public @NotNull <T> T provide(@NotNull Class<T> clazz, Map<String, Object> params, boolean destroyWithCurrent) {
-        if (clazz.isAnnotationPresent(Controller.class))
-            throw new IllegalArgumentException("Class '%s' is not a controller.".formatted(clazz.getName()));
-
-        Object instance = this.component.router().getProvidedInstance(clazz);
+    public @NotNull <T> T initAndRender(@NotNull T controller, Map<String, Object> params, boolean destroyWithCurrent) {
+        if (!controller.getClass().isAnnotationPresent(Controller.class))
+            throw new IllegalArgumentException("Class '%s' is not a controller.".formatted(controller.getClass().getName()));
 
         // If the controller shall be destroyed, we can just call initAndRender
         if (destroyWithCurrent) {
-            Parent rendered = this.component.controllerManager().initAndRender(instance, params);
+            Parent rendered = this.component.controllerManager().initAndRender(controller, params);
             if (Util.isParentController(rendered)) {
                 return (T) rendered;
             }
@@ -142,8 +143,8 @@ public abstract class FxFramework extends Application {
         }
 
         // If the controller shall not be destroyed, we have to manually initialize and render it
-        this.component.controllerManager().init(instance, params);
-        Parent rendered = this.component.controllerManager().render(instance, params);
+        this.component.controllerManager().init(controller, params);
+        Parent rendered = this.component.controllerManager().render(controller, params);
         if (Util.isParentController(rendered)) {
             return (T) rendered;
         }
@@ -207,7 +208,7 @@ public abstract class FxFramework extends Application {
         Tuple<Object, Parent> rendered = this.component.router().renderRoute(route, params);
         this.currentMainController = rendered.first();
         display(rendered.second());
-        onShow(route, rendered.second(), params);
+        onShow(route, rendered.first(), rendered.second(), params);
         return rendered.second();
     }
 
@@ -231,11 +232,12 @@ public abstract class FxFramework extends Application {
      * <p>
      * This method is called after the controller is initialized and rendered.
      *
-     * @param route    The route of the controller
-     * @param rendered The rendered parent of the controller
-     * @param params   The arguments passed to the controller
+     * @param route      The route of the controller
+     * @param controller The controller instance
+     * @param rendered   The rendered parent of the controller
+     * @param params     The arguments passed to the controller
      */
-    protected void onShow(String route, Parent rendered, Map<String, Object> params) {
+    protected void onShow(String route, Object controller, Parent rendered, Map<String, Object> params) {
         // Override this method
     }
 
