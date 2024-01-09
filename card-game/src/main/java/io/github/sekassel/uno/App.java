@@ -50,10 +50,10 @@ public class App extends FxFramework {
 
             // Setting the resource path to the resources folder of the project (required for reloading in dev)
             // If the resource path is not set, the framework will use the default resource path (src/main/resources)
-            setResourcesPath(Path.of("cardgame/src/main/resources/"));
+            setResourcesPath(Path.of("card-game/src/main/resources/"));
 
             // Setting the path which the auto refresher should watch (required for auto-reloading in dev)
-            autoRefresher().setup(Path.of("cardgame/src/main/resources/io/github/sekassel/uno/view"));
+            autoRefresher().setup(Path.of("card-game/src/main/resources/io/github/sekassel/uno/view"));
             show("", Map.of());
 
         } catch (Exception e) {
