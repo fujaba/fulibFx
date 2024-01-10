@@ -4,7 +4,7 @@ import dagger.Lazy;
 import io.github.sekassel.jfxframework.FxFramework;
 import io.github.sekassel.jfxframework.controller.annotation.Controller;
 import io.github.sekassel.jfxframework.controller.annotation.ControllerEvent;
-import io.github.sekassel.jfxframework.controller.annotation.RenderController;
+import io.github.sekassel.jfxframework.controller.annotation.SubController;
 import io.github.sekassel.jfxframework.controller.building.ControllerBuildFactory;
 import io.github.sekassel.jfxframework.data.Tuple;
 import io.github.sekassel.jfxframework.util.Util;
@@ -96,7 +96,7 @@ public class ControllerManager {
         String view = instance.getClass().getAnnotation(Controller.class).view();
 
         // Initialize and render all sub-controllers specified in fields annotated with @RenderController
-        Reflection.getFieldsWithAnnotation(instance.getClass(), RenderController.class).stream().map(field -> {
+        Reflection.getFieldsWithAnnotation(instance.getClass(), SubController.class).stream().map(field -> {
             try {
                 boolean accessible = field.canAccess(instance);
                 field.setAccessible(true);
@@ -189,10 +189,10 @@ public class ControllerManager {
      * an instance provided by the router will be used as the controller for the element.
      *
      * @param fileName The name of the fxml resource file (with path and file extension)
-     * @param factory  The controller factory to use
+     * @param instance  The controller instance to use
      * @return A parent representing the fxml file
      */
-    public @NotNull Parent loadFXML(@NotNull String fileName, @NotNull Object factory, @NotNull Map<@NotNull String, @Nullable Object> parameters, boolean setRoot) {
+    public @NotNull Parent loadFXML(@NotNull String fileName, @NotNull Object instance, @NotNull Map<@NotNull String, @Nullable Object> parameters, boolean setRoot) {
 
         URL url = baseClass.getResource(fileName);
         if (url == null) {
@@ -210,14 +210,14 @@ public class ControllerManager {
             }
         }
 
-        ControllerBuildFactory builderFactory = new ControllerBuildFactory(this, router.get(), parameters);
+        ControllerBuildFactory builderFactory = new ControllerBuildFactory(instance);
 
         FXMLLoader loader = new FXMLLoader(url);
-        loader.setControllerFactory(c -> factory);
+        loader.setControllerFactory(c -> instance);
         loader.setBuilderFactory(builderFactory);
 
         if (setRoot) {
-            loader.setRoot(factory);
+            loader.setRoot(instance);
         }
 
         try {

@@ -5,6 +5,7 @@ import io.github.sekassel.jfxframework.controller.Subscriber;
 import io.github.sekassel.jfxframework.controller.annotation.Controller;
 import io.github.sekassel.jfxframework.controller.annotation.ControllerEvent;
 import io.github.sekassel.jfxframework.controller.annotation.Param;
+import io.github.sekassel.jfxframework.controller.annotation.SubController;
 import io.github.sekassel.uno.App;
 import io.github.sekassel.uno.Constants;
 import io.github.sekassel.uno.model.Card;
@@ -62,6 +63,10 @@ public class IngameController implements Titleable {
     @Inject
     Provider<CardController> cardControllerProvider;
 
+    @SubController("button")
+    @Inject
+    ButtonController buttonController;
+
     @FXML
     private VBox colorSelectorBox;
     @FXML
@@ -93,6 +98,11 @@ public class IngameController implements Titleable {
     @Override
     public String getTitle() {
         return INGAME_SCREEN_TITLE;
+    }
+
+    @ControllerEvent.onInit
+    public void init() {
+        buttonController.setParentController(this);
     }
 
     // Since this method is annotated wth @ControllerEvent.onRender, it will be called when the controller is rendered
@@ -248,7 +258,6 @@ public class IngameController implements Titleable {
      * Different behaviour is defined by the id of the clicked button.
      * Chooses the card color and plays the wild card as a colored card.
      */
-    @FXML
     public void onWildPressed(ActionEvent event) {
         Card selected = this.game.getFirstPlayer().getCurrentCard();
         Button pressed = (Button) event.getSource();

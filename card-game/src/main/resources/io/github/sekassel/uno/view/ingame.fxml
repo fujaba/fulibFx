@@ -9,6 +9,7 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
+<?import io.github.sekassel.uno.controller.ButtonController?>
 <VBox fx:id="ingameScreen" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
       minWidth="-Infinity" prefHeight="720.0" prefWidth="1280.0" spacing="10.0" xmlns="http://javafx.com/javafx/19"
       xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.sekassel.uno.controller.IngameController">
@@ -72,35 +73,7 @@
                   <Font name="Cooper Black" size="14.0"/>
                </font>
             </Text>
-            <HBox fx:id="colorSelectorButtonHBox" alignment="CENTER" spacing="10.0">
-               <VBox.margin>
-                  <Insets/>
-               </VBox.margin>
-               <Button fx:id="redButton" minWidth="64.0" mnemonicParsing="false" onAction="#onWildPressed"
-                       text="RED" textFill="RED">
-                  <font>
-                     <Font name="Cooper Black" size="12.0"/>
-                  </font>
-               </Button>
-               <Button fx:id="greenButton" minWidth="64.0" mnemonicParsing="false" onAction="#onWildPressed"
-                       text="GREEN" textFill="LIME">
-                  <font>
-                     <Font name="Cooper Black" size="12.0"/>
-                  </font>
-               </Button>
-               <Button fx:id="blueButton" minWidth="64.0" mnemonicParsing="false" onAction="#onWildPressed"
-                       text="BLUE" textFill="BLUE">
-                  <font>
-                     <Font name="Cooper Black" size="12.0"/>
-                  </font>
-               </Button>
-               <Button fx:id="yellowButton" minWidth="64.0" mnemonicParsing="false" onAction="#onWildPressed"
-                       text="YELLOW" textFill="YELLOW">
-                  <font>
-                     <Font name="Cooper Black" size="12.0"/>
-                  </font>
-               </Button>
-            </HBox>
+            <ButtonController id="button"/>
          </children>
       </VBox>
       <VBox fx:id="drawPlayVBox" alignment="CENTER" spacing="10.0">

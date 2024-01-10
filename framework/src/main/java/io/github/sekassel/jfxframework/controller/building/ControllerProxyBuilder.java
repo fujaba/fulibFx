@@ -26,31 +26,17 @@ package io.github.sekassel.jfxframework.controller.building;
 
 import com.sun.javafx.fxml.BeanAdapter;
 import com.sun.javafx.fxml.ModuleHelper;
+import com.sun.javafx.reflect.ConstructorUtil;
+import com.sun.javafx.reflect.ReflectUtil;
+import javafx.beans.NamedArg;
+import javafx.util.Builder;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-
-import io.github.sekassel.jfxframework.FxFramework;
-import io.github.sekassel.jfxframework.controller.ControllerManager;
-import io.github.sekassel.jfxframework.controller.Router;
-import javafx.beans.NamedArg;
-import javafx.util.Builder;
-import com.sun.javafx.reflect.ConstructorUtil;
-import com.sun.javafx.reflect.ReflectUtil;
+import java.util.*;
 
 /**
  * Using this builder assumes that some of the constructors of desired class
@@ -74,12 +60,9 @@ public class ControllerProxyBuilder<T> extends AbstractMap<String, Object> imple
     private static final String SETTER_PREFIX = "set";
     private static final String GETTER_PREFIX = "get";
 
-    private final Map<String, Object> parameters;
-
-    public ControllerProxyBuilder(ControllerBuildFactory factory, Class<?> tp, Map<String, Object> parameters) {
+    public ControllerProxyBuilder(ControllerBuildFactory factory, Class<?> tp) {
         this.type = tp;
         this.buildFactory = factory;
-        this.parameters = parameters;
 
         constructorsMap = new HashMap<>();
         Constructor ctors[] = ConstructorUtil.getConstructors(type);
@@ -496,15 +479,12 @@ public class ControllerProxyBuilder<T> extends AbstractMap<String, Object> imple
         return retObj;
     }
 
-    private Object createInstance(Constructor c, Object args[]) throws Exception {
-        Object retObj = null;
+    private Object createInstance(Constructor c, Object args[]) {
 
         ReflectUtil.checkPackageAccess(type);
 
-        retObj = this.buildFactory.getProvidedInstance(type);
-        retObj = this.buildFactory.controllerManager().initAndRender(retObj, this.parameters);
-
-        return retObj;
+        String id = getUserValue("id", String.class) == null ? "" : (String) getUserValue("id", String.class);
+        return this.buildFactory.getProvidedInstance(type, id); // Get the subcontroller instance
     }
 
     private Map<String, Property> scanForSetters() {
