@@ -1,6 +1,7 @@
 package io.github.sekassel.jfxframework.constructs;
 
 import io.github.sekassel.jfxframework.FxFramework;
+import io.github.sekassel.jfxframework.controller.annotation.Component;
 import io.github.sekassel.jfxframework.controller.annotation.Controller;
 import io.github.sekassel.jfxframework.duplicate.Duplicators;
 import io.github.sekassel.jfxframework.util.ArgumentProvider;
@@ -275,7 +276,7 @@ public class For<N, I> extends Parent {
 
         // If a controller class is provided, use the child controller system to create and initialize a controller
         if (node instanceof Class<?> clazz) {
-            if (clazz.isAnnotationPresent(Controller.class)) {
+            if (clazz.isAnnotationPresent(Component.class)) {
                 this.nodeProvider = (item) -> {
                     Object instance = FxFramework.framework().frameworkComponent().router().getProvidedInstance(clazz);
                     this.disposable().add(Disposable.fromRunnable(() -> FxFramework.framework().manager().destroy(instance)));

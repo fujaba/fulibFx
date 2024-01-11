@@ -1,6 +1,7 @@
 package io.github.sekassel.uno.controller;
 
 import io.github.sekassel.jfxframework.controller.Subscriber;
+import io.github.sekassel.jfxframework.controller.annotation.Component;
 import io.github.sekassel.jfxframework.controller.annotation.Controller;
 import io.github.sekassel.jfxframework.controller.annotation.ControllerEvent;
 import io.github.sekassel.jfxframework.controller.annotation.Param;
@@ -14,7 +15,7 @@ import javafx.scene.text.Font;
 
 import javax.inject.Inject;
 
-@Controller(view = "view/sub/bot.fxml")
+@Component(view = "view/sub/bot.fxml")
 public class BotController extends VBox implements Titleable {
 
     public static final String BOT_TITLE = "Uno - Bot";

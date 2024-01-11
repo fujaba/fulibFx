@@ -1,5 +1,6 @@
 package io.github.sekassel.uno.controller;
 
+import io.github.sekassel.jfxframework.controller.annotation.Component;
 import io.github.sekassel.jfxframework.controller.annotation.Controller;
 import io.github.sekassel.jfxframework.controller.annotation.ControllerEvent;
 import javafx.event.ActionEvent;
@@ -8,7 +9,7 @@ import javafx.scene.layout.HBox;
 
 import javax.inject.Inject;
 
-@Controller(view = "view/sub/buttons.fxml")
+@Component(view = "view/sub/buttons.fxml")
 public class ButtonController extends HBox {
 
     public void setParentController(IngameController parentController) {
@@ -36,8 +37,6 @@ public class ButtonController extends HBox {
     public void destroy() {
         System.out.println("ButtonController.onDestroy");
     }
-
-
 
     /**
      * The method triggered by the wild card buttons.

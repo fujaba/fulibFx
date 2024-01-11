@@ -11,8 +11,10 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * Utility class containing different helper methods for reflection.
@@ -32,6 +34,27 @@ public class Reflection {
      */
     public static List<Field> getFieldsWithAnnotation(Class<?> clazz, Class<? extends Annotation> annotation) {
         return Arrays.stream(clazz.getDeclaredFields()).filter(field -> field.isAnnotationPresent(annotation)).toList();
+    }
+
+    /**
+     * Calls the given method for all fields of the given class that are annotated with the given annotation.
+     *
+     * @param instance The instance to call the methods on
+     * @param fields   The fields to call the methods for
+     * @param method   The method to call
+     */
+    public static void callMethodsForFieldInstances(Object instance, Collection<Field> fields, Consumer<Object> method) {
+        for (Field field : fields) {
+            try {
+                boolean accessible = field.canAccess(instance);
+                field.setAccessible(true);
+                Object component = field.get(instance);
+                field.setAccessible(accessible);
+                method.accept(component);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException("Couldn't run method for field '%s' in class '%s'.".formatted(field.getName(), instance.getClass().getName()), e);
+            }
+        }
     }
 
     /**

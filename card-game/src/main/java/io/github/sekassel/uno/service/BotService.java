@@ -36,7 +36,7 @@ public class BotService {
         Timer timer = new Timer(Constants.BOT_PLAY_DELAY, task -> Platform.runLater(() -> this.playRound(bot)));
         timer.setInitialDelay(Constants.BOT_PLAY_DELAY);
         timer.setRepeats(false);
-        timer.restart();
+        timer.restart(); //TODO: Fix timer not being stopped when game is closed by "Quit" button
     }
 
     /**

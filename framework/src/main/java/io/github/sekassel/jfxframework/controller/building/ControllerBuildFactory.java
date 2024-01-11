@@ -1,6 +1,6 @@
 package io.github.sekassel.jfxframework.controller.building;
 
-import io.github.sekassel.jfxframework.controller.annotation.Controller;
+import io.github.sekassel.jfxframework.controller.annotation.Component;
 import io.github.sekassel.jfxframework.controller.annotation.SubController;
 import io.github.sekassel.jfxframework.util.reflection.Reflection;
 import javafx.util.Builder;
@@ -54,7 +54,7 @@ public class ControllerBuildFactory implements BuilderFactory {
 
     @Override
     public Builder<?> getBuilder(Class<?> type) {
-        if (type.isAnnotationPresent(Controller.class)) {
+        if (type.isAnnotationPresent(Component.class)) {
             return new ControllerProxyBuilder<>(this, type);
         } else {
             return null; // Let javafx handle the instantiation

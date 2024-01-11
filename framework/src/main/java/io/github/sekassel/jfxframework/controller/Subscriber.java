@@ -39,7 +39,6 @@ public class Subscriber {
      */
     @Inject
     public Subscriber() {
-
     }
 
     /**

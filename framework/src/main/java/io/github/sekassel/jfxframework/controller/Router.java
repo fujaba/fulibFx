@@ -2,6 +2,7 @@ package io.github.sekassel.jfxframework.controller;
 
 import dagger.Lazy;
 import io.github.sekassel.jfxframework.FxFramework;
+import io.github.sekassel.jfxframework.controller.annotation.Component;
 import io.github.sekassel.jfxframework.controller.annotation.Controller;
 import io.github.sekassel.jfxframework.controller.annotation.Providing;
 import io.github.sekassel.jfxframework.controller.annotation.Route;
@@ -111,20 +112,24 @@ public class Router {
         // Check if the route exists and has a valid controller
         if (!this.routes.containsPath(route)) throw new ControllerInvalidRouteException(route);
 
+        // Get the provider and the controller class
         Field provider = this.routes.traverse(route);
         TraversableNodeTree.Node<Field> node = ((TraversableNodeTree<Field>) this.routes).currentNode();
-        this.history.insert(Tuple.of(node, parameters));
-        Class<?> controller = Util.getProvidedClass(Objects.requireNonNull(provider));
 
-        if (controller == null)
+        // Since we visited this route with the given parameters, we can add it to the history
+        this.history.insert(Tuple.of(node, parameters));
+        Class<?> controllerClass = Util.getProvidedClass(Objects.requireNonNull(provider));
+
+        // Check if the provider is providing a valid controller/component
+        if (controllerClass == null)
             throw new RuntimeException("Field '" + provider.getName() + "' in '" + provider.getDeclaringClass().getName() + "' is not a valid provider field.");
 
-        if (!controller.isAnnotationPresent(Controller.class))
-            throw new RuntimeException("Class " + controller.getName() + " is not annotated with @Controller");
+        if (!controllerClass.isAnnotationPresent(Controller.class) && !controllerClass.isAnnotationPresent(Component.class))
+            throw new RuntimeException("Class " + controllerClass.getName() + " is not annotated with @Controller or @Component");
 
         // Get the instance of the controller
         Object controllerInstance = getInstanceOfProviderField(provider);
-        Parent renderedParent =  this.manager.get().initAndRender(controllerInstance, parameters);
+        Parent renderedParent = this.manager.get().initAndRender(controllerInstance, parameters);
 
         return Tuple.of(controllerInstance, renderedParent);
     }
@@ -132,7 +137,10 @@ public class Router {
     private Object getInstanceOfProviderField(Field provider) {
         try {
             provider.setAccessible(true);
-            return ((Provider<?>) provider.get(routerObject)).get();
+            Provider<?> providerInstance = (Provider<?>) provider.get(this.routerObject);
+            if (providerInstance == null)
+                throw new RuntimeException("Field '" + provider.getName() + "' in '" + provider.getDeclaringClass().getName() + "' is not initialized.");
+            return providerInstance.get();
         } catch (NullPointerException e) {
             throw new RuntimeException("Field '" + provider.getName() + "' in '" + provider.getDeclaringClass().getName() + "' is not initialized.");
         } catch (IllegalAccessException e) {

@@ -8,20 +8,20 @@ import java.lang.annotation.Target;
 /**
  * SubController annotation.
  * <p>
- * Fields annotated with this annotation will be initialized and rendered.
+ * Fields annotated with @SubController will be initialized and rendered with the controller they are defined in.
  * The instance still needs to be provided by the user oder using dependency injection.
  * <p>
- * The instance will be used if a subcontroller of the same type is needed.
+ * The instance will be used if a sub-controller of the same type with the same (or none) id is needed.
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD)
+@Target({ElementType.FIELD, ElementType.TYPE})
 public @interface SubController {
 
     /**
-     * The id of the subcontroller which is used to identify the instance.
-     * If no id is provided, any subcontroller of the same type can use this instance.
+     * The id of the sub-controller which is used to identify the instance.
+     * Can be left empty if there is only one sub-controller of the same type.
      *
-     * @return The id of the subcontroller
+     * @return The id of the sub-controller
      */
     String value() default "";
 

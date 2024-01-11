@@ -1,6 +1,7 @@
 package io.github.sekassel.jfxframework.util;
 
 import io.github.sekassel.jfxframework.FxFramework;
+import io.github.sekassel.jfxframework.controller.annotation.Component;
 import io.github.sekassel.jfxframework.controller.annotation.Controller;
 import io.github.sekassel.jfxframework.controller.annotation.Route;
 import io.github.sekassel.jfxframework.controller.exception.InvalidRouteFieldException;
@@ -44,14 +45,14 @@ public class Util {
 
     /**
      * Checks if the given field is a valid route field.
-     * A valid route field is a field that is annotated with {@link Route} and is of type {@link Provider} where the generic type is a class annotated with {@link Controller}.
+     * A valid route field is a field that is annotated with {@link Route} and is of type {@link Provider} where the generic type is a class annotated with {@link Controller} or {@link Component}.
      *
      * @param field The field to check
      * @throws InvalidRouteFieldException If the field is not a valid route field
      */
     public static void requireControllerProvider(@NotNull Field field) {
         Class<?> providedClass = getProvidedClass(field);
-        if (providedClass == null || !providedClass.isAnnotationPresent(Controller.class))
+        if (providedClass == null || (!providedClass.isAnnotationPresent(Controller.class) && !providedClass.isAnnotationPresent(Component.class)))
             throw new InvalidRouteFieldException(field);
     }
 
@@ -177,19 +178,19 @@ public class Util {
     }
 
     /**
-     * Checks if an instance is a controller extending a Parent.
+     * Checks if an instance is a component (controller extending a Parent).
      * <p>
      * This method is used internally by the framework and shouldn't be required for developers.
      *
      * @param instance The instance to check
-     * @return True if the instance is a controller extending a Parent
+     * @return True if the instance is a component (controller extending a Parent)
      */
-    public static boolean isParentController(@Nullable Object instance) {
-        return instance != null && instance.getClass().isAnnotationPresent(Controller.class) && Parent.class.isAssignableFrom(instance.getClass());
+    public static boolean isComponent(@Nullable Object instance) {
+        return instance != null && instance.getClass().isAnnotationPresent(Component.class) && Parent.class.isAssignableFrom(instance.getClass());
     }
 
     /**
-     * Checks if an instance is a controller.
+     * Checks if an instance is a controller or a component.
      * <p>
      * This method is used internally by the framework and shouldn't be required for developers.
      *
@@ -197,7 +198,10 @@ public class Util {
      * @return True if the instance is a controller
      */
     public static boolean isController(@Nullable Object instance) {
-        return instance != null && instance.getClass().isAnnotationPresent(Controller.class);
+        if (instance == null) return false;
+
+        if (instance.getClass().isAnnotationPresent(Controller.class) && instance.getClass().isAnnotationPresent(Component.class)) return false;
+        return instance.getClass().isAnnotationPresent(Controller.class) || isComponent(instance);
     }
 
     /**

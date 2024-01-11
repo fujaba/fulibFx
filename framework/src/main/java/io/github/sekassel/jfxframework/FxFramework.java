@@ -3,6 +3,7 @@ package io.github.sekassel.jfxframework;
 import io.github.sekassel.jfxframework.controller.AutoRefresher;
 import io.github.sekassel.jfxframework.controller.ControllerManager;
 import io.github.sekassel.jfxframework.controller.Router;
+import io.github.sekassel.jfxframework.controller.annotation.Component;
 import io.github.sekassel.jfxframework.controller.annotation.Controller;
 import io.github.sekassel.jfxframework.dagger.DaggerFrameworkComponent;
 import io.github.sekassel.jfxframework.dagger.FrameworkComponent;
@@ -130,13 +131,13 @@ public abstract class FxFramework extends Application {
      * @return The rendered controller
      */
     public @NotNull <T> T initAndRender(@NotNull T controller, Map<String, Object> params, boolean destroyWithCurrent) {
-        if (!controller.getClass().isAnnotationPresent(Controller.class))
+        if (!controller.getClass().isAnnotationPresent(Controller.class) && !controller.getClass().isAnnotationPresent(Component.class))
             throw new IllegalArgumentException("Class '%s' is not a controller.".formatted(controller.getClass().getName()));
 
         // If the controller shall be destroyed, we can just call initAndRender
         if (destroyWithCurrent) {
             Parent rendered = this.component.controllerManager().initAndRender(controller, params);
-            if (Util.isParentController(rendered)) {
+            if (Util.isComponent(rendered)) {
                 return (T) rendered;
             }
             throw new IllegalStateException("Providing a controller only works for controllers extending Parent.");
@@ -145,7 +146,7 @@ public abstract class FxFramework extends Application {
         // If the controller shall not be destroyed, we have to manually initialize and render it
         this.component.controllerManager().init(controller, params);
         Parent rendered = this.component.controllerManager().render(controller, params);
-        if (Util.isParentController(rendered)) {
+        if (Util.isComponent(rendered)) {
             return (T) rendered;
         }
         throw new IllegalStateException("Providing a controller only works for controllers extending Parent.");

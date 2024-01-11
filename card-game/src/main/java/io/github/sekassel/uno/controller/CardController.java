@@ -1,6 +1,7 @@
 package io.github.sekassel.uno.controller;
 
 import io.github.sekassel.jfxframework.controller.Subscriber;
+import io.github.sekassel.jfxframework.controller.annotation.Component;
 import io.github.sekassel.jfxframework.controller.annotation.Controller;
 import io.github.sekassel.jfxframework.controller.annotation.ControllerEvent;
 import io.github.sekassel.uno.Constants;
@@ -16,7 +17,7 @@ import javafx.scene.text.FontWeight;
 
 import javax.inject.Inject;
 
-@Controller(view = "view/sub/card.fxml")
+@Component(view = "view/sub/card.fxml")
 public class CardController extends VBox implements Titleable {
 
     public static final String CARD_TITLE = "Uno - Card";
