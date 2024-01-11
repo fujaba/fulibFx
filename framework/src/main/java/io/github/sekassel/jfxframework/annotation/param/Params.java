@@ -1,4 +1,4 @@
-package io.github.sekassel.jfxframework.controller.annotation;
+package io.github.sekassel.jfxframework.annotation.param;
 
 import io.github.sekassel.jfxframework.controller.Router;
 
@@ -8,18 +8,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation used to mark controller parameters.
+ * Annotation used to mark controller parameters in which the {@link Router} should inject the parameter map.
  * Used by the {@link Router} to inject parameters into controllers.
  */
 @Target({ElementType.PARAMETER, ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Param {
-
-    /**
-     * The name of the parameter.
-     *
-     * @return The name of the parameter.
-     */
-    String value();
-
+public @interface Params {
 }

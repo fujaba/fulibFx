@@ -1,4 +1,4 @@
-package io.github.sekassel.jfxframework.controller.annotation;
+package io.github.sekassel.jfxframework.annotation.controller;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

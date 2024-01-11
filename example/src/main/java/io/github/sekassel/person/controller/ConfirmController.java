@@ -1,8 +1,10 @@
 package io.github.sekassel.person.controller;
 
-import io.github.sekassel.jfxframework.controller.annotation.Controller;
-import io.github.sekassel.jfxframework.controller.annotation.ControllerEvent;
-import io.github.sekassel.jfxframework.controller.annotation.Param;
+import io.github.sekassel.jfxframework.annotation.controller.Controller;
+import io.github.sekassel.jfxframework.annotation.event.onDestroy;
+import io.github.sekassel.jfxframework.annotation.event.onInit;
+import io.github.sekassel.jfxframework.annotation.event.onRender;
+import io.github.sekassel.jfxframework.annotation.param.Param;
 import io.github.sekassel.person.backend.Person;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -36,18 +38,18 @@ public class ConfirmController extends VBox {
 
     }
 
-    @ControllerEvent.onRender
+    @onRender
     private void onRender(@Param(value = "person") Person person) {
         System.out.println("ConfirmController.onRender");
         this.label.setText("Do you want to delete %s?".formatted(person.firstName() + " " + person.lastName()));
     }
 
-    @ControllerEvent.onInit
+    @onInit
     private void onInit(@Param(value = "person") Person person) {
         System.out.println("ConfirmController.onInit");
     }
 
-    @ControllerEvent.onDestroy
+    @onDestroy
     private void onDestroy() {
         System.out.println("ConfirmController.onDestroy");
     }

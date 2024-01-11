@@ -1,8 +1,8 @@
 package io.github.sekassel.jfxframework.constructs;
 
 import io.github.sekassel.jfxframework.FxFramework;
-import io.github.sekassel.jfxframework.controller.annotation.Component;
-import io.github.sekassel.jfxframework.controller.annotation.Controller;
+import io.github.sekassel.jfxframework.annotation.controller.Component;
+import io.github.sekassel.jfxframework.annotation.controller.Controller;
 import io.github.sekassel.jfxframework.duplicate.Duplicators;
 import io.github.sekassel.jfxframework.util.ArgumentProvider;
 import io.github.sekassel.jfxframework.util.Util;

@@ -1,10 +1,10 @@
 package io.github.sekassel.uno.controller;
 
+import io.github.sekassel.jfxframework.annotation.controller.Component;
+import io.github.sekassel.jfxframework.annotation.event.onDestroy;
+import io.github.sekassel.jfxframework.annotation.event.onRender;
+import io.github.sekassel.jfxframework.annotation.param.Param;
 import io.github.sekassel.jfxframework.controller.Subscriber;
-import io.github.sekassel.jfxframework.controller.annotation.Component;
-import io.github.sekassel.jfxframework.controller.annotation.Controller;
-import io.github.sekassel.jfxframework.controller.annotation.ControllerEvent;
-import io.github.sekassel.jfxframework.controller.annotation.Param;
 import io.github.sekassel.uno.Constants;
 import io.github.sekassel.uno.model.Player;
 import io.github.sekassel.uno.service.GameService;
@@ -45,7 +45,7 @@ public class BotController extends VBox implements Titleable {
         return BOT_TITLE;
     }
 
-    @ControllerEvent.onRender()
+    @onRender()
     public void render() {
 
         botBox.setId(bot.getName().replace(" ", ""));
@@ -92,7 +92,7 @@ public class BotController extends VBox implements Titleable {
         iconLabel.setFont(Font.font(Constants.BOT_ICON_FONT_FAMILY, highlight ? 72 : 64));
     }
 
-    @ControllerEvent.onDestroy
+    @onDestroy
     public void destroy() {
         // Remove the bot from the game
         this.gameService.getBotService().removeBot(bot);

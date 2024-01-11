@@ -1,8 +1,9 @@
 package io.github.sekassel.uno.controller;
 
-import io.github.sekassel.jfxframework.controller.annotation.Component;
-import io.github.sekassel.jfxframework.controller.annotation.Controller;
-import io.github.sekassel.jfxframework.controller.annotation.ControllerEvent;
+import io.github.sekassel.jfxframework.annotation.controller.Component;
+import io.github.sekassel.jfxframework.annotation.event.onDestroy;
+import io.github.sekassel.jfxframework.annotation.event.onInit;
+import io.github.sekassel.jfxframework.annotation.event.onRender;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.layout.HBox;
@@ -23,17 +24,17 @@ public class ButtonController extends HBox {
         System.out.println("ButtonController.constructor");
     }
 
-    @ControllerEvent.onInit
+    @onInit
     public void init() {
         System.out.println("ButtonController.onInit");
     }
 
-    @ControllerEvent.onRender
+    @onRender
     public void render() {
         System.out.println("ButtonController.onRender");
     }
 
-    @ControllerEvent.onDestroy
+    @onDestroy
     public void destroy() {
         System.out.println("ButtonController.onDestroy");
     }

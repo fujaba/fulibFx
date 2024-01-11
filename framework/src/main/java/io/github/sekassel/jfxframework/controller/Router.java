@@ -2,10 +2,10 @@ package io.github.sekassel.jfxframework.controller;
 
 import dagger.Lazy;
 import io.github.sekassel.jfxframework.FxFramework;
-import io.github.sekassel.jfxframework.controller.annotation.Component;
-import io.github.sekassel.jfxframework.controller.annotation.Controller;
-import io.github.sekassel.jfxframework.controller.annotation.Providing;
-import io.github.sekassel.jfxframework.controller.annotation.Route;
+import io.github.sekassel.jfxframework.annotation.controller.Component;
+import io.github.sekassel.jfxframework.annotation.controller.Controller;
+import io.github.sekassel.jfxframework.annotation.Providing;
+import io.github.sekassel.jfxframework.annotation.Route;
 import io.github.sekassel.jfxframework.controller.exception.ControllerDuplicatedRouteException;
 import io.github.sekassel.jfxframework.controller.exception.ControllerInvalidRouteException;
 import io.github.sekassel.jfxframework.data.*;

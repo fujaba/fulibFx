@@ -1,8 +1,10 @@
 package io.github.sekassel.person.controller;
 
+import io.github.sekassel.jfxframework.annotation.event.onDestroy;
+import io.github.sekassel.jfxframework.annotation.event.onRender;
 import io.github.sekassel.jfxframework.controller.Subscriber;
-import io.github.sekassel.jfxframework.controller.annotation.Controller;
-import io.github.sekassel.jfxframework.controller.annotation.ControllerEvent;
+import io.github.sekassel.jfxframework.annotation.controller.Controller;
+import io.github.sekassel.jfxframework.annotation.event.onInit;
 import io.github.sekassel.person.PersonApp;
 import io.github.sekassel.person.backend.Person;
 import io.github.sekassel.jfxframework.controller.Modals;
@@ -56,13 +58,13 @@ public class PersonController extends HBox {
         this.personList = personList;
     }
 
-    @ControllerEvent.onInit
+    @onInit
     public void onInit() {
         System.out.println("PersonController.onInit");
         subscriber.addDestroyable(() -> System.out.println("PersonController->Subscriber.onDestroy"));
     }
 
-    @ControllerEvent.onRender
+    @onRender
     public void onRender() {
         System.out.println("PersonController.onRender");
         firstName.setText(person.firstName());
@@ -79,7 +81,7 @@ public class PersonController extends HBox {
         }, Map.of("person", person), true));
     }
 
-    @ControllerEvent.onDestroy
+    @onDestroy
     public void onDestroy() {
         subscriber.destroy();
         System.out.println("PersonController.onDestroy " + this);

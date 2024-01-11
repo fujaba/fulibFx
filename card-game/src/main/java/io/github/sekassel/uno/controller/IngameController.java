@@ -1,11 +1,13 @@
 package io.github.sekassel.uno.controller;
 
+import io.github.sekassel.jfxframework.annotation.event.onDestroy;
+import io.github.sekassel.jfxframework.annotation.event.onRender;
 import io.github.sekassel.jfxframework.constructs.For;
 import io.github.sekassel.jfxframework.controller.Subscriber;
-import io.github.sekassel.jfxframework.controller.annotation.Controller;
-import io.github.sekassel.jfxframework.controller.annotation.ControllerEvent;
-import io.github.sekassel.jfxframework.controller.annotation.Param;
-import io.github.sekassel.jfxframework.controller.annotation.SubController;
+import io.github.sekassel.jfxframework.annotation.controller.Controller;
+import io.github.sekassel.jfxframework.annotation.event.onInit;
+import io.github.sekassel.jfxframework.annotation.param.Param;
+import io.github.sekassel.jfxframework.annotation.controller.SubController;
 import io.github.sekassel.uno.App;
 import io.github.sekassel.uno.Constants;
 import io.github.sekassel.uno.model.Card;
@@ -100,13 +102,13 @@ public class IngameController implements Titleable {
         return INGAME_SCREEN_TITLE;
     }
 
-    @ControllerEvent.onInit
+    @onInit
     public void init() {
         buttonController.setParentController(this);
     }
 
     // Since this method is annotated wth @ControllerEvent.onRender, it will be called when the controller is rendered
-    @ControllerEvent.onRender
+    @onRender
     public void render() {
         // Setup gui elements
         setupPropertyChangeListeners();
@@ -385,7 +387,7 @@ public class IngameController implements Titleable {
         this.app.show("/gameover", Map.of("winner", player));
     }
 
-    @ControllerEvent.onDestroy
+    @onDestroy
     public void destroy() {
         // Remove the card from the game
         this.subscriber.destroy();

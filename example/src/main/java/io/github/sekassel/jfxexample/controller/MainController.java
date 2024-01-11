@@ -1,11 +1,10 @@
 package io.github.sekassel.jfxexample.controller;
 
 import io.github.sekassel.jfxexample.ExampleApp;
-import io.github.sekassel.jfxframework.controller.annotation.Controller;
-import io.github.sekassel.jfxframework.controller.annotation.ControllerEvent;
-import io.github.sekassel.jfxframework.controller.annotation.Param;
-import io.github.sekassel.jfxframework.controller.annotation.Params;
-import javafx.event.ActionEvent;
+import io.github.sekassel.jfxframework.annotation.controller.Controller;
+import io.github.sekassel.jfxframework.annotation.event.onRender;
+import io.github.sekassel.jfxframework.annotation.param.Param;
+import io.github.sekassel.jfxframework.annotation.param.Params;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -27,12 +26,12 @@ public class MainController {
     public MainController() {
     }
 
-    @ControllerEvent.onRender()
+    @onRender()
     public void setText(@Param(value = "username") String username, @Param(value = "password") String password) {
         welcomeLabel.setText("Welcome " + username + ", your password is " + password);
     }
 
-    @ControllerEvent.onRender()
+    @onRender()
     public void listParameters(@Params Map<String, Object> params) {
         params.forEach((key, value) -> ((Pane) welcomeLabel.getParent()).getChildren().add(new Label(key + ": " + value)));
     }

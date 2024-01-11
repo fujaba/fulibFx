@@ -1,7 +1,7 @@
 package io.github.sekassel.jfxframework.util.reflection;
 
-import io.github.sekassel.jfxframework.controller.annotation.Param;
-import io.github.sekassel.jfxframework.controller.annotation.Params;
+import io.github.sekassel.jfxframework.annotation.param.Param;
+import io.github.sekassel.jfxframework.annotation.param.Params;
 import io.github.sekassel.jfxframework.util.Util;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

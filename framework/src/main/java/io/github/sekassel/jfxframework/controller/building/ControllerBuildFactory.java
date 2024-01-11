@@ -1,7 +1,7 @@
 package io.github.sekassel.jfxframework.controller.building;
 
-import io.github.sekassel.jfxframework.controller.annotation.Component;
-import io.github.sekassel.jfxframework.controller.annotation.SubController;
+import io.github.sekassel.jfxframework.annotation.controller.Component;
+import io.github.sekassel.jfxframework.annotation.controller.SubController;
 import io.github.sekassel.jfxframework.util.reflection.Reflection;
 import javafx.util.Builder;
 import javafx.util.BuilderFactory;

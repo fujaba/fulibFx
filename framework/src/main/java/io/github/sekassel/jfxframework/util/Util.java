@@ -1,9 +1,9 @@
 package io.github.sekassel.jfxframework.util;
 
 import io.github.sekassel.jfxframework.FxFramework;
-import io.github.sekassel.jfxframework.controller.annotation.Component;
-import io.github.sekassel.jfxframework.controller.annotation.Controller;
-import io.github.sekassel.jfxframework.controller.annotation.Route;
+import io.github.sekassel.jfxframework.annotation.controller.Component;
+import io.github.sekassel.jfxframework.annotation.controller.Controller;
+import io.github.sekassel.jfxframework.annotation.Route;
 import io.github.sekassel.jfxframework.controller.exception.InvalidRouteFieldException;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;

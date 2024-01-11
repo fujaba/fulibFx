@@ -1,9 +1,9 @@
 package io.github.sekassel.uno.controller;
 
+import io.github.sekassel.jfxframework.annotation.controller.Component;
+import io.github.sekassel.jfxframework.annotation.event.onDestroy;
+import io.github.sekassel.jfxframework.annotation.event.onRender;
 import io.github.sekassel.jfxframework.controller.Subscriber;
-import io.github.sekassel.jfxframework.controller.annotation.Component;
-import io.github.sekassel.jfxframework.controller.annotation.Controller;
-import io.github.sekassel.jfxframework.controller.annotation.ControllerEvent;
 import io.github.sekassel.uno.Constants;
 import io.github.sekassel.uno.model.Card;
 import io.github.sekassel.uno.model.Player;
@@ -44,7 +44,7 @@ public class CardController extends VBox implements Titleable {
         return CARD_TITLE;
     }
 
-    @ControllerEvent.onRender
+    @onRender
     public void render() {
 
         cardScreen.setId((this.card.getColor() + "_" + this.card.getType()).toLowerCase());
@@ -104,7 +104,7 @@ public class CardController extends VBox implements Titleable {
         return this;
     }
 
-    @ControllerEvent.onDestroy
+    @onDestroy
     public void destroy() {
         // Remove the card from the game
         this.subscriber.destroy();

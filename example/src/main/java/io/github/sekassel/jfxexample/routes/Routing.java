@@ -1,8 +1,8 @@
 package io.github.sekassel.jfxexample.routes;
 
 import io.github.sekassel.jfxexample.controller.*;
-import io.github.sekassel.jfxframework.controller.annotation.Providing;
-import io.github.sekassel.jfxframework.controller.annotation.Route;
+import io.github.sekassel.jfxframework.annotation.Providing;
+import io.github.sekassel.jfxframework.annotation.Route;
 
 import javax.inject.Inject;
 import javax.inject.Provider;

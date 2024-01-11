@@ -2,10 +2,12 @@ package io.github.sekassel.jfxframework.controller;
 
 import dagger.Lazy;
 import io.github.sekassel.jfxframework.FxFramework;
-import io.github.sekassel.jfxframework.controller.annotation.Component;
-import io.github.sekassel.jfxframework.controller.annotation.Controller;
-import io.github.sekassel.jfxframework.controller.annotation.ControllerEvent;
-import io.github.sekassel.jfxframework.controller.annotation.SubController;
+import io.github.sekassel.jfxframework.annotation.controller.Component;
+import io.github.sekassel.jfxframework.annotation.controller.Controller;
+import io.github.sekassel.jfxframework.annotation.event.onDestroy;
+import io.github.sekassel.jfxframework.annotation.event.onInit;
+import io.github.sekassel.jfxframework.annotation.controller.SubController;
+import io.github.sekassel.jfxframework.annotation.event.onRender;
 import io.github.sekassel.jfxframework.controller.building.ControllerBuildFactory;
 import io.github.sekassel.jfxframework.data.Tuple;
 import io.github.sekassel.jfxframework.util.Util;
@@ -18,7 +20,6 @@ import org.jetbrains.annotations.Nullable;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.*;
-import java.lang.annotation.Annotation;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -89,7 +90,7 @@ public class ControllerManager {
         Reflection.fillParametersIntoFields(instance, parameters);
 
         // Call the onInit method(s)
-        Reflection.callMethodsWithAnnotation(instance, ControllerEvent.onInit.class, parameters);
+        Reflection.callMethodsWithAnnotation(instance, onInit.class, parameters);
 
         // Search for sub-controllers
         List<Field> subControllerField = Reflection.getFieldsWithAnnotation(instance.getClass(), SubController.class)
@@ -184,13 +185,13 @@ public class ControllerManager {
         }
 
         // Call the onRender method
-        Reflection.callMethodsWithAnnotation(instance, ControllerEvent.onRender.class, parameters);
+        Reflection.callMethodsWithAnnotation(instance, onRender.class, parameters);
 
         return parent;
     }
 
     /**
-     * Destroys the given controller by calling all methods annotated with {@link ControllerEvent.onDestroy}.
+     * Destroys the given controller by calling all methods annotated with {@link onDestroy}.
      * If the controller has an undestroyed Subscriber field, the destroy method of the subscriber will be called.
      *
      * @param instance The controller instance to destroy
@@ -200,7 +201,7 @@ public class ControllerManager {
             throw new IllegalArgumentException("Class '%s' is not a controller.".formatted(instance.getClass().getName()));
 
         // Call destroy methods
-        Reflection.callMethodsWithAnnotation(instance, ControllerEvent.onDestroy.class, Map.of());
+        Reflection.callMethodsWithAnnotation(instance, onDestroy.class, Map.of());
 
         // In development mode, check for undestroyed subscribers
         if (Util.runningInDev()) {

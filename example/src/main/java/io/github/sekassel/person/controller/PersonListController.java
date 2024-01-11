@@ -1,9 +1,11 @@
 package io.github.sekassel.person.controller;
 
+import io.github.sekassel.jfxframework.annotation.event.onDestroy;
+import io.github.sekassel.jfxframework.annotation.event.onRender;
 import io.github.sekassel.jfxframework.constructs.For;
 import io.github.sekassel.jfxframework.controller.Subscriber;
-import io.github.sekassel.jfxframework.controller.annotation.Controller;
-import io.github.sekassel.jfxframework.controller.annotation.ControllerEvent;
+import io.github.sekassel.jfxframework.annotation.controller.Controller;
+import io.github.sekassel.jfxframework.annotation.event.onInit;
 import io.github.sekassel.person.PersonApp;
 import io.github.sekassel.person.backend.Person;
 import io.reactivex.rxjava3.disposables.Disposable;
@@ -56,12 +58,12 @@ public class PersonListController {
         return personList;
     }
 
-    @ControllerEvent.onInit
+    @onInit
     public void onInit() {
         System.out.println("PersonListController.onInit");
     }
 
-    @ControllerEvent.onRender
+    @onRender
     public void onRender() {
         System.out.println("PersonListController.onRender");
 
@@ -85,7 +87,7 @@ public class PersonListController {
         subscriber.addDestroyable(disposable);
     }
 
-    @ControllerEvent.onDestroy
+    @onDestroy
     public void onDestroy() {
         System.out.println("PersonListController.onDestroy");
     }
