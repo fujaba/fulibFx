@@ -6,7 +6,7 @@ import io.github.sekassel.jfxframework.annotation.controller.Component;
 import io.github.sekassel.jfxframework.annotation.controller.Controller;
 import io.github.sekassel.jfxframework.annotation.event.onDestroy;
 import io.github.sekassel.jfxframework.annotation.event.onInit;
-import io.github.sekassel.jfxframework.annotation.controller.SubController;
+import io.github.sekassel.jfxframework.annotation.controller.SubComponent;
 import io.github.sekassel.jfxframework.annotation.event.onRender;
 import io.github.sekassel.jfxframework.controller.building.ControllerBuildFactory;
 import io.github.sekassel.jfxframework.data.Tuple;
@@ -93,7 +93,7 @@ public class ControllerManager {
         Reflection.callMethodsWithAnnotation(instance, onInit.class, parameters);
 
         // Search for sub-controllers
-        List<Field> subControllerField = Reflection.getFieldsWithAnnotation(instance.getClass(), SubController.class)
+        List<Field> subControllerField = Reflection.getFieldsWithAnnotation(instance.getClass(), SubComponent.class)
                 .stream()
                 .filter(field -> {
                     if (!field.getType().isAnnotationPresent(Component.class)) {
@@ -227,14 +227,20 @@ public class ControllerManager {
     /**
      * Destroys all controllers that have been initialized and are currently displayed.
      */
+    // TODO: Fix some controllers being destroyed twice
     public void cleanup() {
         currentlyDisplayedControllers.forEach((controller, subControllers) -> {
+            // Destroy all sub-controllers of the controller
             subControllers.forEach(weakReference -> {
                 Object subController = weakReference.get();
                 if (subController != null) {
                     destroy(subController);
+                    weakReference.clear();
                 }
             });
+            subControllers.clear();
+
+            // Destroy the controller itself
             destroy(controller);
         });
         currentlyDisplayedControllers.clear();

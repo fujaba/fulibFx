@@ -7,7 +7,7 @@ import io.github.sekassel.jfxframework.controller.Subscriber;
 import io.github.sekassel.jfxframework.annotation.controller.Controller;
 import io.github.sekassel.jfxframework.annotation.event.onInit;
 import io.github.sekassel.jfxframework.annotation.param.Param;
-import io.github.sekassel.jfxframework.annotation.controller.SubController;
+import io.github.sekassel.jfxframework.annotation.controller.SubComponent;
 import io.github.sekassel.uno.App;
 import io.github.sekassel.uno.Constants;
 import io.github.sekassel.uno.model.Card;
@@ -65,8 +65,11 @@ public class IngameController implements Titleable {
     @Inject
     Provider<CardController> cardControllerProvider;
 
-    @SubController("button")
     @Inject
+    @SubComponent
+    @FXML
+    // Fields annotated with @SubComponent will be initialized and rendered with the controller.
+    // They can be placed manually in code or using the FXML file.
     ButtonController buttonController;
 
     @FXML
@@ -107,7 +110,7 @@ public class IngameController implements Titleable {
         buttonController.setParentController(this);
     }
 
-    // Since this method is annotated wth @ControllerEvent.onRender, it will be called when the controller is rendered
+    // Since this method is annotated wth @onRender, it will be called when the controller is rendered
     @onRender
     public void render() {
         // Setup gui elements

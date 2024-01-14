@@ -1,12 +1,14 @@
 package io.github.sekassel.jfxframework.controller.building;
 
 import io.github.sekassel.jfxframework.annotation.controller.Component;
-import io.github.sekassel.jfxframework.annotation.controller.SubController;
+import io.github.sekassel.jfxframework.annotation.controller.SubComponent;
+import io.github.sekassel.jfxframework.util.Util;
 import io.github.sekassel.jfxframework.util.reflection.Reflection;
 import javafx.util.Builder;
 import javafx.util.BuilderFactory;
 import org.jetbrains.annotations.NotNull;
 
+import javax.inject.Provider;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,12 +19,14 @@ public class ControllerBuildFactory implements BuilderFactory {
 
     private final Object instance;
 
-    // Cache for subcontroller instances, mapped by class -> id -> instance
-    private final Map<String, Object> subControllerInstances;
+    // Cache for subcontroller instances, mapped by class -> instance/provider
+    private final Map<Class<?>, Object> subControllerInstances;
+    private final Map<Class<?>, Provider<?>> subControllerProviders;
 
     public ControllerBuildFactory(@NotNull Object instance) {
         this.instance = instance;
         this.subControllerInstances = new HashMap<>();
+        this.subControllerProviders = new HashMap<>();
 
         initSubControllers();
     }
@@ -31,23 +35,37 @@ public class ControllerBuildFactory implements BuilderFactory {
      * Searches the controller class for fields annotated with @SubController and stores the instances.
      */
     private void initSubControllers() {
-        Reflection.getFieldsWithAnnotation(instance.getClass(), SubController.class).forEach(field -> {
+        Reflection.getFieldsWithAnnotation(instance.getClass(), SubComponent.class).forEach(field -> {
 
-            SubController annotation = field.getAnnotation(SubController.class);
-            String id = annotation.value();
-            if (id.isEmpty()) {
-                id = "";
+            // If the field is a provider, store it in the provider map
+            if (field.getType() == Provider.class) {
+                field.setAccessible(true);
+                try {
+                    Class<?> type = Util.getProvidedClass(field);
+                    if (type == null) {
+                        throw new RuntimeException("Couldn't determine the type of the provider '%s' in '%s'.".formatted(field.getName(), field.getClass().getName()));
+                    }
+                    if (subControllerProviders.containsKey(type)) {
+                        throw new RuntimeException("Multiple sub-controller annotations with the same type '" + type.getName() + "' found in class '" + instance.getClass().getName() + "'.");
+                    }
+                    subControllerProviders.put(type, (Provider<?>) field.get(instance));
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException("Couldn't access the provider '%s' in '%s'.".formatted(field.getName(), field.getClass().getName()), e);
+                }
+                return;
             }
 
-            if (subControllerInstances.containsKey(id)) {
-                throw new RuntimeException("Multiple subcontrollers with the same id '" + id + "' found in class '" + instance.getClass().getName() + "'.");
+            // If the field is not a provider, store the instance in the instance map
+
+            if (subControllerInstances.containsKey(field.getType())) {
+                throw new RuntimeException("Multiple sub-controller annotations with the same type '" + field.getType().getName() + "' found in class '" + instance.getClass().getName() + "'.");
             }
 
             try {
                 field.setAccessible(true);
-                subControllerInstances.put(id, field.get(instance));
+                subControllerInstances.put(field.getType(), field.get(instance));
             } catch (IllegalAccessException e) {
-                throw new RuntimeException("Couldn't access the instance of the subcontroller field with id '" + id + "'.", e);
+                throw new RuntimeException("Couldn't access field '%s' annotated as a sub-controller in '%s'.".formatted(field.getName(), field.getClass().getName()), e);
             }
         });
     }
@@ -66,21 +84,15 @@ public class ControllerBuildFactory implements BuilderFactory {
      * The type of the instance doesn't need to be exactly the same as the given type, as long as the classes are compatible.
      *
      * @param type The type of the subcontroller
-     * @param id   The id of the subcontroller
      * @return The instance of the subcontroller
      */
-    public Object getProvidedInstance(Class<?> type, String id) {
-        if (subControllerInstances.containsKey(id)) {
-            Object instance = subControllerInstances.get(id);
-
-            // The instance doesn't need to be of the exact type, as long as the classes are compatible
-            if (type.isAssignableFrom(instance.getClass())) {
-                return instance;
-            } else {
-                throw new RuntimeException("The provided instance of the subcontroller with id '" + id + "' is not of the correct type.");
-            }
+    public Object getProvidedInstance(Class<?> type) {
+        if (subControllerInstances.containsKey(type)) {
+            return subControllerInstances.get(type);
+        } else if (subControllerProviders.containsKey(type)) {
+            return subControllerProviders.get(type).get();
         } else {
-            throw new RuntimeException("No instance of the subcontroller with id '" + id + "' found.");
+            throw new RuntimeException("No instance of the subcontroller with type '" + type.getName() + "' found.");
         }
     }
 }

@@ -212,11 +212,9 @@ public class ControllerProxyBuilder<T> extends AbstractMap<String, Object> imple
      * @return The instance of the controller class
      */
     private Object createInstance() {
-
         ReflectUtil.checkPackageAccess(type);
 
-        String id = getUserValue("id", String.class) == null ? "" : (String) getUserValue("id", String.class);
-        return this.buildFactory.getProvidedInstance(type, id); // Get the subcontroller instance
+        return this.buildFactory.getProvidedInstance(type); // Get the subcontroller instance
     }
 
     private Map<String, Property> scanForSetters() {
