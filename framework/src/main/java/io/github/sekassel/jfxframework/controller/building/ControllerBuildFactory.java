@@ -9,8 +9,7 @@ import javafx.util.BuilderFactory;
 import org.jetbrains.annotations.NotNull;
 
 import javax.inject.Provider;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * A custom building-factory for instantiating controllers. If an element in an FXML file is of a class annotated with @Controller and a field providing an instance of the same class exists, the provided instance will be used as the controller for the element.
@@ -20,7 +19,7 @@ public class ControllerBuildFactory implements BuilderFactory {
     private final Object instance;
 
     // Cache for subcontroller instances, mapped by class -> instance/provider
-    private final Map<Class<?>, Object> subControllerInstances;
+    private final Map<Class<?>, List<Object>> subControllerInstances;
     private final Map<Class<?>, Provider<?>> subControllerProviders;
 
     public ControllerBuildFactory(@NotNull Object instance) {
@@ -57,13 +56,13 @@ public class ControllerBuildFactory implements BuilderFactory {
 
             // If the field is not a provider, store the instance in the instance map
 
-            if (subControllerInstances.containsKey(field.getType())) {
-                throw new RuntimeException("Multiple sub-controller annotations with the same type '" + field.getType().getName() + "' found in class '" + instance.getClass().getName() + "'.");
+            if (!subControllerInstances.containsKey(field.getType())) {
+                subControllerInstances.put(field.getType(), new ArrayList<>());
             }
 
             try {
                 field.setAccessible(true);
-                subControllerInstances.put(field.getType(), field.get(instance));
+                subControllerInstances.get(field.getType()).add(field.get(instance));
             } catch (IllegalAccessException e) {
                 throw new RuntimeException("Couldn't access field '%s' annotated as a sub-controller in '%s'.".formatted(field.getName(), field.getClass().getName()), e);
             }
@@ -81,18 +80,25 @@ public class ControllerBuildFactory implements BuilderFactory {
 
     /**
      * Searches the controller class for a field annotated with @SubController that provides an instance of the given type.
-     * The type of the instance doesn't need to be exactly the same as the given type, as long as the classes are compatible.
+     * If no matching field is found, the framework will look for a provider field annotated with @SubController.
+     * If no matching provider is found, the framework will throw an exception.
      *
      * @param type The type of the subcontroller
      * @return The instance of the subcontroller
      */
     public Object getProvidedInstance(Class<?> type) {
         if (subControllerInstances.containsKey(type)) {
-            return subControllerInstances.get(type);
+            if (!subControllerInstances.get(type).isEmpty()) {
+                // If there are multiple instances of the same type, use the first one and remove it from the list
+                Object instance = subControllerInstances.get(type).get(0);
+                subControllerInstances.get(type).remove(0);
+                return instance;
+            } else
+                throw new RuntimeException("No usable instance of the sub-controller with type '" + type.getName() + "' found.");
         } else if (subControllerProviders.containsKey(type)) {
             return subControllerProviders.get(type).get();
         } else {
-            throw new RuntimeException("No instance of the subcontroller with type '" + type.getName() + "' found.");
+            throw new RuntimeException("No instance of the sub-controller with type '" + type.getName() + "' found.");
         }
     }
 }

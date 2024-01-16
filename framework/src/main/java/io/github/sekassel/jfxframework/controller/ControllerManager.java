@@ -170,6 +170,7 @@ public class ControllerManager {
                 Method method = instance.getClass().getDeclaredMethod(methodName);
                 if (!Parent.class.isAssignableFrom(method.getReturnType()))
                     throw new RuntimeException("Method '" + methodName + "()' in class '" + instance.getClass().getName() + "' does not return a Parent.");
+                method.setAccessible(true);
                 parent = (Parent) method.invoke(instance);
             } catch (NoSuchMethodException e) {
                 throw new RuntimeException("Method '" + methodName + "()' in class '" + instance.getClass().getName() + "' does not exist.");
@@ -257,6 +258,7 @@ public class ControllerManager {
      * @param instance The controller instance to use
      * @return A parent representing the fxml file
      */
+    // TODO: Check params
     public @NotNull Parent loadFXML(@NotNull String fileName, @NotNull Object instance, @NotNull Map<@NotNull String, @Nullable Object> parameters, boolean setRoot) {
 
         URL url = baseClass.getResource(fileName);
