@@ -24,7 +24,6 @@ import java.util.function.BiConsumer;
  * @param <Node> The type of the node to display for each item (e.g. a component or a node)
  * @param <Item> The type of the items in the list
  */
-// TODO: sorted lists (order controllers the same way as the items)
 public class For<Node extends javafx.scene.Node, Item> {
 
     // The nodes that are currently displayed for each item

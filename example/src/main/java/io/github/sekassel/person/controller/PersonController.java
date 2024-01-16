@@ -35,6 +35,9 @@ public class PersonController extends HBox {
     Subscriber subscriber;
 
     @Inject
+    ConfirmController confirmController;
+
+    @Inject
     PersonApp app;
 
     private Person person;
@@ -72,7 +75,7 @@ public class PersonController extends HBox {
         image.setImage(new Image(person.image()));
 
         // Open a modal when the delete button is clicked
-        deleteButton.setOnMouseClicked(event -> Modals.showModal(app.stage(), ConfirmController.class, (modalStage, controller) -> {
+        deleteButton.setOnMouseClicked(event -> Modals.showModal(app.stage(), confirmController, (modalStage, controller) -> {
             controller.setOnConfirm(() -> {
                 personList.remove(person);
                 modalStage.close();

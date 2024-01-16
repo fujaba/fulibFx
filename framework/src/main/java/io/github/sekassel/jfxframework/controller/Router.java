@@ -1,11 +1,9 @@
 package io.github.sekassel.jfxframework.controller;
 
 import dagger.Lazy;
-import io.github.sekassel.jfxframework.FxFramework;
+import io.github.sekassel.jfxframework.annotation.Route;
 import io.github.sekassel.jfxframework.annotation.controller.Component;
 import io.github.sekassel.jfxframework.annotation.controller.Controller;
-import io.github.sekassel.jfxframework.annotation.Providing;
-import io.github.sekassel.jfxframework.annotation.Route;
 import io.github.sekassel.jfxframework.controller.exception.ControllerDuplicatedRouteException;
 import io.github.sekassel.jfxframework.controller.exception.ControllerInvalidRouteException;
 import io.github.sekassel.jfxframework.data.*;
@@ -21,12 +19,10 @@ import javax.inject.Singleton;
 import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Singleton
 public class Router {
 
-    private final Map<Class<?>, Field> providingFields;
     private final TraversableTree<Field> routes;
     private final TraversableQueue<Tuple<TraversableNodeTree.Node<Field>, Map<String, Object>>> history;
 
@@ -37,7 +33,6 @@ public class Router {
 
     @Inject
     public Router() {
-        this.providingFields = new ConcurrentHashMap<>();
         this.routes = new TraversableNodeTree<>();
         this.history = new EvictingQueue<>(10);
     }
@@ -54,26 +49,8 @@ public class Router {
         this.routerObject = routes;
 
         Reflection.getFieldsWithAnnotation(routes.getClass(), Route.class).forEach(this::registerRoute);
-        Reflection.getFieldsWithAnnotation(routes.getClass(), Providing.class).forEach(this::registerProviding);
     }
 
-    /**
-     * Registers a field as a provider for loading subcontrollers in FXML files.
-     *
-     * @param field The field to register
-     */
-    private void registerProviding(Field field) {
-        if (!field.isAnnotationPresent(Providing.class))
-            throw new RuntimeException("Field '" + field.getName() + "' in class '" + field.getDeclaringClass().getName() + "' is not annotated with @Providing");
-        if (this.providingFields.containsKey(field.getType())) {
-            FxFramework.logger().warning("Field '" + field.getName() + "' in '" + field.getDeclaringClass().getName() + "' is annotated with @Providing but there is already a field providing an instance of '" + field.getType().getName() + "'. The old field will be used instead.");
-            return;
-        }
-
-        Util.requireControllerProvider(field);
-
-        this.providingFields.put(Util.getProvidedClass(field), field);
-    }
 
     /**
      * Registers a field as a route.
@@ -145,25 +122,6 @@ public class Router {
             throw new RuntimeException("Field '" + provider.getName() + "' in '" + provider.getDeclaringClass().getName() + "' is not initialized.");
         } catch (IllegalAccessException e) {
             throw new RuntimeException("Cannot access field '" + provider.getName() + "' in '" + provider.getDeclaringClass().getName() + "'.", e);
-        }
-    }
-
-    /**
-     * Returns the instance of the given type provided by a field annotated with {@link Providing} in the router class.
-     *
-     * @param type The type of the instance
-     * @return The instance
-     * @throws RuntimeException If no field providing an instance of the given type has been registered
-     */
-    public @NotNull <T> T getProvidedInstance(@NotNull Class<T> type) {
-        if (!this.providingFields.containsKey(type))
-            throw new RuntimeException("No field providing an instance of '" + type.getName() + "' has been registered using @Providing.");
-
-        Field field = this.providingFields.get(type);
-        try {
-            return ((Provider<T>) field.get(this.routerObject)).get();
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException("Field '" + field.getName() + "' in '" + field.getDeclaringClass().getName() + "' could not be accessed.", e);
         }
     }
 
