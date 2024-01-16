@@ -73,7 +73,6 @@
                   <Font name="Cooper Black" size="14.0"/>
                </font>
             </Text>
-            <ButtonController fx:id="buttonController"/>
          </children>
       </VBox>
       <VBox fx:id="drawPlayVBox" alignment="CENTER" spacing="10.0">

@@ -18,6 +18,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 
 @Controller(view = "view/persons.fxml")
 public class PersonListController {
@@ -41,6 +42,9 @@ public class PersonListController {
 
     @Inject
     Subscriber subscriber;
+
+    @Inject
+    Provider<PersonController> personController;
 
     @FXML
     public PersonDisplayController currentFriend;
@@ -73,7 +77,7 @@ public class PersonListController {
             this.currentFriend.refresh();
         }
 
-        Disposable disposable = For.controller(friendList, personList, PersonController.class, (personController, person) -> {
+        Disposable disposable = For.of(friendList, personList, personController, (personController, person) -> {
 
             System.out.println("PersonController.beforeInit");
             personController.setPerson(person);

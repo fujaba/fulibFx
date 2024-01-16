@@ -107,7 +107,7 @@ public class IngameController implements Titleable {
 
     @onInit
     public void init() {
-        buttonController.setParentController(this);
+        //buttonController.setParentController(this);
     }
 
     // Since this method is annotated wth @onRender, it will be called when the controller is rendered
@@ -121,7 +121,7 @@ public class IngameController implements Titleable {
         this.gameService.initialize(this.game);
 
         // Render the cards of the player
-        subscriber.addDestroyable(For.controller(this.cardListHBox, this.game.getFirstPlayer().getCards(), CardController.class, (controller, card) -> {
+        subscriber.addDestroyable(For.of(this.cardListHBox, this.game.getFirstPlayer().getCards(), cardControllerProvider, (controller, card) -> {
             controller.setCard(card);
             this.cards.put(card, controller);
             controller.subscriber.addDestroyable(() -> this.cards.remove(card));

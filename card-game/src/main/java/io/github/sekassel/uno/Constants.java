@@ -5,7 +5,7 @@ import javafx.scene.media.Media;
 
 public class Constants {
 
-    public static final int START_CARD_AMOUNT = 16;
+    public static final int START_CARD_AMOUNT = 4;
 
     public static final int MAX_NAME_LENGTH = 16;
     public static final String BOT_NAME = "Bot %s";
