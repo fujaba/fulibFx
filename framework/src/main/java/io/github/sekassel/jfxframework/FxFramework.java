@@ -170,7 +170,6 @@ public abstract class FxFramework extends Application {
         this.stage = primaryStage;
 
         this.component = DaggerFrameworkComponent.builder().framework(this).build();
-        this.component.controllerManager().setMainClass(this.getClass());
 
         Scene scene = new Scene(new Pane()); // Show default scene
 

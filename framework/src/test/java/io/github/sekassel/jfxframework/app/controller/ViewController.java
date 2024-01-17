@@ -4,7 +4,7 @@ import io.github.sekassel.jfxframework.annotation.controller.Controller;
 
 import javax.inject.Inject;
 
-@Controller(view = "view/view.fxml")
+@Controller(view = "../view/view.fxml")
 public class ViewController {
 
     @Inject

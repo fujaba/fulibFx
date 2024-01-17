@@ -1,6 +1,5 @@
 package io.github.sekassel.uno;
 
-import io.github.sekassel.jfxframework.annotation.Providing;
 import io.github.sekassel.jfxframework.annotation.Route;
 import io.github.sekassel.uno.controller.*;
 
@@ -17,7 +16,6 @@ import javax.inject.Singleton;
  * <p>
  * The controllers will be created using Providers, which in this case are injected by dagger. Therefore, the controllers
  * need an empty constructor annotated with {@link Inject}.
- * TODO: Maybe rewrite the Providing part
  */
 @Singleton
 public class UnoRouting {
@@ -34,15 +32,6 @@ public class UnoRouting {
     @Inject
     @Route("gameover")
     public Provider<GameOverController> gameOverController;
-
-    @Inject
-    @Providing
-    public Provider<BotController> botController;
-
-    @Inject
-    @Providing
-    public Provider<CardController> cardController;
-
 
     @Inject
     public UnoRouting() {

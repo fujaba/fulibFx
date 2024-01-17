@@ -28,8 +28,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
 
-import static io.github.sekassel.jfxframework.util.Constants.FXML_PATH;
-
 /**
  * Manages the initialization, rendering and destroying of controllers.
  * <p>
@@ -38,14 +36,11 @@ import static io.github.sekassel.jfxframework.util.Constants.FXML_PATH;
 @Singleton
 public class ControllerManager {
 
-    // Set of controllers that have been initialized and are currently displayed
-    private final Map<Object, Collection<WeakReference<Object>>> currentlyDisplayedControllers = new HashMap<>();
+    // Map of controllers that have been initialized and are currently displayed
+    private final Map<Object, Set<WeakReference<Object>>> currentlyDisplayedControllers = new HashMap<>();
 
     @Inject
     Lazy<Router> router;
-
-    // The base class of the framework, used to load resources (relative to the base class)
-    private Class<? extends FxFramework> baseClass;
 
     @Inject
     public ControllerManager() {
@@ -104,7 +99,7 @@ public class ControllerManager {
                 }).toList();
 
         // Initialize all sub-controllers and add them to the map of initialized controllers
-        List<WeakReference<Object>> subControllers = new ArrayList<>();
+        Set<WeakReference<Object>> subControllers = new HashSet<>();
         this.currentlyDisplayedControllers.put(instance, subControllers);
         Reflection.callMethodsForFieldInstances(instance, subControllerField, (subController) -> {
             subControllers.add(new WeakReference<>(subController));
@@ -160,7 +155,7 @@ public class ControllerManager {
         // If the controller extends from a javafx Parent, render it
         // This can be combined with the view annotation to set the controller as the root of the fxml file
         if (component) {
-            parent = view.isEmpty() ? (Parent) instance : loadFXML(view, instance, parameters, true);
+            parent = view.isEmpty() ? (Parent) instance : loadFXML(view, instance, true);
         }
 
         // If the controller specifies a method as view, call it
@@ -181,8 +176,8 @@ public class ControllerManager {
 
         // If the controller specifies a fxml file, load it. This will also load sub-controllers specified in the FXML file
         else {
-            String fxmlPath = view.isEmpty() ? FXML_PATH + Util.transform(instance.getClass().getSimpleName()) + ".fxml" : view;
-            parent = loadFXML(fxmlPath, instance, parameters, false);
+            String fxmlPath = view.isEmpty() ? Util.transform(instance.getClass().getSimpleName()) + ".fxml" : view;
+            parent = loadFXML(fxmlPath, instance, false);
         }
 
         // Call the onRender method
@@ -258,15 +253,14 @@ public class ControllerManager {
      * @param instance The controller instance to use
      * @return A parent representing the fxml file
      */
-    // TODO: Check params
-    public @NotNull Parent loadFXML(@NotNull String fileName, @NotNull Object instance, @NotNull Map<@NotNull String, @Nullable Object> parameters, boolean setRoot) {
+    public @NotNull Parent loadFXML(@NotNull String fileName, @NotNull Object instance, boolean setRoot) {
 
-        URL url = baseClass.getResource(fileName);
+        URL url = instance.getClass().getResource(fileName);
         if (url == null) {
             throw new RuntimeException("Could not find resource '" + fileName + "'");
         }
 
-        File file = Util.getResourceAsLocalFile(baseClass, fileName);
+        File file = Util.getResourceAsLocalFile(instance.getClass(), fileName);
 
         // If the file exists, use it instead of the resource (development mode, allows for hot reloading)
         if (file.exists()) {
@@ -292,15 +286,6 @@ public class ControllerManager {
         } catch (IOException exception) {
             throw new RuntimeException(exception);
         }
-    }
-
-    /**
-     * Sets the base class of the framework.
-     *
-     * @param clazz The base class
-     */
-    public void setMainClass(Class<? extends FxFramework> clazz) {
-        this.baseClass = clazz;
     }
 
 }

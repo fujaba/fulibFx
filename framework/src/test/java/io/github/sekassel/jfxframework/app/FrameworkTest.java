@@ -44,23 +44,23 @@ public class FrameworkTest extends ApplicationTest {
     public void controllers() {
         app.show("/controller/basic");
         verifyThat("Basic Controller", Node::isVisible);
-        sleep(1000);
+        sleep(200);
 
         app.show("/controller/method");
         verifyThat("Method Controller", Node::isVisible);
-        sleep(1000);
+        sleep(200);
 
         app.show("/controller/view");
         verifyThat("View Controller", Node::isVisible);
-        sleep(1000);
+        sleep(200);
 
         app.show("/component/basic");
         verifyThat("Basic Component", Node::isVisible);
-        sleep(1000);
+        sleep(200);
 
         app.show("/component/root");
         verifyThat("Root Component", Node::isVisible);
-        sleep(1000);
+        sleep(200);
     }
 
     /**
@@ -69,7 +69,7 @@ public class FrameworkTest extends ApplicationTest {
     @Test
     public void subComponent() {
         app.show("/controller/withsubcomponent");
-        sleep(1000);
+        sleep(200);
         ButtonSubComponent button = lookup("#buttonSubComponent").query();
         verifyThat(button, Node::isVisible);
         assertEquals(100, button.getMinWidth());

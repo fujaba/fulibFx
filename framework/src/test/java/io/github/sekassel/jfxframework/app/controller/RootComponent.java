@@ -7,7 +7,7 @@ import javafx.scene.layout.VBox;
 
 import javax.inject.Inject;
 
-@Component(view = "view/root.fxml")
+@Component(view = "root.fxml")
 public class RootComponent extends VBox {
 
     @FXML

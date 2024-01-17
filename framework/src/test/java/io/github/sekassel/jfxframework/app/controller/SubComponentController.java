@@ -7,7 +7,7 @@ import javafx.fxml.FXML;
 
 import javax.inject.Inject;
 
-@Controller(view = "view/withsubcomponent.fxml")
+@Controller(view = "withsubcomponent.fxml")
 public class SubComponentController {
 
     @SubComponent
