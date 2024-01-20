@@ -35,6 +35,7 @@ dependencies {
 
     // https://mvnrepository.com/artifact/com.google.dagger/dagger-compiler
     testAnnotationProcessor group: 'com.google.dagger', name: 'dagger-compiler', version: '2.42'
+
 }
 
 // Project dependencies

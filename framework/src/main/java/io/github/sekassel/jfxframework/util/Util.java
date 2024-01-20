@@ -155,7 +155,6 @@ public class Util {
     public static <T, E> @Nullable T keyForValue(@NotNull Map<@NotNull T, @NotNull E> map, @NotNull E value) {
         Map.Entry<T, E> keyEntry = map.entrySet().stream().filter(entry -> Objects.equals(entry.getValue(), value)).findFirst().orElse(null);
         return keyEntry == null ? null : keyEntry.getKey();
-
     }
 
     /**
@@ -200,8 +199,24 @@ public class Util {
     public static boolean isController(@Nullable Object instance) {
         if (instance == null) return false;
 
-        if (instance.getClass().isAnnotationPresent(Controller.class) && instance.getClass().isAnnotationPresent(Component.class)) return false;
+        if (instance.getClass().isAnnotationPresent(Controller.class) && instance.getClass().isAnnotationPresent(Component.class))
+            return false;
         return instance.getClass().isAnnotationPresent(Controller.class) || isComponent(instance);
+    }
+
+    /**
+     * Checks if the given field is a field that can provide a component.
+     *
+     * @param field The field to check
+     * @return True if the field is a field that can provide a component
+     */
+    public static boolean canProvideSubComponent(Field field) {
+        if (field.getType().isAnnotationPresent(Component.class) && Parent.class.isAssignableFrom(field.getType()))
+            return true; // Field is a component
+
+        Class<?> providedClass = getProvidedClass(field);
+
+        return providedClass != null && providedClass.isAnnotationPresent(Component.class) && Parent.class.isAssignableFrom(providedClass); // Field is a provider of a component
     }
 
     /**
@@ -228,6 +243,7 @@ public class Util {
      * Checks if the framework is running in development mode. This is the case if the INDEV environment variable is set to true.
      * <p>
      * Since people are dumb and might not set the variable correctly, it also checks if the intellij launcher is used.
+     *
      * @return True if the framework is running in development mode
      */
     public static boolean runningInDev() {

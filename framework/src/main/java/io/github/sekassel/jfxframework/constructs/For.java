@@ -261,7 +261,7 @@ public class For<Node extends javafx.scene.Node, Item> {
 
         // Initialize and render the controller if the node is a component
         if (Util.isComponent(node)) {
-            FxFramework.framework().manager().init(node, params);
+            FxFramework.framework().manager().init(node, params, false);
             FxFramework.framework().manager().render(node, params);
         }
 

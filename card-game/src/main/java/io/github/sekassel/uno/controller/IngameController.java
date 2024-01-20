@@ -121,11 +121,13 @@ public class IngameController implements Titleable {
         this.gameService.initialize(this.game);
 
         // Render the cards of the player
-        subscriber.addDestroyable(For.of(this.cardListHBox, this.game.getFirstPlayer().getCards(), cardControllerProvider, (controller, card) -> {
-            controller.setCard(card);
-            this.cards.put(card, controller);
-            controller.subscriber.addDestroyable(() -> this.cards.remove(card));
-        }).disposable());
+        subscriber.addDestroyable(
+                For.of(this.cardListHBox, this.game.getFirstPlayer().getCards(), cardControllerProvider, (controller, card) -> {
+                    controller.setCard(card);
+                    this.cards.put(card, controller);
+                    controller.subscriber.addDestroyable(() -> this.cards.remove(card));
+                }).disposable()
+        );
     }
 
     /**

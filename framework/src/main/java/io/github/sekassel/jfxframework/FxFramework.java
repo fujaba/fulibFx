@@ -144,7 +144,7 @@ public abstract class FxFramework extends Application {
         }
 
         // If the controller shall not be destroyed, we have to manually initialize and render it
-        this.component.controllerManager().init(controller, params);
+        this.component.controllerManager().init(controller, params, false);
         Parent rendered = this.component.controllerManager().render(controller, params);
         if (Util.isComponent(rendered)) {
             return (T) rendered;
@@ -309,7 +309,7 @@ public abstract class FxFramework extends Application {
     public void refresh() {
         cleanup();
         Map<String, Object> params = this.component.router().current().second(); // Use the same parameters as before
-        this.manager().init(currentMainController, params); // Re-initialize the controller
+        this.manager().init(currentMainController, params, true); // Re-initialize the controller
         Parent parent = this.manager().render(currentMainController, params); // Re-render the controller
         display(parent); // Display the controller
     }

@@ -11,7 +11,12 @@ import io.github.sekassel.jfxframework.annotation.event.onRender;
 import io.github.sekassel.jfxframework.controller.building.ControllerBuildFactory;
 import io.github.sekassel.jfxframework.data.Tuple;
 import io.github.sekassel.jfxframework.util.Util;
+import io.github.sekassel.jfxframework.util.disposable.ItemListDisposable;
+import io.github.sekassel.jfxframework.util.disposable.RefreshableCompositeDisposable;
+import io.github.sekassel.jfxframework.util.disposable.RefreshableDisposable;
 import io.github.sekassel.jfxframework.util.reflection.Reflection;
+import io.reactivex.rxjava3.disposables.CompositeDisposable;
+import io.reactivex.rxjava3.disposables.Disposable;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import org.jetbrains.annotations.NotNull;
@@ -36,8 +41,8 @@ import java.util.*;
 @Singleton
 public class ControllerManager {
 
-    // Map of controllers that have been initialized and are currently displayed
-    private final Map<Object, Set<WeakReference<Object>>> currentlyDisplayedControllers = new HashMap<>();
+    // Map of controllers that have been initialized
+    private final RefreshableCompositeDisposable currentlyInitializedControllers = new RefreshableCompositeDisposable();
 
     @Inject
     Lazy<Router> router;
@@ -64,22 +69,51 @@ public class ControllerManager {
         return render(instance, parameters);
     }
 
+
+    /**
+     * Initializes the given controller/component. Calls the onInit method(s) and recursively initializes all sub-controllers.
+     * <p>
+     * All initialized controllers will be added to a disposable. When the disposable is disposed, all initialized controllers will be destroyed in reverse order.
+     * The lowest subcomponent will be destroyed first, then the next lowest, until the main controller is destroyed.
+     *
+     * @param instance                   The controller instance
+     * @param parameters                 The parameters to pass to the controller
+     * @param disposeOnNewMainController Whether the controller should be destroyed when a new main controller is set
+     * @return A disposable which disposes all initialized controllers when it is disposed
+     */
+    public Disposable init(@NotNull Object instance, @NotNull Map<@NotNull String, @Nullable Object> parameters, boolean disposeOnNewMainController) {
+        List<WeakReference<Object>> initializedControllers = init(instance, parameters);
+
+        ItemListDisposable<WeakReference<Object>> disposable = ItemListDisposable.of((reference) -> {
+            if (reference.get() != null) {
+                destroy(Objects.requireNonNull(reference.get()));
+            }
+        }, initializedControllers);
+
+        if (disposeOnNewMainController) {
+            this.currentlyInitializedControllers.add(disposable);
+        }
+
+        return disposable;
+    }
+
     /**
      * Initializes the given controller/component.
      * Calls the onInit method(s) and recursively initializes all sub-controllers.
+     * <p>
+     * All initialized controllers will be added to the list of initialized controllers.
+     * If a controller/component is added to the list, all its subcomponents will follow right after it.
      *
      * @param instance   The controller instance
      * @param parameters The parameters to pass to the controller
      */
-    public void init(@NotNull Object instance, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
+    private List<WeakReference<Object>> init(@NotNull Object instance, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
+
+        List<WeakReference<Object>> initializedControllers = new ArrayList<>();
 
         // Check if the instance is a controller
         if (!Util.isController(instance))
             throw new IllegalArgumentException("Class '%s' is not a controller or component.".formatted(instance.getClass().getName()));
-
-        // Check if this exact instance has already been initialized
-        if (this.currentlyDisplayedControllers.containsKey(instance))
-            throw new IllegalArgumentException("Controller '%s' has already been initialized.".formatted(instance.getClass().getName()));
 
         // Inject parameters into the controller fields
         Reflection.fillParametersIntoFields(instance, parameters);
@@ -87,24 +121,20 @@ public class ControllerManager {
         // Call the onInit method(s)
         Reflection.callMethodsWithAnnotation(instance, onInit.class, parameters);
 
-        // Search for sub-controllers
-        List<Field> subControllerField = Reflection.getFieldsWithAnnotation(instance.getClass(), SubComponent.class)
-                .stream()
-                .filter(field -> {
-                    if (!field.getType().isAnnotationPresent(Component.class)) {
-                        FxFramework.logger().warning("Field '%s' in class '%s' is annotated with @SubController but is not a Component.".formatted(field.getName(), instance.getClass().getName()));
-                        return false;
-                    }
-                    return true;
-                }).toList();
+        // Search for subcomponents
+        List<Field> subComponentFields = getSubComponentFields(instance);
 
-        // Initialize all sub-controllers and add them to the map of initialized controllers
-        Set<WeakReference<Object>> subControllers = new HashSet<>();
-        this.currentlyDisplayedControllers.put(instance, subControllers);
-        Reflection.callMethodsForFieldInstances(instance, subControllerField, (subController) -> {
-            subControllers.add(new WeakReference<>(subController));
-            init(subController, parameters);
+        // Add the controller to the list of initialized controllers
+        initializedControllers.add(new WeakReference<>(instance));
+
+        // Initialize all sub-controllers and add them to the list of initialized controllers
+        Reflection.callMethodsForFieldInstances(instance, subComponentFields, (subController) -> {
+            initializedControllers.add(new WeakReference<>(subController));
+            initializedControllers.addAll(init(subController, parameters));
         });
+
+        return initializedControllers;
+
     }
 
     /**
@@ -132,18 +162,9 @@ public class ControllerManager {
         if (!component && !instance.getClass().isAnnotationPresent(Controller.class))
             throw new IllegalArgumentException("Class '%s' is not a controller or component.".formatted(instance.getClass().getName()));
 
-        // Check if the instance has been initialized
-        if (!currentlyDisplayedControllers.containsKey(instance)) {
-            throw new IllegalArgumentException("Controller '%s' has not been initialized.".formatted(instance.getClass().getName()));
-        }
-
         // Render all sub-controllers
-        currentlyDisplayedControllers.get(instance).forEach(weakReference -> {
-            Object subController = weakReference.get();
-            if (subController != null) {
-                // We can safely ignore the return value here, as the sub-controllers will all be components and therefore do not have an 'external' view
-                render(subController, parameters);
-            }
+        Reflection.callMethodsForFieldInstances(instance, getSubComponentFields(instance), (subController) -> {
+            render(subController, parameters);
         });
 
         // Get the view of the controller
@@ -223,23 +244,9 @@ public class ControllerManager {
     /**
      * Destroys all controllers that have been initialized and are currently displayed.
      */
-    // TODO: Fix some controllers being destroyed twice
     public void cleanup() {
-        currentlyDisplayedControllers.forEach((controller, subControllers) -> {
-            // Destroy all sub-controllers of the controller
-            subControllers.forEach(weakReference -> {
-                Object subController = weakReference.get();
-                if (subController != null) {
-                    destroy(subController);
-                    weakReference.clear();
-                }
-            });
-            subControllers.clear();
-
-            // Destroy the controller itself
-            destroy(controller);
-        });
-        currentlyDisplayedControllers.clear();
+        currentlyInitializedControllers.dispose();
+        currentlyInitializedControllers.refresh();
     }
 
     /**
@@ -286,6 +293,18 @@ public class ControllerManager {
         } catch (IOException exception) {
             throw new RuntimeException(exception);
         }
+    }
+
+    private List<Field> getSubComponentFields(Object instance) {
+        return Reflection.getFieldsWithAnnotation(instance.getClass(), SubComponent.class)
+                .stream()
+                .filter(field -> {
+                    if (!Util.canProvideSubComponent(field)) {
+                        FxFramework.logger().warning("Field '%s' in class '%s' is annotated with @SubComponent but is not a component or a valid provider.".formatted(field.getName(), instance.getClass().getName()));
+                        return false;
+                    }
+                    return true;
+                }).toList();
     }
 
 }
