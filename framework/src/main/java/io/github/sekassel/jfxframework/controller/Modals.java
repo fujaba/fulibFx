@@ -1,6 +1,7 @@
 package io.github.sekassel.jfxframework.controller;
 
 import io.github.sekassel.jfxframework.FxFramework;
+import io.github.sekassel.jfxframework.data.TriConsumer;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.Parent;
@@ -8,10 +9,10 @@ import javafx.scene.Scene;
 import javafx.scene.paint.Paint;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
-import java.util.function.BiConsumer;
 
 public class Modals {
 
@@ -21,6 +22,8 @@ public class Modals {
 
     /**
      * Shows a component as a modal window.
+     * <p>
+     * <b>Important:</b> The component shouldn't be initialized/rendered before calling this method.
      * <p>
      * When closing the window, the component will be destroyed.
      * <p>
@@ -33,12 +36,14 @@ public class Modals {
      * @param <Display>    the type of the controller
      * @return the modal stage
      */
-    public static <Display extends Node> Stage showModal(Stage currentStage, Display component, BiConsumer<Stage, Display> initializer) {
-        return showModal(currentStage, component, initializer, Map.of(), true);
+    public static <Display extends Node> void showModal(Stage currentStage, Display component, TriConsumer<Stage, Scene, Display> initializer) {
+        showModal(currentStage, component, initializer, Map.of(), true);
     }
 
     /**
      * Shows a controller as a modal window.
+     * <p>
+     * <b>Important:</b> The component shouldn't be initialized/rendered before calling this method.
      * <p>
      * When closing the window, the controller will be destroyed. If the {@link Stage#setOnCloseRequest(EventHandler)}
      * method is overridden, the controller will not be destroyed automatically.
@@ -47,15 +52,16 @@ public class Modals {
      * @param component    the class of the controller to show
      * @param params       the parameters to pass to the controller
      * @param <Display>    the type of the controller
-     * @return the modal stage
      */
-    public static <Display extends Node> Stage showModal(Stage currentStage, Display component, Map<String, Object> params) {
-        return showModal(currentStage, component, (stage, controller) -> {
+    public static <Display extends Node> void showModal(Stage currentStage, Display component, Map<String, Object> params) {
+        showModal(currentStage, component, (stage, scene, controller) -> {
         }, params, true);
     }
 
     /**
      * Shows a controller as a modal window.
+     * <p>
+     * <b>Important:</b> The component shouldn't be initialized/rendered before calling this method.
      * <p>
      * When closing the window, the controller will be destroyed. If the {@link Stage#setOnCloseRequest(EventHandler)}
      * method is overridden, the controller will not be destroyed automatically.
@@ -65,13 +71,15 @@ public class Modals {
      * @param <Display>    the type of the controller
      * @return the modal stage
      */
-    public static <Display extends Node> Stage showModal(Stage currentStage, Display component) {
-        return showModal(currentStage, component, (stage, controller) -> {
+    public static <Display extends Node> void showModal(Stage currentStage, Display component) {
+        showModal(currentStage, component, (stage, scene, controller) -> {
         }, Map.of(), true);
     }
 
     /**
      * Shows a controller as a modal window.
+     * <p>
+     * <b>Important:</b> The component shouldn't be initialized/rendered before calling this method.
      * <p>
      * If destroyOnClose is enabled, when closing (or to be more exact, hiding) the window, the controller will be destroyed.
      * The controller will be destroyed before the stage is hidden.
@@ -81,24 +89,25 @@ public class Modals {
      * @param initializer  the initializer for passing more arguments to the stage and controller
      * @param params       the parameters to pass to the controller
      * @param <Display>    the type of the controller
-     * @return the modal stage
      */
-    public static <Display extends Node> Stage showModal(Stage currentStage, Display component, BiConsumer<Stage, Display> initializer, Map<String, Object> params, boolean destroyOnClose) {
-        ModalStage modalStage = new ModalStage(destroyOnClose ? () -> FxFramework.framework().frameworkComponent().controllerManager().destroy(component) : null);
+    public static <Display extends Node> void showModal(Stage currentStage, Display component, TriConsumer<Stage, Scene, Display> initializer, Map<String, Object> params, boolean destroyOnClose) {
+        FxFramework.scheduler().scheduleDirect(() -> {
+            ModalStage modalStage = new ModalStage(destroyOnClose ? () -> FxFramework.framework().frameworkComponent().controllerManager().destroy(component) : null);
 
 
-        Parent rendered = FxFramework.framework().frameworkComponent().controllerManager().initAndRender(component, params);
+            Parent rendered = FxFramework.framework().frameworkComponent().controllerManager().initAndRender(component, params);
 
-        Scene scene = new Scene(rendered);
-        scene.setFill(Paint.valueOf("transparent"));
+            Scene scene = new Scene(rendered);
+            scene.setFill(Paint.valueOf("transparent"));
 
-        modalStage.setScene(scene);
-        modalStage.initOwner(currentStage);
-        modalStage.initModality(Modality.WINDOW_MODAL);
-        modalStage.show();
-        modalStage.requestFocus();
-        initializer.accept(modalStage, component);
-        return modalStage;
+            modalStage.setScene(scene);
+            modalStage.initStyle(StageStyle.TRANSPARENT);
+            modalStage.initOwner(currentStage);
+            modalStage.initModality(Modality.WINDOW_MODAL);
+            modalStage.show();
+            modalStage.requestFocus();
+            initializer.accept(modalStage, scene, component);
+        });
     }
 
     /**

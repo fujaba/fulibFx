@@ -1,7 +1,9 @@
 package io.github.sekassel.jfxframework.app;
 
 import io.github.sekassel.jfxframework.FxFramework;
+import io.github.sekassel.jfxframework.app.controller.modal.ModalComponent;
 import io.github.sekassel.jfxframework.app.controller.sub.ButtonSubComponent;
+import io.github.sekassel.jfxframework.controller.Modals;
 import io.github.sekassel.jfxframework.controller.exception.ControllerInvalidRouteException;
 import io.github.sekassel.jfxframework.controller.exception.IllegalControllerException;
 import javafx.collections.FXCollections;
@@ -16,8 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.testfx.api.FxAssert.verifyThat;
 import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
 
@@ -132,7 +133,29 @@ public class FrameworkTest extends ApplicationTest {
         app.show("/controller/basic");
 
         assertEquals(List.of("othersubsub", "subsub", "sub", "main"), destroyList);
+    }
 
+    @Test
+    public void modalTest() {
+        app.show("/controller/basic");
+        verifyThat("Basic Controller", Node::isVisible);
+        sleep(200);
+
+        Modals.showModal(app.stage(), new ModalComponent(), (stage, scene, controller) -> {
+            stage.setTitle("Modal");
+            stage.setWidth(200);
+            stage.setHeight(200);
+        });
+
+        waitForFxEvents();
+
+        Modals.ModalStage modal = (Modals.ModalStage) Stage.getWindows().stream().filter(window -> window instanceof Modals.ModalStage).map(window -> (Stage) window).findAny().orElse(null);
+
+        assertNotNull(modal);
+        verifyThat("Modal Component", Node::isVisible);
+        assertEquals(200, modal.getWidth());
+        assertEquals(200, modal.getHeight());
+        assertEquals("Modal", modal.getTitle());
     }
 
 }
