@@ -257,4 +257,18 @@ public class Util {
         return System.getenv().getOrDefault(Constants.INDEV_ENVIRONMENT_VARIABLE, "false").equalsIgnoreCase("true");
     }
 
+    public static Object getInstanceOfProviderField(Field provider, Object instance) {
+        try {
+            provider.setAccessible(true);
+            Provider<?> providerInstance = (Provider<?>) provider.get(instance);
+            if (providerInstance == null)
+                throw new RuntimeException("Field '" + provider.getName() + "' in '" + provider.getDeclaringClass().getName() + "' is not initialized.");
+            return providerInstance.get();
+        } catch (NullPointerException e) {
+            throw new RuntimeException("Field '" + provider.getName() + "' in '" + provider.getDeclaringClass().getName() + "' is not initialized.");
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException("Cannot access field '" + provider.getName() + "' in '" + provider.getDeclaringClass().getName() + "'.", e);
+        }
+    }
+
 }

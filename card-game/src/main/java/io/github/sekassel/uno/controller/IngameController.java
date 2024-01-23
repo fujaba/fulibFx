@@ -109,6 +109,10 @@ public class IngameController implements Titleable {
     @onInit
     public void init() {
         buttonController.setParentController(this);
+
+        // Initialize the game
+        this.gameService.initialize(this.game);
+
     }
 
     // Since this method is annotated wth @onRender, it will be called when the controller is rendered
@@ -118,8 +122,6 @@ public class IngameController implements Titleable {
         setupPropertyChangeListeners();
         renderBots();
 
-        // Initialize the game
-        this.gameService.initialize(this.game);
 
         // Render the cards of the player
         subscriber.addDestroyable(
@@ -322,6 +324,7 @@ public class IngameController implements Titleable {
      * @param index   The index of the bot controller
      */
     private void renderBot(Parent botNode, Pane pane, int index) {
+        System.out.println("Rendering bot " + botNode + " at " + pane + " with index " + index);
         pane.getChildren().remove(index);
         pane.getChildren().add(index, botNode);
     }

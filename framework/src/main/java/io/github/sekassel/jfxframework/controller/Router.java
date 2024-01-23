@@ -14,7 +14,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.inject.Inject;
-import javax.inject.Provider;
 import javax.inject.Singleton;
 import java.lang.reflect.Field;
 import java.util.Map;
@@ -106,24 +105,10 @@ public class Router {
             throw new RuntimeException("Class " + controllerClass.getName() + " is not annotated with @Controller or @Component");
 
         // Get the instance of the controller
-        Object controllerInstance = getInstanceOfProviderField(provider);
+        Object controllerInstance = Util.getInstanceOfProviderField(provider, this.routerObject);
         Parent renderedParent = this.manager.get().initAndRender(controllerInstance, parameters);
 
         return Tuple.of(controllerInstance, renderedParent);
-    }
-
-    private Object getInstanceOfProviderField(Field provider) {
-        try {
-            provider.setAccessible(true);
-            Provider<?> providerInstance = (Provider<?>) provider.get(this.routerObject);
-            if (providerInstance == null)
-                throw new RuntimeException("Field '" + provider.getName() + "' in '" + provider.getDeclaringClass().getName() + "' is not initialized.");
-            return providerInstance.get();
-        } catch (NullPointerException e) {
-            throw new RuntimeException("Field '" + provider.getName() + "' in '" + provider.getDeclaringClass().getName() + "' is not initialized.");
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException("Cannot access field '" + provider.getName() + "' in '" + provider.getDeclaringClass().getName() + "'.", e);
-        }
     }
 
     /**
@@ -135,7 +120,8 @@ public class Router {
         try {
             Tuple<TraversableNodeTree.Node<Field>, Map<String, Object>> tuple = this.history.back();
             ((TraversableNodeTree<Field>) routes).setCurrentNode(tuple.first());
-            return this.manager.get().initAndRender(getInstanceOfProviderField(tuple.first().value()), tuple.second());
+            return this.manager.get().initAndRender(Util.getInstanceOfProviderField(tuple.first().value(), this.routerObject), tuple.second());
+
         } catch (Exception e) {
             return null;
         }
@@ -150,7 +136,7 @@ public class Router {
         try {
             Tuple<TraversableNodeTree.Node<Field>, Map<String, Object>> tuple = this.history.forward();
             ((TraversableNodeTree<Field>) routes).setCurrentNode(tuple.first());
-            return this.manager.get().initAndRender(getInstanceOfProviderField(tuple.first().value()), tuple.second());
+            return this.manager.get().initAndRender(Util.getInstanceOfProviderField(tuple.first().value(), this.routerObject), tuple.second());
         } catch (Exception e) {
             return null;
         }
@@ -166,4 +152,5 @@ public class Router {
     public Tuple<Field, Map<String, Object>> current() {
         return Tuple.of(this.history.current().first().value(), this.history.current().second());
     }
+
 }
