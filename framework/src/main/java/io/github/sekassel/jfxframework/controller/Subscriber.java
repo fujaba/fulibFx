@@ -8,12 +8,15 @@ import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.functions.Action;
 import io.reactivex.rxjava3.functions.Consumer;
+import javafx.beans.property.Property;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.inject.Inject;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 
 /**
  * A subscriber is used to subscribe to observables and listen to properties.
@@ -36,7 +39,6 @@ public class Subscriber {
      */
     @Inject
     public Subscriber() {
-
     }
 
     /**
@@ -142,6 +144,53 @@ public class Subscriber {
     public <T> void listen(@NotNull ObservableValue<@NotNull T> property, @NotNull ChangeListener<? super @NotNull T> listener) {
         property.addListener(listener);
         addDestroyable(() -> property.removeListener(listener));
+    }
+
+    /**
+     * Adds a beans property change listener to a property change support and removes it on destroy.
+     *
+     * @param support        The property change support (e.g. a model)
+     * @param property       The property to listen to
+     * @param changeListener The listener to add
+     */
+    public void listen(@NotNull PropertyChangeSupport support, @NotNull String property, @NotNull PropertyChangeListener changeListener) {
+        support.addPropertyChangeListener(property, changeListener);
+        addDestroyable(() -> support.removePropertyChangeListener(property, changeListener));
+    }
+
+    /**
+     * Adds a beans property change listener to a property change support and removes it on destroy.
+     *
+     * @param support        The property change support (e.g. a model)
+     * @param changeListener The listener to add
+     */
+    public void listen(@NotNull PropertyChangeSupport support, @NotNull PropertyChangeListener changeListener) {
+        support.addPropertyChangeListener(changeListener);
+        addDestroyable(() -> support.removePropertyChangeListener(changeListener));
+    }
+
+    /**
+     * Binds a property to another property (unidirectional) and unbinds it on destroy.
+     *
+     * @param property The property to bind
+     * @param other    The property to bind to
+     * @param <T>      The type of the property
+     */
+    public <T> void bind(@NotNull Property<@NotNull T> property, @NotNull ObservableValue<@NotNull T> other) {
+        property.bind(other);
+        addDestroyable(property::unbind);
+    }
+
+    /**
+     * Binds a property to another property (bidirectional) and unbinds it on destroy.
+     *
+     * @param property The property to bind
+     * @param other    The property to bind to
+     * @param <T>      The type of the property
+     */
+    public <T> void bindBidirectional(@NotNull Property<@NotNull T> property, @NotNull Property<@NotNull T> other) {
+        property.bindBidirectional(other);
+        addDestroyable(() -> property.unbindBidirectional(other));
     }
 
     /**

@@ -1,9 +1,9 @@
 package io.github.sekassel.jfxframework.util;
 
-import com.sun.tools.javac.Main;
 import io.github.sekassel.jfxframework.FxFramework;
-import io.github.sekassel.jfxframework.controller.annotation.Controller;
-import io.github.sekassel.jfxframework.controller.annotation.Route;
+import io.github.sekassel.jfxframework.annotation.controller.Component;
+import io.github.sekassel.jfxframework.annotation.controller.Controller;
+import io.github.sekassel.jfxframework.annotation.Route;
 import io.github.sekassel.jfxframework.controller.exception.InvalidRouteFieldException;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
@@ -45,14 +45,14 @@ public class Util {
 
     /**
      * Checks if the given field is a valid route field.
-     * A valid route field is a field that is annotated with {@link Route} and is of type {@link Provider} where the generic type is a class annotated with {@link Controller}.
+     * A valid route field is a field that is annotated with {@link Route} and is of type {@link Provider} where the generic type is a class annotated with {@link Controller} or {@link Component}.
      *
      * @param field The field to check
      * @throws InvalidRouteFieldException If the field is not a valid route field
      */
     public static void requireControllerProvider(@NotNull Field field) {
         Class<?> providedClass = getProvidedClass(field);
-        if (providedClass == null || !providedClass.isAnnotationPresent(Controller.class))
+        if (providedClass == null || (!providedClass.isAnnotationPresent(Controller.class) && !providedClass.isAnnotationPresent(Component.class)))
             throw new InvalidRouteFieldException(field);
     }
 
@@ -155,7 +155,6 @@ public class Util {
     public static <T, E> @Nullable T keyForValue(@NotNull Map<@NotNull T, @NotNull E> map, @NotNull E value) {
         Map.Entry<T, E> keyEntry = map.entrySet().stream().filter(entry -> Objects.equals(entry.getValue(), value)).findFirst().orElse(null);
         return keyEntry == null ? null : keyEntry.getKey();
-
     }
 
     /**
@@ -178,19 +177,19 @@ public class Util {
     }
 
     /**
-     * Checks if an instance is a controller extending a Parent.
+     * Checks if an instance is a component (controller extending a Parent).
      * <p>
      * This method is used internally by the framework and shouldn't be required for developers.
      *
      * @param instance The instance to check
-     * @return True if the instance is a controller extending a Parent
+     * @return True if the instance is a component (controller extending a Parent)
      */
-    public static boolean isParentController(@Nullable Object instance) {
-        return instance != null && instance.getClass().isAnnotationPresent(Controller.class) && Parent.class.isAssignableFrom(instance.getClass());
+    public static boolean isComponent(@Nullable Object instance) {
+        return instance != null && instance.getClass().isAnnotationPresent(Component.class) && Parent.class.isAssignableFrom(instance.getClass());
     }
 
     /**
-     * Checks if an instance is a controller.
+     * Checks if an instance is a controller or a component.
      * <p>
      * This method is used internally by the framework and shouldn't be required for developers.
      *
@@ -198,7 +197,26 @@ public class Util {
      * @return True if the instance is a controller
      */
     public static boolean isController(@Nullable Object instance) {
-        return instance != null && instance.getClass().isAnnotationPresent(Controller.class);
+        if (instance == null) return false;
+
+        if (instance.getClass().isAnnotationPresent(Controller.class) && instance.getClass().isAnnotationPresent(Component.class))
+            return false;
+        return instance.getClass().isAnnotationPresent(Controller.class) || isComponent(instance);
+    }
+
+    /**
+     * Checks if the given field is a field that can provide a component.
+     *
+     * @param field The field to check
+     * @return True if the field is a field that can provide a component
+     */
+    public static boolean canProvideSubComponent(Field field) {
+        if (field.getType().isAnnotationPresent(Component.class) && Parent.class.isAssignableFrom(field.getType()))
+            return true; // Field is a component
+
+        Class<?> providedClass = getProvidedClass(field);
+
+        return providedClass != null && providedClass.isAnnotationPresent(Component.class) && Parent.class.isAssignableFrom(providedClass); // Field is a provider of a component
     }
 
     /**
@@ -215,9 +233,16 @@ public class Util {
         }
     }
 
+    /**
+     * Returns the file representation of the given resource in the resources folder of the given class.
+     *
+     * @param clazz    The class to get the resource from
+     * @param resource The resource to read
+     * @return The file of the given resource
+     */
     public static @NotNull File getResourceAsLocalFile(Class<?> clazz, String resource) {
         String classPath = clazz.getPackageName().replace(".", "/");
-        Path path = Path.of(FxFramework.resourcesPath());
+        Path path = FxFramework.resourcesPath();
         return path.resolve(classPath).resolve(resource).toFile();
     }
 
@@ -225,23 +250,24 @@ public class Util {
      * Checks if the framework is running in development mode. This is the case if the INDEV environment variable is set to true.
      * <p>
      * Since people are dumb and might not set the variable correctly, it also checks if the intellij launcher is used.
+     *
      * @return True if the framework is running in development mode
      */
     public static boolean runningInDev() {
-        return System.getenv().getOrDefault(Constants.INDEV_ENVIRONMENT_VARIABLE, "false").equalsIgnoreCase("true") || runningInIntelliJ();
+        return System.getenv().getOrDefault(Constants.INDEV_ENVIRONMENT_VARIABLE, "false").equalsIgnoreCase("true");
     }
 
-    /**
-     * Checks if the framework is running in IntelliJ.
-     * This is not reliable as disabling the idea launcher in the run configuration will result in this method returning false.
-     *
-     * @return True if the framework is running in IntelliJ
-     */
-    public static boolean runningInIntelliJ() {
+    public static Object getInstanceOfProviderField(Field provider, Object instance) {
         try {
-            return Main.class.getClassLoader().loadClass("com.intellij.rt.execution.application.AppMainV2") != null;
-        } catch (ClassNotFoundException e) {
-            return false;
+            provider.setAccessible(true);
+            Provider<?> providerInstance = (Provider<?>) provider.get(instance);
+            if (providerInstance == null)
+                throw new RuntimeException("Field '" + provider.getName() + "' in '" + provider.getDeclaringClass().getName() + "' is not initialized.");
+            return providerInstance.get();
+        } catch (NullPointerException e) {
+            throw new RuntimeException("Field '" + provider.getName() + "' in '" + provider.getDeclaringClass().getName() + "' is not initialized.");
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException("Cannot access field '" + provider.getName() + "' in '" + provider.getDeclaringClass().getName() + "'.", e);
         }
     }
 

@@ -29,7 +29,7 @@ public class AutoRefresher {
     public AutoRefresher() {
     }
 
-    public void setup(String directory) {
+    public void setup(Path directory) {
 
         if (!Util.runningInDev()) {
             FxFramework.logger().warning("AutoRefresher is only meant to be used in development mode! Not starting.");
@@ -40,15 +40,14 @@ public class AutoRefresher {
 
         try {
             this.watchService = FileSystems.getDefault().newWatchService();
-            Path path = Paths.get(directory);
-            WatchKey key = path.register(watchService, ENTRY_MODIFY);
+            WatchKey key = directory.register(watchService, ENTRY_MODIFY);
 
             AtomicLong lastModified = new AtomicLong(-1);
 
             disposable = Schedulers.newThread().scheduleDirect(() -> {
                 while (enabled) {
                     for (WatchEvent<?> event : key.pollEvents()) {
-                        Path file = path.resolve((Path) event.context());
+                        Path file = directory.resolve((Path) event.context());
 
                         // Some OSs fire multiple events for the same file, so we need to filter them out
                         if (file.toFile().lastModified() == lastModified.get()) {

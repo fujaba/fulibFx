@@ -1,7 +1,8 @@
 package io.github.sekassel.jfxexample.controller;
 
-import io.github.sekassel.jfxframework.controller.annotation.Controller;
-import io.github.sekassel.jfxframework.controller.annotation.ControllerEvent;
+import io.github.sekassel.jfxframework.annotation.controller.Controller;
+import io.github.sekassel.jfxframework.annotation.event.onInit;
+import io.github.sekassel.jfxframework.annotation.event.onRender;
 import javafx.scene.Cursor;
 import javafx.scene.control.Button;
 
@@ -17,11 +18,11 @@ public class CustomButton extends Button {
     }
 
 
-    @ControllerEvent.onInit
+    @onInit
     public void onInit() {
     }
 
-    @ControllerEvent.onRender
+    @onRender
     public void onRender() {
         this.setText("Dieser Button wurde gerendert.");
     }

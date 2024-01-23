@@ -5,6 +5,7 @@ import io.github.sekassel.person.dagger.DaggerMainComponent;
 import io.github.sekassel.person.dagger.MainComponent;
 import javafx.stage.Stage;
 
+import java.nio.file.Path;
 import java.util.Map;
 
 public class PersonApp extends FxFramework {
@@ -24,9 +25,9 @@ public class PersonApp extends FxFramework {
 
             super.start(primaryStage);
             instance = this;
-            router().registerRoutes(component.router());
-            setResourcesPath("example/src/main/resources/");
-            autoRefresher().setup("example/src/main/resources/io/github/sekassel/person/view");
+            registerRoutes(component.router());
+            setResourcesPath(Path.of("example/src/main/resources/"));
+            autoRefresher().setup(Path.of("example/src/main/resources/io/github/sekassel/person/view"));
             show("", Map.of());
 
         } catch (Exception e) {

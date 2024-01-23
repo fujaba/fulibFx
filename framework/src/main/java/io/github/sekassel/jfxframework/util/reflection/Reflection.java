@@ -1,7 +1,7 @@
 package io.github.sekassel.jfxframework.util.reflection;
 
-import io.github.sekassel.jfxframework.controller.annotation.Param;
-import io.github.sekassel.jfxframework.controller.annotation.Params;
+import io.github.sekassel.jfxframework.annotation.param.Param;
+import io.github.sekassel.jfxframework.annotation.param.Params;
 import io.github.sekassel.jfxframework.util.Util;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -11,8 +11,10 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * Utility class containing different helper methods for reflection.
@@ -32,6 +34,27 @@ public class Reflection {
      */
     public static List<Field> getFieldsWithAnnotation(Class<?> clazz, Class<? extends Annotation> annotation) {
         return Arrays.stream(clazz.getDeclaredFields()).filter(field -> field.isAnnotationPresent(annotation)).toList();
+    }
+
+    /**
+     * Calls the given method for all fields of the given class that are annotated with the given annotation.
+     *
+     * @param instance The instance to call the methods on
+     * @param fields   The fields to call the methods for
+     * @param method   The method to call
+     */
+    public static void callMethodsForFieldInstances(Object instance, Collection<Field> fields, Consumer<Object> method) {
+        for (Field field : fields) {
+            try {
+                boolean accessible = field.canAccess(instance);
+                field.setAccessible(true);
+                Object component = field.get(instance);
+                field.setAccessible(accessible);
+                method.accept(component);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException("Couldn't run method for field '%s' in class '%s'.".formatted(field.getName(), instance.getClass().getName()), e);
+            }
+        }
     }
 
     /**
@@ -75,6 +98,31 @@ public class Reflection {
         }
     }
 
+    public static void fillParametersIntoFields(@NotNull Object instance, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
+        for (Field field : Reflection.getFieldsWithAnnotation(instance.getClass(), Param.class)) {
+            try {
+                boolean accessible = field.canAccess(instance);
+                field.setAccessible(true);
+                field.set(instance, parameters.get(field.getAnnotation(Param.class).value()));
+                field.setAccessible(accessible);
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+                throw new RuntimeException("Couldn't fill parameter '" + field.getAnnotation(Param.class).value() + "' into field '" + field.getName() + "' in '" + instance.getClass().getName() + "'", e);
+            }
+        }
+
+        for (Field field : Reflection.getFieldsWithAnnotation(instance.getClass(), Params.class)) {
+            try {
+                boolean accessible = field.canAccess(instance);
+                field.setAccessible(true);
+                field.set(instance, parameters);
+                field.setAccessible(accessible);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException("Couldn't fill parameters into field '" + field.getName() + "' in '" + instance.getClass().getName() + "'", e);
+            }
+        }
+    }
+
     /**
      * Returns an array with all parameters that are applicable to the given method in the correct order.
      * <p>
@@ -96,10 +144,10 @@ public class Reflection {
 
             // Check if the parameter is annotated with @Param and if the parameter is of the correct type
             if (param != null) {
-                if (parameters.containsKey(param.name()) && !parameter.getType().isAssignableFrom(parameters.get(param.name()).getClass())) {
-                    throw new RuntimeException("Parameter named '" + param.name() + "' in method '" + method.getDeclaringClass().getName() + "#" + method.getName() + "' is of type " + parameter.getType().getName() + " but the provided value is of type " + parameters.get(param.name()).getClass().getName());
+                if (parameters.containsKey(param.value()) && !parameter.getType().isAssignableFrom(parameters.get(param.value()).getClass())) {
+                    throw new RuntimeException("Parameter named '" + param.value() + "' in method '" + method.getDeclaringClass().getName() + "#" + method.getName() + "' is of type " + parameter.getType().getName() + " but the provided value is of type " + parameters.get(param.value()).getClass().getName());
                 }
-                return parameters.get(param.name());
+                return parameters.get(param.value());
             }
 
             // Check if the parameter is annotated with @Params and if the parameter is of the type Map<String, Object>

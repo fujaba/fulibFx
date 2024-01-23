@@ -80,4 +80,9 @@ public class EvictingQueue<T> implements TraversableQueue<T> {
     public int hashCode() {
         return Objects.hash(list, currentIndex, size);
     }
+
+    @Override
+    public int size() {
+        return list.size();
+    }
 }

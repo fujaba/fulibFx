@@ -2,30 +2,35 @@ package io.github.sekassel.jfxframework.controller;
 
 import dagger.Lazy;
 import io.github.sekassel.jfxframework.FxFramework;
-import io.github.sekassel.jfxframework.controller.annotation.Controller;
-import io.github.sekassel.jfxframework.controller.annotation.ControllerEvent;
+import io.github.sekassel.jfxframework.annotation.controller.Component;
+import io.github.sekassel.jfxframework.annotation.controller.Controller;
+import io.github.sekassel.jfxframework.annotation.controller.SubComponent;
+import io.github.sekassel.jfxframework.annotation.event.onDestroy;
+import io.github.sekassel.jfxframework.annotation.event.onInit;
+import io.github.sekassel.jfxframework.annotation.event.onRender;
 import io.github.sekassel.jfxframework.controller.building.ControllerBuildFactory;
+import io.github.sekassel.jfxframework.controller.exception.IllegalControllerException;
 import io.github.sekassel.jfxframework.data.Tuple;
 import io.github.sekassel.jfxframework.util.Util;
+import io.github.sekassel.jfxframework.util.disposable.RefreshableCompositeDisposable;
 import io.github.sekassel.jfxframework.util.reflection.Reflection;
+import io.reactivex.rxjava3.disposables.Disposable;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-
-import static io.github.sekassel.jfxframework.util.Constants.FXML_PATH;
+import java.util.*;
 
 /**
  * Manages the initialization, rendering and destroying of controllers.
@@ -35,10 +40,8 @@ import static io.github.sekassel.jfxframework.util.Constants.FXML_PATH;
 @Singleton
 public class ControllerManager {
 
-    // Set of controllers that have been initialized and are currently displayed
-    private final Set<Object> controllers = new HashSet<>();
-    // The base class of the framework, used to load resources (relative to the base class)
-    private Class<? extends FxFramework> baseClass;
+    // Map of controllers that have been initialized
+    private final RefreshableCompositeDisposable cleanup = new RefreshableCompositeDisposable();
 
     @Inject
     Lazy<Router> router;
@@ -50,35 +53,83 @@ public class ControllerManager {
     /**
      * Initializes and renders the given controller. Calls the onInit and onRender methods. See {@link #init(Object, Map)} and {@link #render(Object, Map)}.
      * <p>
-     * The controller instance will be added to the set of initialized controllers and will be destroyed when a new main controller is set.
+     * The controller/component instance(s) will be added to the set of initialized controllers and will be destroyed when a new main controller is set.
      *
      * @param instance   The controller instance
      * @param parameters The parameters to pass to the controller
      * @return The rendered controller
      */
     public Parent initAndRender(Object instance, Map<String, Object> parameters) {
-        // Add the controller to the set of initialized controllers
-        controllers.add(instance);
 
-        // Call the onInit method
-        init(instance, parameters);
+        // Initialize the controller
+        init(instance, parameters, true);
 
         // Render the controller
         return render(instance, parameters);
     }
 
-    public void init(Object instance, Map<String, Object> parameters) {
-        Reflection.callMethodsWithAnnotation(instance, ControllerEvent.onInit.class, parameters);
+
+    /**
+     * Initializes the given controller/component. Calls the onInit method(s) and recursively initializes all subcomponents.
+     * <p>
+     * <b>Order:</b> Controller -> Subcomponents -> Subcomponents of subcomponents -> ...
+     *
+     * @param instance                   The controller/component instance
+     * @param parameters                 The parameters to pass to the controller/component
+     * @param disposeOnNewMainController Whether the controller/component should be destroyed when a new main controller is set
+     * @return A disposable that can be used to destroy the controller/component and all its subcomponents manually
+     */
+    public Disposable init(@NotNull Object instance, @NotNull Map<@NotNull String, @Nullable Object> parameters, boolean disposeOnNewMainController) {
+        Disposable disposable = Disposable.fromRunnable(() -> destroy(instance));
+
+        init(instance, parameters);
+
+        if (disposeOnNewMainController) {
+            this.cleanup.add(disposable);
+        }
+
+        return disposable;
     }
 
     /**
-     * Renders the given controller. Calls the onRender method.
+     * Initializes the given controller/component.
+     * Calls the onInit method(s) and recursively initializes all sub-controllers.
+     * <p>
+     * All initialized controllers will be added to the list of initialized controllers.
+     * If a controller/component is added to the list, all its subcomponents will follow right after it.
+     *
+     * @param instance   The controller/component instance
+     * @param parameters The parameters to pass to the controller
+     */
+    private void init(@NotNull Object instance, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
+
+        // Check if the instance is a controller
+        if (!Util.isController(instance))
+            throw new IllegalControllerException("Class '%s' is not a controller or component.".formatted(instance.getClass().getName()));
+
+        // Inject parameters into the controller fields
+        Reflection.fillParametersIntoFields(instance, parameters);
+
+        // Call the onInit method(s)
+        Reflection.callMethodsWithAnnotation(instance, onInit.class, parameters);
+
+        // Initialize all sub-controllers
+        Reflection.callMethodsForFieldInstances(instance, getSubComponentFields(instance), (subController) -> init(subController, parameters));
+
+    }
+
+    /**
+     * Renders the given controller/component instance. Renders all sub-controllers recursively and then calls the onRender method(s) before returning the rendered controller.
+     * <p>
+     * <b>Important:</b> This method assumes that the controller has already been initialized.
+     * The controller will <u>not automatically be destroyed</u> when using only this method.
+     * Use {@link #init(Object, Map, boolean)} before, to initialize and automatically destroy the controller or destroy it yourself afterward.
      * <p>
      * If the controller specifies a fxml file in its {@link Controller#view()},
      * it will be loaded and the controller will be set as the controller of the fxml file.
      * <p>
-     * If the controller extends from a JavaFX Parent, the controller itself will be returned.
-     * This can be combined with the {@link Controller#view()} to set the controller as the root of the fxml file.
+     * If the controller is a component (extends from a JavaFX Parent), the component itself will be rendered and returned.
+     * This can be combined with the {@link Component#view()} to set the controller as the root of the fxml file.
      * <p>
      * If the controller specifies a method as {@link Controller#view()}, the method will be called and the returned Parent will be returned.
      * In order to specify a method, the view must start with a '#'. The method must be in the controller class and must return a (subclass of) Parent.
@@ -86,15 +137,29 @@ public class ControllerManager {
      *
      * @param instance   The controller instance
      * @param parameters The parameters to pass to the controller
-     * @return The rendered controller
+     * @return The rendered controller/component
      */
     public Parent render(Object instance, Map<String, Object> parameters) {
+
+        // Check if the instance is a controller/component
+        boolean component = instance.getClass().isAnnotationPresent(Component.class) && Util.isComponent(instance);
+
+        if (!component && !instance.getClass().isAnnotationPresent(Controller.class))
+            throw new IllegalArgumentException("Class '%s' is not a controller or component.".formatted(instance.getClass().getName()));
+
+        // Render all sub-controllers
+        Reflection.callMethodsForFieldInstances(instance, getSubComponentFields(instance), (subController) -> render(subController, parameters));
+
+        // Get the view of the controller
         Parent parent;
-        String view = instance.getClass().getAnnotation(Controller.class).view();
+        String view = component ?
+                instance.getClass().getAnnotation(Component.class).view() :
+                instance.getClass().getAnnotation(Controller.class).view();
 
         // If the controller extends from a javafx Parent, render it
-        if (Parent.class.isAssignableFrom(instance.getClass()) && view.isEmpty()) {
-            parent = (Parent) instance;
+        // This can be combined with the view annotation to set the controller as the root of the fxml file
+        if (component) {
+            parent = view.isEmpty() ? (Parent) instance : loadFXML(view, instance, true);
         }
 
         // If the controller specifies a method as view, call it
@@ -104,6 +169,7 @@ public class ControllerManager {
                 Method method = instance.getClass().getDeclaredMethod(methodName);
                 if (!Parent.class.isAssignableFrom(method.getReturnType()))
                     throw new RuntimeException("Method '" + methodName + "()' in class '" + instance.getClass().getName() + "' does not return a Parent.");
+                method.setAccessible(true);
                 parent = (Parent) method.invoke(instance);
             } catch (NoSuchMethodException e) {
                 throw new RuntimeException("Method '" + methodName + "()' in class '" + instance.getClass().getName() + "' does not exist.");
@@ -111,30 +177,43 @@ public class ControllerManager {
                 throw new RuntimeException("Method '" + methodName + "()' in class '" + instance.getClass().getName() + "' could not be called.", e);
             }
         }
-        // If the controller specifies a fxml file, load it
+
+        // If the controller specifies a fxml file, load it. This will also load sub-controllers specified in the FXML file
         else {
-            String fxmlPath = view.isEmpty() ? FXML_PATH + Util.transform(instance.getClass().getSimpleName()) + ".fxml" : view;
-            parent = loadFXML(fxmlPath, instance, parameters, Parent.class.isAssignableFrom(instance.getClass()));
+            String fxmlPath = view.isEmpty() ? Util.transform(instance.getClass().getSimpleName()) + ".fxml" : view;
+            parent = loadFXML(fxmlPath, instance, false);
         }
 
         // Call the onRender method
-        Reflection.callMethodsWithAnnotation(instance, ControllerEvent.onRender.class, parameters);
+        Reflection.callMethodsWithAnnotation(instance, onRender.class, parameters);
 
         return parent;
     }
 
     /**
-     * Destroys the given controller by calling all methods annotated with {@link ControllerEvent.onDestroy}.
-     * If the controller has an undestroyed Subscriber field, the destroy method of the subscriber will be called.
+     * Destroys the given controller/component by calling all methods annotated with {@link onDestroy}.
+     * <p>
+     * <b>Important:</b> Do not use this method on a controller's view but on the controller itself.
+     * <p>
+     * If the controller has subcomponents, they will be destroyed first recursively in reverse order.
+     * <p>
+     * If the controller has an undestroyed Subscriber field, a warning will be logged in development mode.
      *
-     * @param instance The controller instance to destroy
+     * @param instance The controller/component instance to destroy
      */
     public void destroy(@NotNull Object instance) {
         if (!Util.isController(instance))
-            throw new IllegalArgumentException("Class '%s' is not a controller.".formatted(instance.getClass().getName()));
+            throw new IllegalArgumentException("Class '%s' is not a controller or component.".formatted(instance.getClass().getName()));
+
+        // Destroying should be done in exactly the reverse order of initialization
+        List<Field> subComponentFields = new ArrayList<>(getSubComponentFields(instance));
+        Collections.reverse(subComponentFields);
+
+        // Destroy all sub-controllers
+        Reflection.callMethodsForFieldInstances(instance, subComponentFields, this::destroy);
 
         // Call destroy methods
-        Reflection.callMethodsWithAnnotation(instance, ControllerEvent.onDestroy.class, Map.of());
+        Reflection.callMethodsWithAnnotation(instance, onDestroy.class, Map.of());
 
         // In development mode, check for undestroyed subscribers
         if (Util.runningInDev()) {
@@ -161,8 +240,8 @@ public class ControllerManager {
      * Destroys all controllers that have been initialized and are currently displayed.
      */
     public void cleanup() {
-        controllers.forEach(this::destroy);
-        controllers.clear();
+        cleanup.dispose();
+        cleanup.refresh();
     }
 
     /**
@@ -173,17 +252,18 @@ public class ControllerManager {
      * an instance provided by the router will be used as the controller for the element.
      *
      * @param fileName The name of the fxml resource file (with path and file extension)
-     * @param factory  The controller factory to use
+     * @param instance The controller instance to use
      * @return A parent representing the fxml file
      */
-    public @NotNull Parent loadFXML(@NotNull String fileName, @NotNull Object factory, @NotNull Map<@NotNull String, @Nullable Object> parameters, boolean setRoot) {
+    public @NotNull Parent loadFXML(@NotNull String fileName, @NotNull Object instance, boolean setRoot) {
 
-        URL url = baseClass.getResource(fileName);
+        URL url = instance.getClass().getResource(fileName);
         if (url == null) {
-            throw new RuntimeException("Could not find resource '" + fileName + "'");
+            String urlPath = instance.getClass().getPackageName().replace(".", "/") + "/" +  fileName;
+            throw new RuntimeException("Could not find resource '" + urlPath + "'");
         }
 
-        File file = Util.getResourceAsLocalFile(baseClass, fileName);
+        File file = Util.getResourceAsLocalFile(instance.getClass(), fileName);
 
         // If the file exists, use it instead of the resource (development mode, allows for hot reloading)
         if (file.exists()) {
@@ -194,29 +274,40 @@ public class ControllerManager {
             }
         }
 
-        ControllerBuildFactory builderFactory = new ControllerBuildFactory(this, router.get(), parameters);
+        ControllerBuildFactory builderFactory = new ControllerBuildFactory(instance);
 
         FXMLLoader loader = new FXMLLoader(url);
-        loader.setControllerFactory(c -> factory);
+        loader.setControllerFactory(c -> instance);
         loader.setBuilderFactory(builderFactory);
 
         if (setRoot) {
-            loader.setRoot(factory);
+            loader.setRoot(instance);
         }
 
         try {
             return loader.load();
         } catch (IOException exception) {
-            throw new RuntimeException(exception);
+            throw new RuntimeException("Couldn't load the FXML file for controller '%s'".formatted(instance.getClass()), exception);
         }
     }
 
     /**
-     * Sets the base class of the framework.
-     * @param clazz The base class
+     * Returns a list of all fields in the given instance that are annotated with {@link SubComponent}.
+     *
+     * @param instance The instance to get the fields from
+     * @return A list of all fields in the given instance that are annotated with {@link SubComponent}
      */
-    public void setMainClass(Class<? extends FxFramework> clazz) {
-        this.baseClass = clazz;
+    @Unmodifiable
+    private List<Field> getSubComponentFields(Object instance) {
+        return Reflection.getFieldsWithAnnotation(instance.getClass(), SubComponent.class)
+                .stream()
+                .filter(field -> {
+                    if (!field.getType().isAnnotationPresent(Component.class)) {
+                        FxFramework.logger().warning("Field '%s' in class '%s' is annotated with @SubComponent but is not a subcomponent.".formatted(field.getName(), instance.getClass().getName()));
+                        return false;
+                    }
+                    return true;
+                }).toList();
     }
 
 }

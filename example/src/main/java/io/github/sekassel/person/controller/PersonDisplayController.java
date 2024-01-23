@@ -1,7 +1,9 @@
 package io.github.sekassel.person.controller;
 
-import io.github.sekassel.jfxframework.controller.annotation.Controller;
-import io.github.sekassel.jfxframework.controller.annotation.ControllerEvent;
+import io.github.sekassel.jfxframework.annotation.controller.Controller;
+import io.github.sekassel.jfxframework.annotation.event.onDestroy;
+import io.github.sekassel.jfxframework.annotation.event.onInit;
+import io.github.sekassel.jfxframework.annotation.event.onRender;
 import io.github.sekassel.person.backend.Person;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -44,17 +46,17 @@ public class PersonDisplayController extends VBox {
         this.current = current;
     }
 
-    @ControllerEvent.onInit
+    @onInit
     public void init() {
         System.out.println("PersonDisplayController.onInit");
     }
 
-    @ControllerEvent.onRender
+    @onRender
     public void render() {
         System.out.println("PersonDisplayController.onRender");
     }
 
-    @ControllerEvent.onRender
+    @onRender
     public void refresh() {
         if (current == null) return;
         firstName.setText(current.firstName());
@@ -127,7 +129,7 @@ public class PersonDisplayController extends VBox {
         saveAsNewButton.setDisable(false);
     }
 
-    @ControllerEvent.onDestroy
+    @onDestroy
     public void onDestroy() {
         System.out.println("PersonDisplayController.onDestroy");
     }

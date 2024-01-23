@@ -9,7 +9,7 @@ import io.github.sekassel.jfxframework.controller.Router;
 
 import javax.inject.Singleton;
 
-@Component(modules = {ControllerModule.class})
+@Component()
 @Singleton
 public interface FrameworkComponent {
 

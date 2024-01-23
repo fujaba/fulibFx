@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+<VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
+      prefHeight="720.0" prefWidth="1280.0" spacing="40.0" xmlns="http://javafx.com/javafx/19"
+      xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.sekassel.uno.controller.SetupController">
+   <padding>
+      <Insets bottom="40.0" left="40.0" right="40.0" top="40.0"/>
+   </padding>
+   <ImageView fx:id="mainMenuLogo" fitHeight="200.0" fitWidth="300.0" pickOnBounds="true" preserveRatio="true">
+      <Image url="@../image/logo.png"/>
+   </ImageView>
+   <VBox fx:id="nicknameBox" alignment="CENTER" spacing="5.0">
+      <Text fx:id="nicknameText" strokeType="OUTSIDE" strokeWidth="0.0" text="Please enter your player name:">
+         <font>
+            <Font name="Cooper Black" size="14.0"/>
+         </font>
+      </Text>
+      <TextField fx:id="nicknameField" maxWidth="-Infinity" prefWidth="360.0" promptText="Your name...">
+         <font>
+            <Font name="Cooper Black" size="12.0"/>
+         </font>
+      </TextField>
+   </VBox>
+   <VBox fx:id="botAmountBox" alignment="CENTER" spacing="5.0">
+      <Text fx:id="botAmountText" strokeType="OUTSIDE" strokeWidth="0.0"
+            text="How many opponents should play against you?">
+         <font>
+            <Font name="Cooper Black" size="14.0"/>
+         </font>
+      </Text>
+      <Slider fx:id="botAmountSlider" blockIncrement="1.0" majorTickUnit="1.0" max="3.0" maxWidth="360.0" min="1.0"
+              minorTickCount="0" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="3.0"/>
+   </VBox>
+   <Button fx:id="playButton" defaultButton="true" mnemonicParsing="false" onAction="#start" text="Play!">
+      <font>
+         <Font name="Cooper Black" size="24.0"/>
+      </font>
+   </Button>
+</VBox>

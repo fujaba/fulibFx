@@ -1,9 +1,11 @@
 package io.github.sekassel.person.controller;
 
+import io.github.sekassel.jfxframework.annotation.event.onDestroy;
+import io.github.sekassel.jfxframework.annotation.event.onRender;
 import io.github.sekassel.jfxframework.constructs.For;
 import io.github.sekassel.jfxframework.controller.Subscriber;
-import io.github.sekassel.jfxframework.controller.annotation.Controller;
-import io.github.sekassel.jfxframework.controller.annotation.ControllerEvent;
+import io.github.sekassel.jfxframework.annotation.controller.Controller;
+import io.github.sekassel.jfxframework.annotation.event.onInit;
 import io.github.sekassel.person.PersonApp;
 import io.github.sekassel.person.backend.Person;
 import io.reactivex.rxjava3.disposables.Disposable;
@@ -16,6 +18,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 
 @Controller(view = "view/persons.fxml")
 public class PersonListController {
@@ -40,6 +43,9 @@ public class PersonListController {
     @Inject
     Subscriber subscriber;
 
+    @Inject
+    Provider<PersonController> personController;
+
     @FXML
     public PersonDisplayController currentFriend;
 
@@ -56,12 +62,12 @@ public class PersonListController {
         return personList;
     }
 
-    @ControllerEvent.onInit
+    @onInit
     public void onInit() {
         System.out.println("PersonListController.onInit");
     }
 
-    @ControllerEvent.onRender
+    @onRender
     public void onRender() {
         System.out.println("PersonListController.onRender");
 
@@ -71,7 +77,7 @@ public class PersonListController {
             this.currentFriend.refresh();
         }
 
-        Disposable disposable = For.controller(friendList, personList, PersonController.class, (personController, person) -> {
+        Disposable disposable = For.of(friendList, personList, personController, (personController, person) -> {
 
             System.out.println("PersonController.beforeInit");
             personController.setPerson(person);
@@ -85,7 +91,7 @@ public class PersonListController {
         subscriber.addDestroyable(disposable);
     }
 
-    @ControllerEvent.onDestroy
+    @onDestroy
     public void onDestroy() {
         System.out.println("PersonListController.onDestroy");
     }
