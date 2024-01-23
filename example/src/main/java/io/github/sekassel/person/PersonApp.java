@@ -25,7 +25,7 @@ public class PersonApp extends FxFramework {
 
             super.start(primaryStage);
             instance = this;
-            router().registerRoutes(component.router());
+            registerRoutes(component.router());
             setResourcesPath(Path.of("example/src/main/resources/"));
             autoRefresher().setup(Path.of("example/src/main/resources/io/github/sekassel/person/view"));
             show("", Map.of());

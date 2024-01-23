@@ -2,6 +2,7 @@ package io.github.sekassel.uno.controller;
 
 import io.github.sekassel.jfxframework.annotation.controller.Component;
 import io.github.sekassel.jfxframework.annotation.event.onDestroy;
+import io.github.sekassel.jfxframework.annotation.event.onInit;
 import io.github.sekassel.jfxframework.annotation.event.onRender;
 import io.github.sekassel.jfxframework.controller.Subscriber;
 import io.github.sekassel.uno.Constants;
@@ -37,6 +38,7 @@ public class CardController extends VBox implements Titleable {
 
     @Inject
     public CardController() {
+        System.out.println(this + " created.");
     }
 
     @Override
@@ -108,6 +110,22 @@ public class CardController extends VBox implements Titleable {
     public void destroy() {
         // Remove the card from the game
         this.subscriber.destroy();
+    }
+
+
+    @onInit
+    public void initSout() {
+        System.out.println(this + " initialized.");
+    }
+
+    @onRender()
+    public void renderSout() {
+        System.out.println(this + " rendered.");
+    }
+
+    @onDestroy
+    public void destroySout() {
+        System.out.println(this + " destroyed.");
     }
 
 }

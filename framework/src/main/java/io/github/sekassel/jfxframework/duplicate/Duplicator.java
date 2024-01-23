@@ -5,6 +5,7 @@ package io.github.sekassel.jfxframework.duplicate;
  *
  * @param <T> The type of the object to duplicate
  */
+@FunctionalInterface
 public interface Duplicator<T> {
 
     /**

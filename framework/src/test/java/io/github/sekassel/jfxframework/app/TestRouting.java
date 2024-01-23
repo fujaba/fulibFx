@@ -2,6 +2,7 @@ package io.github.sekassel.jfxframework.app;
 
 import io.github.sekassel.jfxframework.annotation.Route;
 import io.github.sekassel.jfxframework.app.controller.*;
+import io.github.sekassel.jfxframework.app.subcontrollertest.MainController;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -35,6 +36,14 @@ public class TestRouting {
     @Inject
     @Route("controller/for")
     Provider<ForController> forControllerProvider;
+
+    @Inject
+    @Route("controller/nonextending")
+    Provider<NonExtendingComponent> nonExtendingComponentProvider;
+
+    @Inject
+    @Route("ordertest/main")
+    Provider<MainController> mainControllerProvider;
 
     @Inject
     public TestRouting() {

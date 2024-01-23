@@ -83,7 +83,8 @@ public class Router {
      *
      * @param route      The route of the controller
      * @param parameters The parameters to pass to the controller
-     * @throws ControllerInvalidRouteException If the controller couldn't be found
+     * @return A tuple containing the controller instance and the rendered parent (will be the same if the controller is a component)
+     * @throws ControllerInvalidRouteException If the route couldn't be found
      */
     public @NotNull Tuple<Object, Parent> renderRoute(@NotNull String route, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
         // Check if the route exists and has a valid controller

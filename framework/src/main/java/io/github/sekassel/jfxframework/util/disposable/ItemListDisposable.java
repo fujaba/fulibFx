@@ -78,6 +78,11 @@ public class ItemListDisposable<T> implements RefreshableDisposable {
         return false;
     }
 
+    @Override
+    public boolean isFresh() {
+        return !isDisposed() && this.disposables.isEmpty();
+    }
+
     /**
      * Adds an item to the list of items to dispose.
      *

@@ -1,6 +1,8 @@
 package io.github.sekassel.uno.controller;
 
 import io.github.sekassel.jfxframework.annotation.controller.Controller;
+import io.github.sekassel.jfxframework.annotation.event.onDestroy;
+import io.github.sekassel.jfxframework.annotation.event.onInit;
 import io.github.sekassel.jfxframework.annotation.event.onRender;
 import io.github.sekassel.jfxframework.annotation.param.Param;
 import io.github.sekassel.uno.App;
@@ -31,6 +33,7 @@ public class GameOverController implements Titleable {
 
     @Inject
     public GameOverController() {
+        System.out.println(this + " created.");
     }
 
     @Override
@@ -52,6 +55,22 @@ public class GameOverController implements Titleable {
     @FXML
     private void backToMenu() {
         this.app.show("/");
+    }
+
+
+    @onInit
+    public void initSout() {
+        System.out.println(this + " initialized.");
+    }
+
+    @onRender()
+    public void renderSout() {
+        System.out.println(this + " rendered.");
+    }
+
+    @onDestroy
+    public void destroySout() {
+        System.out.println(this + " destroyed.");
     }
 
 }

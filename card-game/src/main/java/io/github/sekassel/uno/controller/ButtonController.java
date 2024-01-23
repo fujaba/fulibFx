@@ -21,22 +21,23 @@ public class ButtonController extends HBox {
 
     @Inject
     public ButtonController() {
-        System.out.println("ButtonController.constructor");
+        System.out.println(this + " created.");
     }
+
 
     @onInit
-    public void init() {
-        System.out.println("ButtonController.onInit");
+    public void initSout() {
+        System.out.println(this + " initialized.");
     }
 
-    @onRender
-    public void render() {
-        System.out.println("ButtonController.onRender");
+    @onRender()
+    public void renderSout() {
+        System.out.println(this + " rendered.");
     }
 
     @onDestroy
-    public void destroy() {
-        System.out.println("ButtonController.onDestroy");
+    public void destroySout() {
+        System.out.println(this + " destroyed.");
     }
 
     /**

@@ -24,7 +24,7 @@ public class ExampleApp extends FxFramework {
 
             super.start(primaryStage);
             instance = this;
-            router().registerRoutes(component.router());
+            registerRoutes(component.router());
             show("", Map.of());
 
         } catch (Exception e) {

@@ -27,6 +27,11 @@ public class RefreshableCompositeDisposable implements RefreshableDisposable, Di
     }
 
     @Override
+    public boolean isFresh() {
+        return this.compositeDisposable == null || (!this.compositeDisposable.isDisposed() && this.compositeDisposable.size() == 0);
+    }
+
+    @Override
     public void dispose() {
         if (compositeDisposable != null) {
             compositeDisposable.dispose();

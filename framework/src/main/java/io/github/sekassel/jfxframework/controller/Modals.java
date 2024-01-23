@@ -84,10 +84,10 @@ public class Modals {
      * @return the modal stage
      */
     public static <Display extends Node> Stage showModal(Stage currentStage, Display component, BiConsumer<Stage, Display> initializer, Map<String, Object> params, boolean destroyOnClose) {
-        ModalStage modalStage = new ModalStage(destroyOnClose ? () -> FxFramework.framework().manager().destroy(component) : null);
+        ModalStage modalStage = new ModalStage(destroyOnClose ? () -> FxFramework.framework().frameworkComponent().controllerManager().destroy(component) : null);
 
 
-        Parent rendered = FxFramework.framework().manager().initAndRender(component, params);
+        Parent rendered = FxFramework.framework().frameworkComponent().controllerManager().initAndRender(component, params);
 
         Scene scene = new Scene(rendered);
         scene.setFill(Paint.valueOf("transparent"));

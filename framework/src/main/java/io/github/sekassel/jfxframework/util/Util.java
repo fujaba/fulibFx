@@ -233,6 +233,13 @@ public class Util {
         }
     }
 
+    /**
+     * Returns the file representation of the given resource in the resources folder of the given class.
+     *
+     * @param clazz    The class to get the resource from
+     * @param resource The resource to read
+     * @return The file of the given resource
+     */
     public static @NotNull File getResourceAsLocalFile(Class<?> clazz, String resource) {
         String classPath = clazz.getPackageName().replace(".", "/");
         Path path = FxFramework.resourcesPath();

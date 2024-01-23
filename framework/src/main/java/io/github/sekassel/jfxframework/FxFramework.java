@@ -1,15 +1,14 @@
 package io.github.sekassel.jfxframework;
 
-import io.github.sekassel.jfxframework.controller.AutoRefresher;
-import io.github.sekassel.jfxframework.controller.ControllerManager;
-import io.github.sekassel.jfxframework.controller.Router;
 import io.github.sekassel.jfxframework.annotation.controller.Component;
-import io.github.sekassel.jfxframework.annotation.controller.Controller;
+import io.github.sekassel.jfxframework.controller.AutoRefresher;
 import io.github.sekassel.jfxframework.dagger.DaggerFrameworkComponent;
 import io.github.sekassel.jfxframework.dagger.FrameworkComponent;
+import io.github.sekassel.jfxframework.data.Rendered;
 import io.github.sekassel.jfxframework.data.Tuple;
 import io.github.sekassel.jfxframework.util.Util;
 import io.reactivex.rxjava3.core.Scheduler;
+import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -98,8 +97,7 @@ public abstract class FxFramework extends Application {
     }
 
     /**
-     * Initializes and renders a controller instance.
-     * This method only works with controllers which extend Parent.
+     * Initializes and renders a component instance (a controller with the {@link Component} annotation).
      * <p>
      * If destroyWithCurrent is false, the method will NOT add the controller to the set of initialized controllers and the
      * controller will not be destroyed when a new main controller is set.
@@ -111,13 +109,12 @@ public abstract class FxFramework extends Application {
      * @param destroyWithCurrent Whether the controller shall be destroyed when a new main controller is set
      * @return The rendered controller
      */
-    public @NotNull <T> T initAndRender(@NotNull T controller, boolean destroyWithCurrent) {
+    public @NotNull <T extends Parent> Rendered<T> initAndRender(@NotNull T controller, boolean destroyWithCurrent) {
         return initAndRender(controller, Map.of(), destroyWithCurrent);
     }
 
     /**
-     * Initializes and renders a controller instance.
-     * This method only works with controllers which extend Parent.
+     * Initializes and renders a component instance (a controller with the {@link Component} annotation).
      * <p>
      * If destroyWithCurrent is false, the method will NOT add the controller to the set of initialized controllers and the
      * controller will not be destroyed when a new main controller is set.
@@ -125,31 +122,20 @@ public abstract class FxFramework extends Application {
      * If destroyWithCurrent is true, the controller will be added to the set of initialized controllers and will be destroyed when
      * a new main controller is set.
      *
-     * @param controller         The controller instance
-     * @param params             The arguments passed to the controller
-     * @param destroyWithCurrent Whether the controller shall be destroyed when a new main controller is set
-     * @return The rendered controller
+     * @param component          The component instance
+     * @param params             The arguments passed to the component
+     * @param destroyWithCurrent Whether the component shall be destroyed when a new main component is set
+     * @return The rendered component and a disposable that can be used to destroy the component with all its children manually
      */
-    public @NotNull <T> T initAndRender(@NotNull T controller, Map<String, Object> params, boolean destroyWithCurrent) {
-        if (!controller.getClass().isAnnotationPresent(Controller.class) && !controller.getClass().isAnnotationPresent(Component.class))
-            throw new IllegalArgumentException("Class '%s' is not a controller.".formatted(controller.getClass().getName()));
+    public @NotNull <T extends Parent> Rendered<T> initAndRender(@NotNull T component, Map<String, Object> params, boolean destroyWithCurrent) {
+        if (!Util.isComponent(component))
+            throw new IllegalArgumentException("Class '%s' is not a component.".formatted(component.getClass().getName()));
 
-        // If the controller shall be destroyed, we can just call initAndRender
-        if (destroyWithCurrent) {
-            Parent rendered = this.component.controllerManager().initAndRender(controller, params);
-            if (Util.isComponent(rendered)) {
-                return (T) rendered;
-            }
-            throw new IllegalStateException("Providing a controller only works for controllers extending Parent.");
-        }
+        Disposable disposable = this.component.controllerManager().init(component, params, destroyWithCurrent);
+        @SuppressWarnings("unchecked") // We know that the component will return itself as the view
+        T rendered = (T) this.component.controllerManager().render(component, params);
 
-        // If the controller shall not be destroyed, we have to manually initialize and render it
-        this.component.controllerManager().init(controller, params, false);
-        Parent rendered = this.component.controllerManager().render(controller, params);
-        if (Util.isComponent(rendered)) {
-            return (T) rendered;
-        }
-        throw new IllegalStateException("Providing a controller only works for controllers extending Parent.");
+        return Rendered.of(rendered, disposable);
     }
 
     /**
@@ -160,7 +146,7 @@ public abstract class FxFramework extends Application {
      * @return The destroyed controller instance
      * @throws IllegalArgumentException If the given instance is not a controller extending Parent
      */
-    public @NotNull <T> T destroy(@NotNull T rendered) {
+    public @NotNull <T extends Parent> T destroy(@NotNull T rendered) {
         this.component.controllerManager().destroy(rendered);
         return rendered;
     }
@@ -252,6 +238,8 @@ public abstract class FxFramework extends Application {
 
     /**
      * Returns the currently used component of the application.
+     * <p>
+     * <b>Warning:</b> This method should only be used for internal purposes.
      *
      * @return The component
      */
@@ -260,17 +248,12 @@ public abstract class FxFramework extends Application {
     }
 
     /**
-     * Returns the router of the application.
+     * Registers all routes in the given class.
+     *
+     * @param routes The class to register the routes from
      */
-    public Router router() {
-        return this.component.router();
-    }
-
-    /**
-     * Returns the controller manager of the application.
-     */
-    public ControllerManager manager() {
-        return this.component.controllerManager();
+    public void registerRoutes(Object routes) {
+        this.component.router().registerRoutes(routes);
     }
 
     /**
@@ -309,8 +292,8 @@ public abstract class FxFramework extends Application {
     public void refresh() {
         cleanup();
         Map<String, Object> params = this.component.router().current().second(); // Use the same parameters as before
-        this.manager().init(currentMainController, params, true); // Re-initialize the controller
-        Parent parent = this.manager().render(currentMainController, params); // Re-render the controller
+        this.component.controllerManager().init(currentMainController, params, true); // Re-initialize the controller
+        Parent parent = this.component.controllerManager().render(currentMainController, params); // Re-render the controller
         display(parent); // Display the controller
     }
 

@@ -97,6 +97,7 @@ public class IngameController implements Titleable {
 
     @Inject
     public IngameController() {
+        System.out.println(this + " created.");
         // The annotation @Inject is required for dagger to recognize this constructor as an injectable constructor
     }
 
@@ -107,7 +108,7 @@ public class IngameController implements Titleable {
 
     @onInit
     public void init() {
-        //buttonController.setParentController(this);
+        buttonController.setParentController(this);
     }
 
     // Since this method is annotated wth @onRender, it will be called when the controller is rendered
@@ -299,7 +300,7 @@ public class IngameController implements Titleable {
 
             // Create a new controller for the bot. Since the controller isn't rendered by the framework, we have to initialize it manually using initAndRender.
             // Since the controller will persist for the whole lifetime of the game, we can let the framework handle the destruction of the controller.
-            BotController botController = app.initAndRender(botControllerProvider.get(), Map.of("bot", player, "parent", this), true);
+            BotController botController = app.initAndRender(botControllerProvider.get(), Map.of("bot", player, "parent", this), true).rendered();
 
             bots.put(player, botController);
 
@@ -347,7 +348,7 @@ public class IngameController implements Titleable {
         if (!cards.containsKey(card)) {
             // Create a new controller for the card. Since the controller isn't rendered by the framework, we have to initialize it manually using initAndRender.
             // Since the controller won't persist for the whole lifetime of the game, we have to handle the destruction of the controller manually (see above).
-            CardController controller = app.initAndRender(cardControllerProvider.get().setCard(card), false);
+            CardController controller = app.initAndRender(cardControllerProvider.get().setCard(card), false).rendered();
             cards.put(card, controller);
         }
 
@@ -396,6 +397,22 @@ public class IngameController implements Titleable {
     public void destroy() {
         // Remove the card from the game
         this.subscriber.destroy();
+    }
+
+
+    @onInit
+    public void initSout() {
+        System.out.println(this + " initialized.");
+    }
+
+    @onRender()
+    public void renderSout() {
+        System.out.println(this + " rendered.");
+    }
+
+    @onDestroy
+    public void destroySout() {
+        System.out.println(this + " destroyed.");
     }
 
 

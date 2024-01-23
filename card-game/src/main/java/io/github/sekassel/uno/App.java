@@ -2,14 +2,16 @@ package io.github.sekassel.uno;
 
 import io.github.sekassel.jfxframework.FxFramework;
 import io.github.sekassel.uno.controller.Titleable;
-import io.github.sekassel.uno.dagger.MainComponent;
 import io.github.sekassel.uno.dagger.DaggerMainComponent;
+import io.github.sekassel.uno.dagger.MainComponent;
 import javafx.scene.Parent;
 import javafx.stage.Stage;
 
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.logging.Level;
+
+import static javafx.scene.input.KeyEvent.KEY_PRESSED;
 
 /**
  * The main class of your application.
@@ -46,7 +48,13 @@ public class App extends FxFramework {
             super.start(primaryStage);
 
             // Registering the routes of the application. See UnoRouting.java for more information.
-            router().registerRoutes(component.routes());
+            registerRoutes(component.routes());
+
+            stage().addEventHandler(KEY_PRESSED, event -> {
+                if (event.getCode().toString().equals("F5")) {
+                    this.refresh();
+                }
+            });
 
             // Setting the resource path to the resources folder of the project (required for reloading in dev)
             // If the resource path is not set, the framework will use the default resource path (src/main/resources)

@@ -232,7 +232,7 @@ public class For<Node extends javafx.scene.Node, Item> {
 
         // Destroy the controller if the node is a component
         if (Util.isComponent(node)) {
-            FxFramework.framework().manager().destroy(node);
+            FxFramework.framework().frameworkComponent().controllerManager().destroy(node);
         }
 
         // Remove the node from the container
@@ -261,8 +261,8 @@ public class For<Node extends javafx.scene.Node, Item> {
 
         // Initialize and render the controller if the node is a component
         if (Util.isComponent(node)) {
-            FxFramework.framework().manager().init(node, params, false);
-            FxFramework.framework().manager().render(node, params);
+            FxFramework.framework().frameworkComponent().controllerManager().init(node, params, false);
+            FxFramework.framework().frameworkComponent().controllerManager().render(node, params);
         }
 
         // Add the node to the container

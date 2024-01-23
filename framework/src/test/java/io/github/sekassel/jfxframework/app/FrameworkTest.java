@@ -2,6 +2,8 @@ package io.github.sekassel.jfxframework.app;
 
 import io.github.sekassel.jfxframework.FxFramework;
 import io.github.sekassel.jfxframework.app.controller.sub.ButtonSubComponent;
+import io.github.sekassel.jfxframework.controller.exception.ControllerInvalidRouteException;
+import io.github.sekassel.jfxframework.controller.exception.IllegalControllerException;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
@@ -11,9 +13,11 @@ import org.junit.jupiter.api.Test;
 import org.testfx.framework.junit5.ApplicationTest;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.testfx.api.FxAssert.verifyThat;
 import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
 
@@ -26,7 +30,7 @@ public class FrameworkTest extends ApplicationTest {
         @Override
         public void start(Stage stage) {
             super.start(stage);
-            router().registerRoutes(component.routes());
+            registerRoutes(component.routes());
         }
     };
 
@@ -61,6 +65,15 @@ public class FrameworkTest extends ApplicationTest {
         app.show("/component/root");
         verifyThat("Root Component", Node::isVisible);
         sleep(200);
+
+        app.show("../root");
+        verifyThat("Root Component", Node::isVisible);
+        sleep(200);
+
+        assertThrows(ControllerInvalidRouteException.class, () -> app.show("/controller/invalid"));
+
+        assertThrows(IllegalControllerException.class, () -> app.show("/controller/nonextending"));
+
     }
 
     /**
@@ -102,6 +115,24 @@ public class FrameworkTest extends ApplicationTest {
         waitForFxEvents();
 
         assertEquals(3, container.getChildren().size());
+    }
+
+    @Test
+    public void testSubOrder() {
+        List<String> initList = new ArrayList<>();
+        List<String> renderList = new ArrayList<>();
+        List<String> destroyList = new ArrayList<>();
+
+        app.show("/ordertest/main", Map.of("initList", initList, "renderList", renderList, "destroyList", destroyList));
+
+        assertEquals(List.of("main", "sub", "subsub", "othersubsub"), initList);
+        assertEquals(List.of("subsub", "othersubsub", "sub", "main"), renderList);
+        assertEquals(List.of(), destroyList);
+
+        app.show("/controller/basic");
+
+        assertEquals(List.of("othersubsub", "subsub", "sub", "main"), destroyList);
+
     }
 
 }

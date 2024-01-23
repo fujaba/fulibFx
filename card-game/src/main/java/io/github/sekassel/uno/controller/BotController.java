@@ -2,6 +2,7 @@ package io.github.sekassel.uno.controller;
 
 import io.github.sekassel.jfxframework.annotation.controller.Component;
 import io.github.sekassel.jfxframework.annotation.event.onDestroy;
+import io.github.sekassel.jfxframework.annotation.event.onInit;
 import io.github.sekassel.jfxframework.annotation.event.onRender;
 import io.github.sekassel.jfxframework.annotation.param.Param;
 import io.github.sekassel.jfxframework.controller.Subscriber;
@@ -43,6 +44,21 @@ public class BotController extends VBox implements Titleable {
     @Override
     public String getTitle() {
         return BOT_TITLE;
+    }
+
+    @onInit
+    public void initSout() {
+        System.out.println(this + " initialized.");
+    }
+
+    @onRender()
+    public void renderSout() {
+        System.out.println(this + " rendered.");
+    }
+
+    @onDestroy
+    public void destroySout() {
+        System.out.println(this + " destroyed.");
     }
 
     @onRender()
@@ -102,6 +118,7 @@ public class BotController extends VBox implements Titleable {
     @Inject
     public BotController() {
         super();
+        System.out.println(this + " created.");
     }
 
 }
