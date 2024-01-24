@@ -28,6 +28,9 @@ public class TodoApp extends FxFramework {
 }
 ```
 
+The app can be started as usual, for example by pressing the run button in your IDE or by running the `main` method.
+If you want to start in development mode, you can set the `INDEV` environment variable to `true` before starting the app.
+
 ## 🎮 Controllers
 
 Controllers are the backbone of your application. To set up a controller, create a class where the controller logic will
@@ -266,6 +269,158 @@ public class TodoController extends VBox {
 When displaying this controller, the framework will automatically load the corresponding FXML file and set your
 controller as the controller of the root element. The root element will then be set as the view of the controller.
 
+## 🧵 Sub-Controllers
+
+Components can be used inside other controllers to reduce the complexity of a single controller by moving some features
+into sub-controllers (also called subcomponents).
+The framework supports sub-controllers in the form of components. Basic controllers are <u>not</u> supported as sub-controllers.
+
+Sub-controllers can be added to a controller by creating a field of the required type and annotating it with `@SubComponent`.
+The instance still has to be provided by the user, for example by using dependency injection.
+
+```java
+@Controller
+public class TodoController {
+
+    @FXML
+    VBox container; // VBox is specified in the FXML file
+    
+    @SubComponent
+    @Inject
+    TodoListComponent todoListComponent;
+    
+    // Default constructor (for dependency injection etc.)
+    @Inject
+    public TodoController() {
+    }
+    
+    @onRender
+    public void onRender() {
+        container.getChildren().add(todoListComponent); // Add the sub-controller to the view
+    }
+    
+}
+```
+
+Components annotated with `@SubComponent` will be automatically initialized and rendered along with the parent controller.
+Sub-controllers can be used in the same way as normal controllers, meaning they can have their own sub-controllers and
+initialize/render methods.
+
+### 📧 Sub-Controllers in FXML
+
+Sub-controllers can also be specified in FXML files. In order to display a sub-controller, open the FXML file of the
+parent controller and add the sub-controller as an element like this:
+
+```xml
+<?import io.github.sekassel.jfxexample.controller.TodoController?>
+        ...
+<TodoController fx:id="yourid" onAction="onActionMethod" ... />
+```
+
+This will use one of the fields annotated with `@SubComponent` to display the sub-controller. The field has to be of the
+same type as the component specified in the FXML file. If the `fx:id` attribute is specified, JavaFX will automatically
+inject the controller into the field.
+
+Depending on the parent you extended from, all attributes/properties available for this parent can be set for your
+custom controller element as well.
+
+### ✋ Managing sub-controllers manually
+
+There might be situations where you need a variable amount of sub-controllers but a For-Loop is not suitable.
+In this case you can also create or provide your own instance(s) and initialize/render it manually.
+
+Either inject a `Provider<T>` and call `get()` or create/inject a new instance of the controller manually.
+After aquireing the instance, you can initialize and render it manually using the `initAndRender` method of the `FxFramework` class.
+This method takes the controller, a map of parameters and a boolean specifying if the controller should be cleaned up automatically (with the current main controller).
+The method returns a `Rendered<T>` object containing the rendered controller and a disposable that can be used to clean up the controller.
+
+```java
+
+import java.util.Map;
+
+@Controller
+public class TodoController {
+
+    @Inject
+    App app; // App is the class extending FxFramework
+
+    @FXML
+    VBox container; // VBox is specified in the FXML file
+
+    @Inject
+    Provider<TodoListComponent> todoListComponentProvider;
+
+    @Inject // Do not use @SubComponent annotation, as we want to manage the sub-controller manually
+    TodoInputComponent todoInputComponent;
+
+    // Default constructor (for dependency injection etc.)
+    @Inject
+    public TodoController() {
+    }
+
+    @onRender
+    public void onRender() {
+        Rendered<TodoListComponent> result = app.initAndRender(todoListComponentProvider.get(), Map.of(), false); // This sub-controller has to be cleaned up manually
+        container.getChildren().add(result.rendered()); // Add the sub-controller to the view
+        Disposable disposable = result.disposed(); // can be used to get a disposable that will dispose the sub-controller when called
+
+        // This sub-controller will be cleaned up automatically, therefore we don't need to save the result for the disposable
+        container.getChildren().add(app.initAndRender(todoInputComponent, Map.of(), true).rendered());
+        
+    }
+}
+```
+
+## 🚮 Destroying controllers
+
+When a controller is no longer needed, it should be destroyed to free up resources. This will automatically happen when
+a new controller is shown using the `show()` method. However, if you for example subscribe to observables, the framework
+will not clear them up them automatically. You should therefore save the disposables of your subscriptions and dispose them
+when the controller is destroyed.
+
+This can be done by creating a `CompositeDisposable`, adding all disposables to it and then calling `compositeDisposable.dispose()`
+in a `@ControllerEvent.onDestroy` annotated method.
+
+The framework also provides utility classes for dealing with subscriptions and other mechanisms requiring cleanup.
+By creating a new `Subscriber` instance (or by using dependency injection to provide one) and using its utility methods,
+you can easily manage subscriptions without having to worry about disposing them one by one. Using `subscriber.dispose()`
+will dispose all subscriptions added to the subscriber. When running in dev mode, destroying a controller will check if
+all subscriber fields have been disposed and will print a warning if not.
+
+```java
+
+@Controller
+public class TodoController {
+
+    @Inject
+    Subscriber subscriber;
+    
+    @Inject
+    TodoService todoService;
+
+    // Default constructor (for dependency injection etc.)
+    @Inject
+    public TodoController() {
+    }
+
+    @onRender
+    public void onRender() {
+        this.subscriber.subscribe(this.todoService.getTodos(), todos -> {
+            // Do something with the todos
+        }); 
+        this.subscriber.addDestroyable(() -> {
+            // Add custom logic to be executed when the controller is destroyed
+        });
+    }
+    
+    @onDestroy
+    public void onDestroy() {
+        this.subscriber.destroy();
+    }
+    
+}
+```
+
 ## 🌍 Routes
 
 Routes are the way to navigate between views. To set up routes to different views, you have to create a class where the
@@ -373,7 +528,7 @@ functionality like having multiple screens on top of each other (e.g. a sidebar 
 If you just want to listen to a controller being displayed and don't want to change the display logic, you can override 
 the `onShow()` method instead.
 
-## ⌚ History
+## ⌚ History and refresh
 
 The framework also provides a history of visited routes. The history acts like a stack and can be
 used to go back and forth between previously visited routes. The history is automatically updated when using the `show` 
@@ -382,104 +537,13 @@ and visiting an alternative route, the routes that were previously in the histor
 
 The history can be navigated using the `back()` and `forward()` methods of the `FxFramework` class.
 
-## 🧵 Sub-Controllers
+Using the `refresh()` method of the `FxFramework` class, you can refresh the currently displayed controller. This will
+destroy the controller and reload it with the same parameters as before. This can be used to update the view of a
+controller whilst being in dev mode. Refreshing a controller will run the `onDestroy` method of the controller and then 
+run the `onInit` and `onRender` methods again.
 
-Components can be used inside other controllers to reduce the complexity of a single controller by moving some features 
-into sub-controllers (also called subcomponents).
-The framework supports sub-controllers in the form of components. Basic controllers are <u>not</u> supported as sub-controllers.
-
-Sub-controllers can be added to a controller by creating a field of the required type and annotating it with `@SubComponent`.
-The instance still has to be provided by the user, for example by using dependency injection.
-
-```java
-@Controller
-public class TodoController {
-
-    @FXML
-    VBox container; // VBox is specified in the FXML file
-    
-    @SubComponent
-    @Inject
-    TodoListComponent todoListComponent;
-    
-    // Default constructor (for dependency injection etc.)
-    @Inject
-    public TodoController() {
-    }
-    
-    @onRender
-    public void onRender() {
-        container.getChildren().add(todoListComponent); // Add the sub-controller to the view
-    }
-    
-}
-```
-
-Components annotated with `@SubComponent` will be automatically initialized and rendered along with the parent controller.
-Sub-controllers can be used in the same way as normal controllers, meaning they can have their own sub-controllers and 
-initialize/render methods.
-
-Sub-controllers can also be specified in FXML files. In order to display a sub-controller, open the FXML file of the 
-parent controller and add the sub-controller as an element like this:
-
-```xml
-<?import io.github.sekassel.jfxexample.controller.TodoController?>
-        ...
-<TodoController fx:id="yourid" onAction="onActionMethod" ... />
-```
-
-Depending on the parent you extended from, all attributes/properties available for this parent can be set for your
-custom controller element as well.
-
-## 🚮 Destroying controllers
-
-When a controller is no longer needed, it should be destroyed to free up resources. This will automatically happen when
-a new controller is shown using the `show()` method. However, if you for example subscribe to observables, the framework 
-will not clear them up them automatically. You should therefore save the disposables of your subscriptions and dispose them
-when the controller is destroyed. 
-
-This can be done by creating a `CompositeDisposable`, adding all disposables to it and then calling `compositeDisposable.dispose()` 
-in a `@ControllerEvent.onDestroy` annotated method. 
-
-The framework also provides utility classes for dealing with subscriptions and other mechanisms requiring cleanup. 
-By creating a new `Subscriber` instance (or by using dependency injection to provide one) and using its utility methods, 
-you can easily manage subscriptions without having to worry about disposing them one by one. Using `subscriber.dispose()`
-will dispose all subscriptions added to the subscriber. When running in dev mode, destroying a controller will check if 
-all subscriber fields have been disposed and will print a warning if not.
-
-```java
-
-@Controller
-public class TodoController {
-
-    @Inject
-    Subscriber subscriber;
-    
-    @Inject
-    TodoService todoService;
-
-    // Default constructor (for dependency injection etc.)
-    @Inject
-    public TodoController() {
-    }
-
-    @onRender
-    public void onRender() {
-        this.subscriber.subscribe(this.todoService.getTodos(), todos -> {
-            // Do something with the todos
-        }); 
-        this.subscriber.addDestroyable(() -> {
-            // Add custom logic to be executed when the controller is destroyed
-        });
-    }
-    
-    @onDestroy
-    public void onDestroy() {
-        this.subscriber.destroy();
-    }
-    
-}
-```
+When being in dev mode, the framework will automatically refresh the controller when the corresponding FXML file is
+changed. This can be used to quickly test changes to the view without having to restart the application.
 
 ## 🔁 For-Loops
 
@@ -544,7 +608,16 @@ can be used to display popup windows, dialogs, etc.
 
 The framework provides a `Modals` class that can be used to display a modal.
 
-TODO: Add example
+```java
+Modals.showModal(app.stage(), confirmComponent, (stage, scene, component) -> {
+    stage.setTitle("Modal");
+    component.setConfirmAction(() -> {
+        // Do something
+        stage.close();
+    });
+});
+
+```
 
 ## 👯‍♂️ Duplicate nodes
 
@@ -665,10 +738,46 @@ onInit ForController
 onRender ForController
 ```
 
-## 📦 Data structures
+## 📦 Other Data structures
 The framework provides a few data structures that can be used to simplify the creation of JavaFX applications.
 
-TODO: Add documentation
+### TriConsumer
+A TriConsumer is a functional interface that takes three arguments and returns nothing (like a Consumer). It can be used
+to define actions that take three arguments. The framework uses TriConsumers for the Modals.
+
+### Duplicator
+A Duplicator is a functional interface that takes an object and returns a duplicate of the object. It can be used to
+create copies of Objects such as JavaFX nodes. The framework used Duplicators for the For-Loops.
+For more information, see the section about [Node duplication](#-duplicate-nodes).
+
+### Subscriber
+The subscriber is a utility class that can be used to manage subscriptions. It can be used to subscribe to observables
+without having to worry about disposing them one by one. For more information, see the section about [cleanup](#-destroying-controllers).
+
+### RefreshableDisposable
+The RefreshableDisposable is an interface defining disposables that can be refreshed. Refreshing a disposable will
+make it usable again, after it has been disposed. An example for this is the `RefreshableCompositeDisposable`.
+
+### ItemListDisposable
+The ItemListDisposable will run an action for all added items upon disposal. This can be used to clean up items in a list
+with a certain action in a single disposable.
+
+### Tuple
+A tuple represents a pair of two values. It can be used to return multiple values from a method. The framework uses
+tuples for storing the history of routes and the parameters of a route.
+
+```java
+ItemListDisposable<String> disposable = ItemListDisposable.of(item -> print(item), "!", "World");
+disposable.add("Hello");
+disposable.dispose(); // Will print "Hello", "World" and "!" to the console (LIFO order)
+```
+
+## TraversableQueue
+A TraversableQueue is a queue that saves the latest n entries made to it. Like a normal queue, it can be used to store items in a FIFO order.
+When the queue is full, the oldest item will be removed. However, it also provides methods to traverse the queue,
+meaning you can go back and forth between items in the queue. When you go back in the queue and add a new item, all
+items after the current item will be removed. This can be compared to the history of a browser and is used for the
+history of routes.
 
 ## 🛑 Common issues
 

@@ -8,6 +8,7 @@ import io.github.sekassel.jfxframework.annotation.controller.Controller;
 import io.github.sekassel.jfxframework.annotation.event.onInit;
 import io.github.sekassel.jfxframework.annotation.param.Param;
 import io.github.sekassel.jfxframework.annotation.controller.SubComponent;
+import io.github.sekassel.jfxframework.data.Rendered;
 import io.github.sekassel.uno.App;
 import io.github.sekassel.uno.Constants;
 import io.github.sekassel.uno.model.Card;
@@ -351,7 +352,8 @@ public class IngameController implements Titleable {
         if (!cards.containsKey(card)) {
             // Create a new controller for the card. Since the controller isn't rendered by the framework, we have to initialize it manually using initAndRender.
             // Since the controller won't persist for the whole lifetime of the game, we have to handle the destruction of the controller manually (see above).
-            CardController controller = app.initAndRender(cardControllerProvider.get().setCard(card), false).rendered();
+            Rendered<CardController> rendered = app.initAndRender(cardControllerProvider.get().setCard(card), false);
+            CardController controller = rendered.rendered();
             cards.put(card, controller);
         }
 
