@@ -102,7 +102,6 @@ jar {
         attributes(
                 'Manifest-Version': version,
                 'Class-Path': '.',
-                'Main-Class': projectMainClass,
         )
     }
 
