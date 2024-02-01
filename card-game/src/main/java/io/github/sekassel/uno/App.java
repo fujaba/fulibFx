@@ -1,6 +1,6 @@
 package io.github.sekassel.uno;
 
-import io.github.sekassel.jfxframework.FxFramework;
+import org.fulib.fx.FxFramework;
 import io.github.sekassel.uno.controller.Titleable;
 import io.github.sekassel.uno.dagger.DaggerMainComponent;
 import io.github.sekassel.uno.dagger.MainComponent;

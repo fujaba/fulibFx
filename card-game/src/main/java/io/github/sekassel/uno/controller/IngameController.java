@@ -1,14 +1,14 @@
 package io.github.sekassel.uno.controller;
 
-import io.github.sekassel.jfxframework.annotation.event.onDestroy;
-import io.github.sekassel.jfxframework.annotation.event.onRender;
-import io.github.sekassel.jfxframework.constructs.For;
-import io.github.sekassel.jfxframework.controller.Subscriber;
-import io.github.sekassel.jfxframework.annotation.controller.Controller;
-import io.github.sekassel.jfxframework.annotation.event.onInit;
-import io.github.sekassel.jfxframework.annotation.param.Param;
-import io.github.sekassel.jfxframework.annotation.controller.SubComponent;
-import io.github.sekassel.jfxframework.data.Rendered;
+import org.fulib.fx.annotation.event.onDestroy;
+import org.fulib.fx.annotation.event.onRender;
+import org.fulib.fx.constructs.For;
+import org.fulib.fx.controller.Subscriber;
+import org.fulib.fx.annotation.controller.Controller;
+import org.fulib.fx.annotation.event.onInit;
+import org.fulib.fx.annotation.param.Param;
+import org.fulib.fx.annotation.controller.SubComponent;
+import org.fulib.fx.data.Rendered;
 import io.github.sekassel.uno.App;
 import io.github.sekassel.uno.Constants;
 import io.github.sekassel.uno.model.Card;

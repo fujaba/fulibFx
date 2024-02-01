@@ -1,6 +1,6 @@
 package io.github.sekassel.uno;
 
-import io.github.sekassel.jfxframework.annotation.Route;
+import org.fulib.fx.annotation.Route;
 import io.github.sekassel.uno.controller.*;
 
 import javax.inject.Inject;
