@@ -4,11 +4,41 @@ plugins {
     id "com.github.johnrengelman.shadow" version "7.0.0"
 }
 
+group projectGroup
+version projectVersion
+
+// ------------------- Dependencies -------------------
+
+repositories {
+    mavenCentral()
+    maven {
+        name = "jitpack"
+        url = "https://jitpack.io"
+    }
+}
+
 // JavaFX dependencies
 javafx {
     version = '20'
-    modules = [ 'javafx.controls', 'javafx.graphics', 'javafx.fxml', 'javafx.media']
+    modules = ['javafx.controls', 'javafx.graphics', 'javafx.fxml', 'javafx.media']
 }
+
+// Project dependencies
+dependencies {
+    // https://mvnrepository.com/artifact/org.jetbrains/annotations
+    implementation 'org.jetbrains:annotations:24.0.1'
+
+    // https://mvnrepository.com/artifact/com.google.dagger/dagger
+    implementation group: 'com.google.dagger', name: 'dagger', version: '2.42'
+
+    // https://mvnrepository.com/artifact/com.google.dagger/dagger-compiler
+    annotationProcessor group: 'com.google.dagger', name: 'dagger-compiler', version: '2.42'
+
+    // https://mvnrepository.com/artifact/io.reactivex.rxjava3/rxjava
+    implementation group: 'io.reactivex.rxjava3', name: 'rxjava', version: '3.1.4'
+}
+
+// ------------------- Tests -------------------
 
 // Test dependencies
 dependencies {
@@ -33,22 +63,11 @@ dependencies {
 
 }
 
-// Project dependencies
-dependencies {
-
-    // https://mvnrepository.com/artifact/org.jetbrains/annotations
-    implementation 'org.jetbrains:annotations:24.0.1'
-
-    // https://mvnrepository.com/artifact/com.google.dagger/dagger
-    implementation group: 'com.google.dagger', name: 'dagger', version: '2.42'
-
-    // https://mvnrepository.com/artifact/com.google.dagger/dagger-compiler
-    annotationProcessor group: 'com.google.dagger', name: 'dagger-compiler', version: '2.42'
-
-    // https://mvnrepository.com/artifact/io.reactivex.rxjava3/rxjava
-    implementation group: 'io.reactivex.rxjava3', name: 'rxjava', version: '3.1.4'
-
+test {
+    useJUnitPlatform()
 }
+
+// ------------------- Build -------------------
 
 java {
     sourceCompatibility = getVersionForMajor(javaSourceVersion)
@@ -62,6 +81,18 @@ java {
     }
 }
 
+static JavaVersion getVersionForMajor(String version) {
+    return JavaVersion.values().find { (it.majorVersion == version) }
+}
+
+compileJava {
+    options.encoding = "UTF-8"
+}
+
+javadoc {
+    options.encoding = "UTF-8"
+}
+
 sourcesJar {
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
@@ -71,31 +102,9 @@ jar {
         attributes(
                 'Manifest-Version': version,
                 'Class-Path': '.',
-                "Main-Class": projectMainClass
+                'Main-Class': projectMainClass,
         )
     }
 
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-}
-
-compileJava { options.encoding = "UTF-8" }
-javadoc { options.encoding = "UTF-8" }
-
-repositories {
-    mavenCentral()
-    maven {
-        name = "jitpack"
-        url = "https://jitpack.io"
-    }
-}
-
-group projectGroup
-version projectVersion
-
-static JavaVersion getVersionForMajor(String version) {
-    return JavaVersion.values().find { (it.majorVersion == version) }
-}
-
-test {
-    useJUnitPlatform()
 }
