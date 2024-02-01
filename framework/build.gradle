@@ -4,11 +4,6 @@ plugins {
     id "com.github.johnrengelman.shadow" version "7.0.0"
 }
 
-configurations {
-    internal
-    implementation.extendsFrom(internal)
-}
-
 // JavaFX dependencies
 javafx {
     version = '20'
@@ -72,10 +67,6 @@ sourcesJar {
 }
 
 jar {
-    from {
-        configurations.internal.collect { it.isDirectory() ? it : zipTree(it) }
-    }
-
     manifest {
         attributes(
                 'Manifest-Version': version,
@@ -100,12 +91,6 @@ repositories {
 
 group projectGroup
 version projectVersion
-
-// Include local jar dependencies
-dependencies {
-    implementation fileTree(dir: 'libs/implementation', include: '*.jar')
-    internal fileTree(dir: 'libs/internal', include: '*.jar')
-}
 
 static JavaVersion getVersionForMajor(String version) {
     return JavaVersion.values().find { (it.majorVersion == version) }
