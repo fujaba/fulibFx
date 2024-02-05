@@ -34,7 +34,6 @@ public class Modals {
      * @param component    The controller to show
      * @param initializer  the initializer for passing more arguments to the stage and controller
      * @param <Display>    the type of the controller
-     * @return the modal stage
      */
     public static <Display extends Node> void showModal(Stage currentStage, Display component, TriConsumer<Stage, Scene, Display> initializer) {
         showModal(currentStage, component, initializer, Map.of(), true);
@@ -69,7 +68,6 @@ public class Modals {
      * @param currentStage the current stage
      * @param component    the class of the controller to show
      * @param <Display>    the type of the controller
-     * @return the modal stage
      */
     public static <Display extends Node> void showModal(Stage currentStage, Display component) {
         showModal(currentStage, component, (stage, scene, controller) -> {

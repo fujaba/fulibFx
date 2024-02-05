@@ -6,6 +6,7 @@ import org.fulib.fx.FulibFxApp;
 
 import javax.inject.Singleton;
 
+@SuppressWarnings("unused")
 @Component
 @Singleton
 public interface TestComponent {
