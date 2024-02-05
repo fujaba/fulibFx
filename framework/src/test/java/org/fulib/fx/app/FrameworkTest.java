@@ -1,6 +1,6 @@
 package org.fulib.fx.app;
 
-import org.fulib.fx.FxFramework;
+import org.fulib.fx.FulibFxApp;
 import org.fulib.fx.app.controller.modal.ModalComponent;
 import org.fulib.fx.app.controller.sub.ButtonSubComponent;
 import org.fulib.fx.controller.Modals;
@@ -24,7 +24,7 @@ import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
 
 public class FrameworkTest extends ApplicationTest {
 
-    public final FxFramework app = new FxFramework() {
+    public final FulibFxApp app = new FulibFxApp() {
 
         final TestComponent component = DaggerTestComponent.builder().mainApp(this).build();
 
@@ -95,7 +95,7 @@ public class FrameworkTest extends ApplicationTest {
     @Test
     public void simpleForTest() {
         ObservableList<String> list = FXCollections.observableList(new ArrayList<>());
-        FxFramework.scheduler().scheduleDirect(() -> {
+        FulibFxApp.scheduler().scheduleDirect(() -> {
             list.add("Hello");
             list.add("World");
             list.add("!");
@@ -107,12 +107,12 @@ public class FrameworkTest extends ApplicationTest {
         VBox container = lookup("#container").queryAs(VBox.class);
         assertEquals(3, container.getChildren().size());
 
-        FxFramework.scheduler().scheduleDirect(() -> list.remove("World"));
+        FulibFxApp.scheduler().scheduleDirect(() -> list.remove("World"));
         waitForFxEvents();
 
         assertEquals(2, container.getChildren().size());
 
-        FxFramework.scheduler().scheduleDirect(() -> list.add(1, "World"));
+        FulibFxApp.scheduler().scheduleDirect(() -> list.add(1, "World"));
         waitForFxEvents();
 
         assertEquals(3, container.getChildren().size());

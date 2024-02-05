@@ -1,6 +1,6 @@
 package org.fulib.fx.util;
 
-import org.fulib.fx.FxFramework;
+import org.fulib.fx.FulibFxApp;
 import org.fulib.fx.annotation.Route;
 import org.fulib.fx.annotation.controller.Component;
 import org.fulib.fx.annotation.controller.Controller;
@@ -242,7 +242,7 @@ public class Util {
      */
     public static @NotNull File getResourceAsLocalFile(Class<?> clazz, String resource) {
         String classPath = clazz.getPackageName().replace(".", "/");
-        Path path = FxFramework.resourcesPath();
+        Path path = FulibFxApp.resourcesPath();
         return path.resolve(classPath).resolve(resource).toFile();
     }
 

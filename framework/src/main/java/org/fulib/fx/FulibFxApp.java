@@ -23,11 +23,11 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.logging.Logger;
 
-public abstract class FxFramework extends Application {
+public abstract class FulibFxApp extends Application {
 
     private static final Scheduler FX_SCHEDULER = Schedulers.from(Platform::runLater);
-    private static final Logger LOGGER = Logger.getLogger(FxFramework.class.getName());
-    private static FxFramework instance;
+    private static final Logger LOGGER = Logger.getLogger(FulibFxApp.class.getName());
+    private static FulibFxApp instance;
 
     private static Path resourcesPath = Path.of("src/main/resources");
 
@@ -40,7 +40,7 @@ public abstract class FxFramework extends Application {
     // The instance of the current main controller (last controller displayed with show())
     private Object currentMainController;
 
-    public FxFramework() {
+    public FulibFxApp() {
         if (instance != null)
             logger().warning("Multiple instances of FxFramework are not supported.");
         instance = this;
@@ -72,7 +72,7 @@ public abstract class FxFramework extends Application {
      *
      * @return The current instance of the framework
      */
-    public static FxFramework framework() {
+    public static FulibFxApp framework() {
         return instance;
     }
 

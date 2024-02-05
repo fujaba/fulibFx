@@ -2,7 +2,7 @@ package org.fulib.fx.app;
 
 import dagger.BindsInstance;
 import dagger.Component;
-import org.fulib.fx.FxFramework;
+import org.fulib.fx.FulibFxApp;
 
 import javax.inject.Singleton;
 
@@ -15,7 +15,7 @@ public interface TestComponent {
     @Component.Builder
     interface Builder {
         @BindsInstance
-        Builder mainApp(FxFramework app);
+        Builder mainApp(FulibFxApp app);
 
         TestComponent build();
     }

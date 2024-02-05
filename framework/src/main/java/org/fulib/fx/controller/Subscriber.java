@@ -1,6 +1,6 @@
 package org.fulib.fx.controller;
 
-import org.fulib.fx.FxFramework;
+import org.fulib.fx.FulibFxApp;
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.Scheduler;
@@ -65,7 +65,7 @@ public class Subscriber {
      * @param completable the completable to subscribe to
      */
     public void subscribe(@NotNull Completable completable) {
-        disposable().add(completable.observeOn(FxFramework.scheduler()).subscribe());
+        disposable().add(completable.observeOn(FulibFxApp.scheduler()).subscribe());
     }
 
     /**
@@ -75,7 +75,7 @@ public class Subscriber {
      * @param onComplete  the consumer to call on each event
      */
     public void subscribe(@NotNull Completable completable, @NotNull Action onComplete) {
-        disposable().add(completable.observeOn(FxFramework.scheduler()).subscribe(onComplete));
+        disposable().add(completable.observeOn(FulibFxApp.scheduler()).subscribe(onComplete));
     }
 
     /**
@@ -85,7 +85,7 @@ public class Subscriber {
      * @param onError     the consumer to call on an error
      */
     public void subscribe(@NotNull Completable completable, @NotNull Consumer<? super @NotNull Throwable> onError) {
-        disposable().add(completable.doOnError(onError).observeOn(FxFramework.scheduler()).subscribe());
+        disposable().add(completable.doOnError(onError).observeOn(FulibFxApp.scheduler()).subscribe());
     }
 
     /**
@@ -98,7 +98,7 @@ public class Subscriber {
      * @param <T>         the type of the items emitted by the Observable
      */
     public <T> void subscribe(@NotNull Observable<@NotNull T> observable, @NotNull Scheduler subscribeOn, @NotNull Consumer<@NotNull T> onNext, @NotNull Consumer<? super @NotNull Throwable> onError) {
-        disposable().add(observable.subscribeOn(subscribeOn).observeOn(FxFramework.scheduler()).subscribe(onNext, onError));
+        disposable().add(observable.subscribeOn(subscribeOn).observeOn(FulibFxApp.scheduler()).subscribe(onNext, onError));
     }
 
     /**
@@ -119,7 +119,7 @@ public class Subscriber {
      * @param <T>        the type of the items emitted by the Observable
      */
     public <T> void subscribe(@NotNull Observable<@NotNull T> observable, @NotNull Consumer<@NotNull T> onNext) {
-        disposable().add(observable.observeOn(FxFramework.scheduler()).subscribe(onNext));
+        disposable().add(observable.observeOn(FulibFxApp.scheduler()).subscribe(onNext));
     }
 
     /**
@@ -131,7 +131,7 @@ public class Subscriber {
      * @param <T>        the type of the items emitted by the Observable
      */
     public <T> void subscribe(@NotNull Observable<@NotNull T> observable, @NotNull Consumer<@NotNull T> onNext, @NotNull Consumer<? super @NotNull Throwable> onError) {
-        disposable().add(observable.observeOn(FxFramework.scheduler()).subscribe(onNext, onError));
+        disposable().add(observable.observeOn(FulibFxApp.scheduler()).subscribe(onNext, onError));
     }
 
     /**

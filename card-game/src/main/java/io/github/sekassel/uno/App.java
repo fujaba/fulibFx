@@ -1,6 +1,6 @@
 package io.github.sekassel.uno;
 
-import org.fulib.fx.FxFramework;
+import org.fulib.fx.FulibFxApp;
 import io.github.sekassel.uno.controller.Titleable;
 import io.github.sekassel.uno.dagger.DaggerMainComponent;
 import io.github.sekassel.uno.dagger.MainComponent;
@@ -16,7 +16,7 @@ import static javafx.scene.input.KeyEvent.KEY_PRESSED;
 /**
  * The main class of your application.
  */
-public class App extends FxFramework {
+public class App extends FulibFxApp {
 
 
     /**

@@ -1,12 +1,12 @@
 package org.fulib.fx.app;
 
-import org.fulib.fx.FxFramework;
+import org.fulib.fx.FulibFxApp;
 import javafx.stage.Stage;
 import org.testfx.framework.junit5.ApplicationTest;
 
 public class ControllerTest extends ApplicationTest {
 
-    public final FxFramework app = new FxFramework() {
+    public final FulibFxApp app = new FulibFxApp() {
         @Override
         public void start(Stage stage) {
             super.start(stage);

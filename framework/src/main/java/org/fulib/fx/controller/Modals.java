@@ -1,6 +1,6 @@
 package org.fulib.fx.controller;
 
-import org.fulib.fx.FxFramework;
+import org.fulib.fx.FulibFxApp;
 import org.fulib.fx.data.TriConsumer;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
@@ -30,7 +30,7 @@ public class Modals {
      * Warning: If the {@link Stage#setOnCloseRequest(EventHandler)} method is overridden,
      * the controller will not be destroyed automatically.
      *
-     * @param currentStage the current stage (see {@link FxFramework#stage()}
+     * @param currentStage the current stage (see {@link FulibFxApp#stage()}
      * @param component    The controller to show
      * @param initializer  the initializer for passing more arguments to the stage and controller
      * @param <Display>    the type of the controller
@@ -91,11 +91,11 @@ public class Modals {
      * @param <Display>    the type of the controller
      */
     public static <Display extends Node> void showModal(Stage currentStage, Display component, TriConsumer<Stage, Scene, Display> initializer, Map<String, Object> params, boolean destroyOnClose) {
-        FxFramework.scheduler().scheduleDirect(() -> {
-            ModalStage modalStage = new ModalStage(destroyOnClose ? () -> FxFramework.framework().frameworkComponent().controllerManager().destroy(component) : null);
+        FulibFxApp.scheduler().scheduleDirect(() -> {
+            ModalStage modalStage = new ModalStage(destroyOnClose ? () -> FulibFxApp.framework().frameworkComponent().controllerManager().destroy(component) : null);
 
 
-            Parent rendered = FxFramework.framework().frameworkComponent().controllerManager().initAndRender(component, params);
+            Parent rendered = FulibFxApp.framework().frameworkComponent().controllerManager().initAndRender(component, params);
 
             Scene scene = new Scene(rendered);
             scene.setFill(Paint.valueOf("transparent"));

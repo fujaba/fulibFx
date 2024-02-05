@@ -8,7 +8,7 @@ import org.fulib.fx.annotation.event.onDestroy;
 import org.fulib.fx.annotation.event.onRender;
 import org.fulib.fx.data.Tuple;
 import org.fulib.fx.util.disposable.RefreshableCompositeDisposable;
-import org.fulib.fx.FxFramework;
+import org.fulib.fx.FulibFxApp;
 import org.fulib.fx.annotation.event.onInit;
 import org.fulib.fx.controller.building.ControllerBuildFactory;
 import org.fulib.fx.controller.exception.IllegalControllerException;
@@ -231,7 +231,7 @@ public class ControllerManager {
                     .filter(tuple -> tuple.first() != null)
                     .filter(tuple -> !tuple.second().disposed()) // Filter out disposed subscribers
                     .forEach(tuple ->
-                            FxFramework.logger().warning("Found undestroyed subscriber '%s' in class '%s'.".formatted(tuple.first().getName(), instance.getClass().getName()))
+                            FulibFxApp.logger().warning("Found undestroyed subscriber '%s' in class '%s'.".formatted(tuple.first().getName(), instance.getClass().getName()))
                     );
         }
     }
@@ -303,7 +303,7 @@ public class ControllerManager {
                 .stream()
                 .filter(field -> {
                     if (!field.getType().isAnnotationPresent(Component.class)) {
-                        FxFramework.logger().warning("Field '%s' in class '%s' is annotated with @SubComponent but is not a subcomponent.".formatted(field.getName(), instance.getClass().getName()));
+                        FulibFxApp.logger().warning("Field '%s' in class '%s' is annotated with @SubComponent but is not a subcomponent.".formatted(field.getName(), instance.getClass().getName()));
                         return false;
                     }
                     return true;

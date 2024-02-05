@@ -2,7 +2,7 @@ package org.fulib.fx.dagger;
 
 import dagger.BindsInstance;
 import dagger.Component;
-import org.fulib.fx.FxFramework;
+import org.fulib.fx.FulibFxApp;
 import org.fulib.fx.controller.AutoRefresher;
 import org.fulib.fx.controller.ControllerManager;
 import org.fulib.fx.controller.Router;
@@ -17,7 +17,7 @@ public interface FrameworkComponent {
     Router router();
 
     @Singleton
-    FxFramework framework();
+    FulibFxApp framework();
 
     @Singleton
     AutoRefresher autoRefresher();
@@ -28,7 +28,7 @@ public interface FrameworkComponent {
     @Component.Builder
     interface Builder {
         @BindsInstance
-        Builder framework(FxFramework framework);
+        Builder framework(FulibFxApp framework);
 
         FrameworkComponent build();
     }

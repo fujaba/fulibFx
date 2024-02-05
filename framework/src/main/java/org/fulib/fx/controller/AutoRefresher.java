@@ -1,7 +1,7 @@
 package org.fulib.fx.controller;
 
 import dagger.Lazy;
-import org.fulib.fx.FxFramework;
+import org.fulib.fx.FulibFxApp;
 import org.fulib.fx.util.Constants;
 import org.fulib.fx.util.Util;
 import io.reactivex.rxjava3.disposables.Disposable;
@@ -19,7 +19,7 @@ import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 public class AutoRefresher {
 
     @Inject
-    Lazy<FxFramework> framework;
+    Lazy<FulibFxApp> framework;
 
     WatchService watchService;
     Disposable disposable;
@@ -32,7 +32,7 @@ public class AutoRefresher {
     public void setup(Path directory) {
 
         if (!Util.runningInDev()) {
-            FxFramework.logger().warning("AutoRefresher is only meant to be used in development mode! Not starting.");
+            FulibFxApp.logger().warning("AutoRefresher is only meant to be used in development mode! Not starting.");
             return;
         }
 
@@ -60,8 +60,8 @@ public class AutoRefresher {
                         if (file.getFileName().toString().contains(".fxml")) {
                             // Check if the file contains the current main controller as fx:controller (only reload if the fxml file is actually used)
                             if (Util.getContent(file.toFile()).contains(String.format(Constants.FX_CONTROLLER_STRING, framework.get().currentMainController().getClass().getName()))) {
-                                FxFramework.scheduler().scheduleDirect(() -> {
-                                    FxFramework.logger().info("Reloading " + file.getFileName() + " because it was modified.");
+                                FulibFxApp.scheduler().scheduleDirect(() -> {
+                                    FulibFxApp.logger().info("Reloading " + file.getFileName() + " because it was modified.");
                                     framework.get().refresh();
                                 });
                             }

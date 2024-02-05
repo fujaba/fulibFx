@@ -1,18 +1,18 @@
-# ☕ JFX Framework
+# ☕ fulibFx
 
-JFX Framework is a versatile Framework for JavaFX applications that is specifically designed for MVC pattern projects.
+fulibFx is a versatile framework for JavaFX applications that is specifically designed for MVC pattern projects.
 
 ## ❓ How to start?
 
-To make use of this framework, you need to create an `App` class (e.g., `TodoApp.class`) that extends the `FxFramework`
+To make use of this framework, you need to create an `App` class (e.g., `TodoApp.class`) that extends the `FulibFxApp`
 class and overrides its `start` method. If you already have a JavaFX App class, you can easily migrate by
-changing `extends Application` to `extends FxFramework`.
+changing `extends Application` to `extends FulibFxApp`.
 
 In the `start` method, you should call `super.start(primaryStage)` to initialize the framework. After that, you can
 proceed to set up your routes and controllers.
 
 ```java
-public class TodoApp extends FxFramework {
+public class TodoApp extends FulibFxApp {
 
     @Override
     public void start(Stage primaryStage) {
@@ -330,7 +330,7 @@ There might be situations where you need a variable amount of sub-controllers bu
 In this case you can also create or provide your own instance(s) and initialize/render it manually.
 
 Either inject a `Provider<T>` and call `get()` or create/inject a new instance of the controller manually.
-After aquireing the instance, you can initialize and render it manually using the `initAndRender` method of the `FxFramework` class.
+After aquireing the instance, you can initialize and render it manually using the `initAndRender` method of the `FulibFxApp` class.
 This method takes the controller, a map of parameters and a boolean specifying if the controller should be cleaned up automatically (with the current main controller).
 The method returns a `Rendered<T>` object containing the rendered controller and a disposable that can be used to clean up the controller.
 
@@ -342,7 +342,7 @@ import java.util.Map;
 public class TodoController {
 
     @Inject
-    App app; // App is the class extending FxFramework
+    App app; // App is the class extending FulibFxApp
 
     @FXML
     VBox container; // VBox is specified in the FXML file
@@ -379,7 +379,7 @@ will not clear them up them automatically. You should therefore save the disposa
 when the controller is destroyed.
 
 This can be done by creating a `CompositeDisposable`, adding all disposables to it and then calling `compositeDisposable.dispose()`
-in a `@ControllerEvent.onDestroy` annotated method.
+in a `@onDestroy` annotated method.
 
 The framework also provides utility classes for dealing with subscriptions and other mechanisms requiring cleanup.
 By creating a new `Subscriber` instance (or by using dependency injection to provide one) and using its utility methods,
@@ -468,15 +468,15 @@ This setup will result in the following routing tree:
 
 <img src=".github/assets/route-diagram.png" height="300" alt="Routing tree showing main, login, todo and register routes in a tree like structure">
 
-After setting up the router class, register it in the `FxFramework` class by calling the `registerRoutes(Object)` method.
+After setting up the router class, register it in the `FulibFxApp` class by calling the `registerRoutes(Object)` method.
 It is recommended to use dependency injection (module/component) to provide a router instance to the method.
 
 ## 🖥 Displaying controllers
 
-To display a controller, you have to call the `show()` method of the `FxFramework` class and pass the route.
+To display a controller, you have to call the `show()` method of the `FulibFxApp` class and pass the route.
 
 ```java
-public class TodoApp extends FxFramework {
+public class TodoApp extends FulibFxApp {
     
     @Override
     public void start(Stage primaryStage) {
@@ -535,9 +535,9 @@ used to go back and forth between previously visited routes. The history is auto
 method. The history works like the history of a browser, meaning you can go back and forth again, but after going back
 and visiting an alternative route, the routes that were previously in the history will be removed.
 
-The history can be navigated using the `back()` and `forward()` methods of the `FxFramework` class.
+The history can be navigated using the `back()` and `forward()` methods of the `FulibFxApp` class.
 
-Using the `refresh()` method of the `FxFramework` class, you can refresh the currently displayed controller. This will
+Using the `refresh()` method of the `FulibFxApp` class, you can refresh the currently displayed controller. This will
 destroy the controller and reload it with the same parameters as before. This can be used to update the view of a
 controller whilst being in dev mode. Refreshing a controller will run the `onDestroy` method of the controller and then 
 run the `onInit` and `onRender` methods again.
@@ -692,7 +692,7 @@ public class SubController extends VBox {
         System.out.println("onInit SubController");
     }
 
-    @ControllerEvent.onRender
+    @onRender
     public void onRender() {
         System.out.println("onRender SubController");
     }
@@ -707,12 +707,12 @@ public class ForController extends VBox {
 
     // Constructor, elements etc.
 
-    @ControllerEvent.onInit
+    @onInit
     public void onInit() {
         System.out.println("onInit ForController");
     }
 
-    @ControllerEvent.onRender
+    @onRender
     public void onRender() {
         System.out.println("onRender ForController");
     }
