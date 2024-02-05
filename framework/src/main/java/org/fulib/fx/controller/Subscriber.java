@@ -11,7 +11,6 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import org.fulib.fx.FulibFxApp;
 import org.fulib.fx.util.disposable.RefreshableCompositeDisposable;
-import org.fulib.fx.util.disposable.RefreshableDisposable;
 import org.fulib.fx.util.disposable.RefreshableDisposableContainer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -26,7 +25,7 @@ import java.beans.PropertyChangeSupport;
  * The subscriber saves all subscriptions and disposes them when it is destroyed.
  * Subscribers which are declared with a field in a controller are automatically destroyed when the controller is destroyed.
  */
-public class Subscriber implements RefreshableDisposable {
+public class Subscriber implements RefreshableDisposableContainer {
 
     /**
      * The composite disposable for this subscriber.
@@ -230,5 +229,44 @@ public class Subscriber implements RefreshableDisposable {
     @Override
     public boolean isFresh() {
         return this.disposable().isFresh();
+    }
+
+    /**
+     * Adds a disposable to the composite disposable.
+     *
+     * @param d The disposable to add
+     * @return true if the disposable was added, false otherwise
+     * @deprecated Use {@link #subscribe(Disposable)} instead
+     */
+    @Deprecated
+    @Override
+    public boolean add(Disposable d) {
+        return this.disposable().add(d);
+    }
+
+    /**
+     * Adds a disposable to the composite disposable.
+     *
+     * @param d The disposable to add
+     * @return true if the disposable was added, false otherwise
+     * @deprecated Removing disposables from the composite disposable should not be done manually.
+     */
+    @Deprecated
+    @Override
+    public boolean remove(Disposable d) {
+        return this.disposable != null && this.disposable.remove(d);
+    }
+
+    /**
+     * Adds a disposable to the composite disposable.
+     *
+     * @param d The disposable to add
+     * @return true if the disposable was added, false otherwise
+     * @deprecated Deleting disposables from the composite disposable should not be done manually.
+     */
+    @Deprecated
+    @Override
+    public boolean delete(Disposable d) {
+        return this.disposable != null && this.disposable.delete(d);
     }
 }

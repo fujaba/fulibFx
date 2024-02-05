@@ -1,14 +1,5 @@
 package io.github.sekassel.uno.controller;
 
-import org.fulib.fx.annotation.event.onDestroy;
-import org.fulib.fx.annotation.event.onRender;
-import org.fulib.fx.constructs.For;
-import org.fulib.fx.controller.Subscriber;
-import org.fulib.fx.annotation.controller.Controller;
-import org.fulib.fx.annotation.event.onInit;
-import org.fulib.fx.annotation.param.Param;
-import org.fulib.fx.annotation.controller.SubComponent;
-import org.fulib.fx.data.Rendered;
 import io.github.sekassel.uno.App;
 import io.github.sekassel.uno.Constants;
 import io.github.sekassel.uno.model.Card;
@@ -27,6 +18,14 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import org.fulib.fx.annotation.controller.Controller;
+import org.fulib.fx.annotation.controller.SubComponent;
+import org.fulib.fx.annotation.event.onDestroy;
+import org.fulib.fx.annotation.event.onInit;
+import org.fulib.fx.annotation.event.onRender;
+import org.fulib.fx.annotation.param.Param;
+import org.fulib.fx.constructs.For;
+import org.fulib.fx.controller.Subscriber;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -122,6 +121,7 @@ public class IngameController implements Titleable {
         // Setup gui elements
         setupPropertyChangeListeners();
         renderBots();
+        displayLastPlayed(this.game.getCurrentCard());
 
 
         // Render the cards of the player
@@ -303,7 +303,7 @@ public class IngameController implements Titleable {
 
             // Create a new controller for the bot. Since the controller isn't rendered by the framework, we have to initialize it manually using initAndRender.
             // Since the controller will persist for the whole lifetime of the game, we can let the framework handle the destruction of the controller.
-            BotController botController = app.initAndRender(botControllerProvider.get(), Map.of("bot", player, "parent", this), true).rendered();
+            BotController botController = app.initAndRender(botControllerProvider.get(), Map.of("bot", player, "parent", this), subscriber);
 
             bots.put(player, botController);
 
@@ -352,8 +352,7 @@ public class IngameController implements Titleable {
         if (!cards.containsKey(card)) {
             // Create a new controller for the card. Since the controller isn't rendered by the framework, we have to initialize it manually using initAndRender.
             // Since the controller won't persist for the whole lifetime of the game, we have to handle the destruction of the controller manually (see above).
-            Rendered<CardController> rendered = app.initAndRender(cardControllerProvider.get().setCard(card), false);
-            CardController controller = rendered.rendered();
+            CardController controller = app.initAndRender(cardControllerProvider.get().setCard(card));
             cards.put(card, controller);
         }
 

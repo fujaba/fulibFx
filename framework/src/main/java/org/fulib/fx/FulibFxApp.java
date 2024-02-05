@@ -1,9 +1,9 @@
 package org.fulib.fx;
 
+import io.reactivex.rxjava3.disposables.DisposableContainer;
 import org.fulib.fx.annotation.controller.Component;
 import org.fulib.fx.controller.AutoRefresher;
 import org.fulib.fx.dagger.FrameworkComponent;
-import org.fulib.fx.data.Rendered;
 import org.fulib.fx.data.Tuple;
 import org.fulib.fx.dagger.DaggerFrameworkComponent;
 import org.fulib.fx.util.Util;
@@ -99,43 +99,73 @@ public abstract class FulibFxApp extends Application {
     /**
      * Initializes and renders a component instance (a controller with the {@link Component} annotation).
      * <p>
-     * If destroyWithCurrent is false, the method will NOT add the controller to the set of initialized controllers and the
-     * controller will not be destroyed when a new main controller is set.
+     * If a disposable is provided, the disposable will be modified to include the cleanup of the rendered component.
+     * The provided disposable can be used to destroy the component with all its children manually.
      * <p>
-     * If destroyWithCurrent is true, the controller will be added to the set of initialized controllers and will be destroyed when
-     * a new main controller is set.
+     * If no disposable is provided, the component has to be destroyed manually, for example by calling {@link #destroy(Parent)}.
      *
-     * @param controller         The controller instance
-     * @param destroyWithCurrent Whether the controller shall be destroyed when a new main controller is set
-     * @return The rendered controller
+     * @param component The component instance
+     * @param <T>       The type of the component
+     * @param onDestroy A disposable which will be modified to include the disposable of the component
+     * @return The rendered component
      */
-    public @NotNull <T extends Parent> Rendered<T> initAndRender(@NotNull T controller, boolean destroyWithCurrent) {
-        return initAndRender(controller, Map.of(), destroyWithCurrent);
+    public @NotNull <T extends Parent> T initAndRender(@NotNull T component, DisposableContainer onDestroy) {
+        return initAndRender(component, Map.of(), onDestroy);
     }
 
     /**
      * Initializes and renders a component instance (a controller with the {@link Component} annotation).
      * <p>
-     * If destroyWithCurrent is false, the method will NOT add the controller to the set of initialized controllers and the
-     * controller will not be destroyed when a new main controller is set.
-     * <p>
-     * If destroyWithCurrent is true, the controller will be added to the set of initialized controllers and will be destroyed when
-     * a new main controller is set.
+     * The component has to be destroyed manually, for example by calling {@link #destroy(Parent)}.
      *
-     * @param component          The component instance
-     * @param params             The arguments passed to the component
-     * @param destroyWithCurrent Whether the component shall be destroyed when a new main component is set
-     * @return The rendered component and a disposable that can be used to destroy the component with all its children manually
+     * @param component The component instance
+     * @param <T>       The type of the component
+     * @return The rendered component
      */
-    public @NotNull <T extends Parent> Rendered<T> initAndRender(@NotNull T component, Map<String, Object> params, boolean destroyWithCurrent) {
+    public @NotNull <T extends Parent> T initAndRender(@NotNull T component) {
+        return initAndRender(component, Map.of(), null);
+    }
+
+    /**
+     * Initializes and renders a component instance (a controller with the {@link Component} annotation).
+     * <p>
+     * The component has to be destroyed manually, for example by calling {@link #destroy(Parent)}.
+     *
+     * @param component The component instance
+     * @param params    The arguments passed to the component
+     * @param <T>       The type of the component
+     * @return The rendered component
+     */
+    public @NotNull <T extends Parent> T initAndRender(@NotNull T component, Map<String, Object> params) {
+        return initAndRender(component, params, null);
+    }
+
+
+    /**
+     * Initializes and renders a component instance (a controller with the {@link Component} annotation).
+     * <p>
+     * If a disposable is provided, the disposable will be modified to include the cleanup of the rendered component.
+     * The provided disposable can be used to destroy the component with all its children manually.
+     * <p>
+     * If no disposable is provided, the component has to be destroyed manually, for example by calling {@link #destroy(Parent)}.
+     *
+     * @param component The component instance
+     * @param params    The arguments passed to the component
+     * @param onDestroy A disposable which will be modified to include the disposable of the component
+     * @return The rendered component
+     */
+    public @NotNull <T extends Parent> T initAndRender(@NotNull T component, Map<String, Object> params, DisposableContainer onDestroy) {
         if (!Util.isComponent(component))
             throw new IllegalArgumentException("Class '%s' is not a component.".formatted(component.getClass().getName()));
 
-        Disposable disposable = this.component.controllerManager().init(component, params, destroyWithCurrent);
+        Disposable disposable = this.component.controllerManager().init(component, params, false);
+        if (onDestroy != null) {
+            onDestroy.add(disposable);
+        }
+
         @SuppressWarnings("unchecked") // We know that the component will return itself as the view
         T rendered = (T) this.component.controllerManager().render(component, params);
-
-        return Rendered.of(rendered, disposable);
+        return rendered;
     }
 
     /**
