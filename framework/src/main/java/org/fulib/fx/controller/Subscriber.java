@@ -1,16 +1,18 @@
 package org.fulib.fx.controller;
 
-import org.fulib.fx.FulibFxApp;
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.Scheduler;
-import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.functions.Action;
 import io.reactivex.rxjava3.functions.Consumer;
 import javafx.beans.property.Property;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import org.fulib.fx.FulibFxApp;
+import org.fulib.fx.util.disposable.RefreshableCompositeDisposable;
+import org.fulib.fx.util.disposable.RefreshableDisposable;
+import org.fulib.fx.util.disposable.RefreshableDisposableContainer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -24,7 +26,7 @@ import java.beans.PropertyChangeSupport;
  * The subscriber saves all subscriptions and disposes them when it is destroyed.
  * Subscribers which are declared with a field in a controller are automatically destroyed when the controller is destroyed.
  */
-public class Subscriber {
+public class Subscriber implements RefreshableDisposable {
 
     /**
      * The composite disposable for this subscriber.
@@ -32,7 +34,7 @@ public class Subscriber {
      * This field is initialized lazily. Use {@link #disposable()} to access it null-safely.
      */
     @Nullable
-    private CompositeDisposable disposable;
+    private RefreshableDisposableContainer disposable;
 
     /**
      * Creates a new subscriber.
@@ -46,7 +48,7 @@ public class Subscriber {
      *
      * @param action the runnable to execute
      */
-    public void addDestroyable(@NotNull Runnable action) {
+    public void subscribe(@NotNull Runnable action) {
         disposable().add(Disposable.fromRunnable(action));
     }
 
@@ -55,7 +57,7 @@ public class Subscriber {
      *
      * @param disposable the disposable to dispose
      */
-    public void addDestroyable(@NotNull Disposable disposable) {
+    public void subscribe(@NotNull Disposable disposable) {
         disposable().add(disposable);
     }
 
@@ -143,7 +145,7 @@ public class Subscriber {
      */
     public <T> void listen(@NotNull ObservableValue<@NotNull T> property, @NotNull ChangeListener<? super @NotNull T> listener) {
         property.addListener(listener);
-        addDestroyable(() -> property.removeListener(listener));
+        subscribe(() -> property.removeListener(listener));
     }
 
     /**
@@ -155,7 +157,7 @@ public class Subscriber {
      */
     public void listen(@NotNull PropertyChangeSupport support, @NotNull String property, @NotNull PropertyChangeListener changeListener) {
         support.addPropertyChangeListener(property, changeListener);
-        addDestroyable(() -> support.removePropertyChangeListener(property, changeListener));
+        subscribe(() -> support.removePropertyChangeListener(property, changeListener));
     }
 
     /**
@@ -166,7 +168,7 @@ public class Subscriber {
      */
     public void listen(@NotNull PropertyChangeSupport support, @NotNull PropertyChangeListener changeListener) {
         support.addPropertyChangeListener(changeListener);
-        addDestroyable(() -> support.removePropertyChangeListener(changeListener));
+        subscribe(() -> support.removePropertyChangeListener(changeListener));
     }
 
     /**
@@ -178,7 +180,7 @@ public class Subscriber {
      */
     public <T> void bind(@NotNull Property<@NotNull T> property, @NotNull ObservableValue<@NotNull T> other) {
         property.bind(other);
-        addDestroyable(property::unbind);
+        subscribe(property::unbind);
     }
 
     /**
@@ -190,38 +192,43 @@ public class Subscriber {
      */
     public <T> void bindBidirectional(@NotNull Property<@NotNull T> property, @NotNull Property<@NotNull T> other) {
         property.bindBidirectional(other);
-        addDestroyable(() -> property.unbindBidirectional(other));
+        subscribe(() -> property.unbindBidirectional(other));
     }
 
     /**
-     * Returns the composite disposable for this subscriber. If the disposable does not exist yet, it will be created.
+     * Returns the internal composite disposable for this subscriber. If the disposable does not exist yet, it will be created.
      *
      * @return The composite disposable for this subscriber
      */
-    public @NotNull CompositeDisposable disposable() {
+    @NotNull
+    private RefreshableDisposableContainer disposable() {
         if (this.disposable == null || this.disposable.isDisposed())
-            this.disposable = new CompositeDisposable();
+            this.disposable = new RefreshableCompositeDisposable();
         return this.disposable;
     }
 
-    /**
-     * Returns whether the subscriber has been disposed.
-     *
-     * @return Whether the subscriber has been disposed
-     */
-    public boolean disposed() {
-        return this.disposable == null || this.disposable.isDisposed();
+    @Override
+    public boolean isDisposed() {
+        if (this.disposable == null) {
+            return false;
+        }
+        return this.disposable.isDisposed();
     }
 
-    /**
-     * Method called by the framework when the controller using this subscriber is destroyed.
-     * Internal use only.
-     */
-    public void destroy() {
+    @Override
+    public void dispose() {
         if (this.disposable != null) {
             this.disposable.dispose();
-            this.disposable = null;
         }
     }
 
+    @Override
+    public boolean refresh() {
+        return this.disposable().refresh();
+    }
+
+    @Override
+    public boolean isFresh() {
+        return this.disposable().isFresh();
+    }
 }

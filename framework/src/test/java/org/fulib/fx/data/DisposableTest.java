@@ -1,12 +1,14 @@
 package org.fulib.fx.data;
 
+import io.reactivex.rxjava3.disposables.Disposable;
+import org.fulib.fx.controller.Subscriber;
 import org.fulib.fx.util.disposable.ItemListDisposable;
 import org.fulib.fx.util.disposable.RefreshableCompositeDisposable;
-import io.reactivex.rxjava3.disposables.Disposable;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -81,6 +83,28 @@ public class DisposableTest {
 
         assertEquals(6, disposedItems.size()); // The action should have been executed for all items
         assertEquals(List.of("3", "2", "1", "4", "5", "6"), disposedItems); // The action should have been executed for all items in reverse order
+    }
+
+    @Test
+    public void subscriberTest() {
+
+        AtomicInteger count = new AtomicInteger();
+
+        Subscriber subscriber = new Subscriber();
+
+        assertFalse(subscriber.isDisposed()); // The disposable should not be disposed
+        assertTrue(subscriber.isFresh()); // The disposable should be clean
+
+        subscriber.subscribe(Disposable.fromRunnable(count::getAndIncrement));
+
+        assertFalse(subscriber.isDisposed()); // The disposable should not be disposed
+        assertFalse(subscriber.isFresh()); // The disposable should not be clean
+
+        subscriber.dispose();
+
+        assertTrue(subscriber.isDisposed()); // The disposable should be disposed
+        assertEquals(1, count.get()); // The action should have been executed
+
     }
 
 }

@@ -2,12 +2,11 @@ package org.fulib.fx.util.disposable;
 
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.disposables.Disposable;
-import io.reactivex.rxjava3.disposables.DisposableContainer;
 
 /**
  * Wrapper for a {@link CompositeDisposable} which can be refreshed.
  */
-public class RefreshableCompositeDisposable implements RefreshableDisposable, DisposableContainer {
+public class RefreshableCompositeDisposable implements RefreshableDisposableContainer {
 
     private CompositeDisposable compositeDisposable;
 

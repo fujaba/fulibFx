@@ -1,7 +1,5 @@
 package org.fulib.fx.data;
 
-import org.fulib.fx.data.TraversableNodeTree;
-import org.fulib.fx.data.TraversableTree;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

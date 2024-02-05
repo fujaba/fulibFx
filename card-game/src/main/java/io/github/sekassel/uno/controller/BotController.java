@@ -112,7 +112,7 @@ public class BotController extends VBox implements Titleable {
     public void destroy() {
         // Remove the bot from the game
         this.gameService.getBotService().removeBot(bot);
-        this.subscriber.destroy();
+        this.subscriber.dispose();
     }
 
     @Inject

@@ -229,7 +229,7 @@ public class ControllerManager {
                     })
                     .filter(Objects::nonNull)
                     .filter(tuple -> tuple.first() != null)
-                    .filter(tuple -> !tuple.second().disposed()) // Filter out disposed subscribers
+                    .filter(tuple -> !tuple.second().isDisposed()) // Filter out disposed subscribers
                     .forEach(tuple ->
                             FulibFxApp.logger().warning("Found undestroyed subscriber '%s' in class '%s'.".formatted(tuple.first().getName(), instance.getClass().getName()))
                     );

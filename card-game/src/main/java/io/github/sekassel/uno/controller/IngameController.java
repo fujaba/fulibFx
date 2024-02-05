@@ -125,11 +125,11 @@ public class IngameController implements Titleable {
 
 
         // Render the cards of the player
-        subscriber.addDestroyable(
+        subscriber.subscribe(
                 For.of(this.cardListHBox, this.game.getFirstPlayer().getCards(), cardControllerProvider, (controller, card) -> {
                     controller.setCard(card);
                     this.cards.put(card, controller);
-                    controller.subscriber.addDestroyable(() -> this.cards.remove(card));
+                    controller.subscriber.subscribe(() -> this.cards.remove(card));
                 }).disposable()
         );
     }
@@ -401,7 +401,7 @@ public class IngameController implements Titleable {
     @onDestroy
     public void destroy() {
         // Remove the card from the game
-        this.subscriber.destroy();
+        this.subscriber.dispose();
     }
 
 

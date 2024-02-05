@@ -3,7 +3,7 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.VBox?>
 
-<?import io.github.sekassel.jfxframework.app.controller.sub.ButtonSubComponent?>
+<?import org.fulib.fx.app.controller.sub.ButtonSubComponent?>
 <VBox xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.fulib.fx.app.controller.SubComponentController">
    <Label text="Basic Controller with a sub component"/>
    <ButtonSubComponent fx:id="buttonSubComponent" minWidth="100" />

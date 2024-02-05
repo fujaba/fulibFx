@@ -73,7 +73,7 @@ public class SetupController implements Titleable {
      */
     private void setupPlayButton() {
         playButton.disableProperty().bind(nicknameField.textProperty().isEmpty());
-        subscriber.addDestroyable(() -> playButton.disableProperty().unbind());
+        subscriber.subscribe(() -> playButton.disableProperty().unbind());
     }
 
     /**
@@ -91,7 +91,7 @@ public class SetupController implements Titleable {
     @onDestroy
     public void destroy() {
         // Remove the card from the game
-        this.subscriber.destroy();
+        this.subscriber.dispose();
     }
 
 

@@ -109,7 +109,7 @@ public class CardController extends VBox implements Titleable {
     @onDestroy
     public void destroy() {
         // Remove the card from the game
-        this.subscriber.destroy();
+        this.subscriber.dispose();
     }
 
 
