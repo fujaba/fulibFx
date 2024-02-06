@@ -331,8 +331,9 @@ In this case you can also create or provide your own instance(s) and initialize/
 
 Either inject a `Provider<T>` and call `get()` or create/inject a new instance of the controller manually.
 After aquireing the instance, you can initialize and render it manually using the `initAndRender` method of the `FulibFxApp` class.
-This method takes the controller, a map of parameters and a boolean specifying if the controller should be cleaned up automatically (with the current main controller).
-The method returns a `Rendered<T>` object containing the rendered controller and a disposable that can be used to clean up the controller.
+This method takes the controller, a map of parameters and a container disposable (e.g. ComponentDisposable or Subscriber).
+The method will return the rendered instance of the component. If a disposable has been provided, a cleanup task for this component will be added to it.
+Otherwise, one has to manually cleanup the component by calling the `destroy` method in the `FulibFxApp` class.
 
 ```java
 
@@ -350,8 +351,15 @@ public class TodoController {
     @Inject
     Provider<TodoListComponent> todoListComponentProvider;
 
+			@Inject
+			@SubComponent // This component will be framework
+			TodoManagerComponent todoManagerComponent;
+
     @Inject // Do not use @SubComponent annotation, as we want to manage the sub-controller manually
     TodoInputComponent todoInputComponent;
+
+			@Inject
+			Subscriber subscriber;
 
     // Default constructor (for dependency injection etc.)
     @Inject
@@ -360,12 +368,11 @@ public class TodoController {
 
     @onRender
     public void onRender() {
-        Rendered<TodoListComponent> result = app.initAndRender(todoListComponentProvider.get(), Map.of(), false); // This sub-controller has to be cleaned up manually
-        container.getChildren().add(result.rendered()); // Add the sub-controller to the view
-        Disposable disposable = result.disposed(); // can be used to get a disposable that will dispose the sub-controller when called
-
-        // This sub-controller will be cleaned up automatically, therefore we don't need to save the result for the disposable
-        container.getChildren().add(app.initAndRender(todoInputComponent, Map.of(), true).rendered());
+        TodoListComponent result = app.initAndRender(todoListComponentProvider.get(), Map.of("param", value), subscriber); // This sub-controller has to be cleaned up manually by disposing the subscriber
+        container.getChildren().add(result); // Add the sub-controller to the view
+        
+        // This sub-controller has to be cleaned up manually, e.g. by calling destroy in the app
+        container.getChildren().add(app.initAndRender(todoInputComponent));
         
     }
 }
@@ -408,14 +415,14 @@ public class TodoController {
         this.subscriber.subscribe(this.todoService.getTodos(), todos -> {
             // Do something with the todos
         }); 
-        this.subscriber.addDestroyable(() -> {
+        this.subscriber.subscribe(() -> {
             // Add custom logic to be executed when the controller is destroyed
         });
     }
     
     @onDestroy
     public void onDestroy() {
-        this.subscriber.destroy();
+        this.subscriber.dispose();
     }
     
 }
@@ -423,7 +430,7 @@ public class TodoController {
 
 ## 🌍 Routes
 
-Routes are the way to navigate between views. To set up routes to different views, you have to create a class where the
+Routes are the main way to navigate between views. To set up routes to different views, you have to create a class where the
 routes will be defined.
 
 Inside the class, you have to create a field for each route you want to define. The field has to be annotated with
@@ -473,7 +480,7 @@ It is recommended to use dependency injection (module/component) to provide a ro
 
 ## 🖥 Displaying controllers
 
-To display a controller, you have to call the `show()` method of the `FulibFxApp` class and pass the route.
+To display a controller, you have to call the `show()` method of the `FulibFxApp` class and pass the route (or the component instance).
 
 ```java
 public class TodoApp extends FulibFxApp {
