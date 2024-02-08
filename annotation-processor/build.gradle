@@ -1,0 +1,67 @@
+plugins {
+    id "java"
+}
+
+group projectGroup
+version projectVersion
+
+// ------------------- Dependencies -------------------
+
+repositories {
+    mavenCentral()
+    maven {
+        name = "jitpack"
+        url = "https://jitpack.io"
+    }
+}
+
+// Project dependencies
+dependencies {
+    // https://mvnrepository.com/artifact/com.google.auto.service/auto-service-annotations
+    implementation 'com.google.auto.service:auto-service-annotations:1.1.1'
+    annotationProcessor 'com.google.auto.service:auto-service-annotations:1.1.1'
+
+    // Framework
+    implementation project(":framework")
+}
+
+// ------------------- Build -------------------
+
+java {
+    sourceCompatibility = getVersionForMajor(javaSourceVersion)
+    targetCompatibility = getVersionForMajor(javaTargetVersion)
+
+    if (generateSourcesJar) {
+        withSourcesJar()
+    }
+    if (generateJavadocJar) {
+        withJavadocJar()
+    }
+}
+
+static JavaVersion getVersionForMajor(String version) {
+    return JavaVersion.values().find { (it.majorVersion == version) }
+}
+
+compileJava {
+    options.encoding = "UTF-8"
+}
+
+javadoc {
+    options.encoding = "UTF-8"
+}
+
+sourcesJar {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}
+
+jar {
+    manifest {
+        attributes(
+                'Manifest-Version': version,
+                'Class-Path': '.',
+        )
+    }
+
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
