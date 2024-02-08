@@ -1,7 +1,6 @@
 package org.fulib.fx.app.mocking;
 
 import io.reactivex.rxjava3.core.Observable;
-import javafx.stage.Stage;
 import org.fulib.fx.app.mocking.controller.MyMainController;
 import org.fulib.fx.app.mocking.controller.MySubComponent;
 import org.fulib.fx.app.mocking.service.MyService;
@@ -15,7 +14,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 

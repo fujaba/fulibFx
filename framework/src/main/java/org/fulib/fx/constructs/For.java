@@ -1,15 +1,14 @@
 package org.fulib.fx.constructs;
 
-import org.fulib.fx.FulibFxApp;
-import org.fulib.fx.annotation.controller.Component;
-import org.fulib.fx.controller.ControllerManager;
-import org.fulib.fx.util.Util;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.disposables.Disposable;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.Parent;
+import org.fulib.fx.annotation.controller.Component;
+import org.fulib.fx.controller.ControllerManager;
+import org.fulib.fx.util.Util;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
