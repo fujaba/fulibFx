@@ -21,13 +21,13 @@ import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 public abstract class FulibFxApp extends Application {
 
     private static final Scheduler FX_SCHEDULER = Schedulers.from(Platform::runLater);
     private static final Logger LOGGER = Logger.getLogger(FulibFxApp.class.getName());
-    private static FulibFxApp instance;
 
     private static Path resourcesPath = Path.of("src/main/resources");
 
@@ -40,11 +40,6 @@ public abstract class FulibFxApp extends Application {
     // The instance of the current main controller (last controller displayed with show())
     private Object currentMainController;
 
-    public FulibFxApp() {
-        if (instance != null)
-            logger().warning("Multiple instances of FxFramework are not supported.");
-        instance = this;
-    }
 
     /**
      * Returns the framework's logger.
@@ -62,18 +57,6 @@ public abstract class FulibFxApp extends Application {
      */
     public static Scheduler scheduler() {
         return FX_SCHEDULER;
-    }
-
-    /**
-     * Returns the current instance of the framework.
-     * <p>
-     * This method is used for internal purposes only where the framework instance is not available via dependency injection.
-     * It is not guaranteed that this method will work in all cases.
-     *
-     * @return The current instance of the framework
-     */
-    public static FulibFxApp framework() {
-        return instance;
     }
 
     /**
@@ -140,7 +123,6 @@ public abstract class FulibFxApp extends Application {
         return initAndRender(component, params, null);
     }
 
-
     /**
      * Initializes and renders a component instance (a controller with the {@link Component} annotation).
      * <p>
@@ -201,7 +183,6 @@ public abstract class FulibFxApp extends Application {
         System.exit(0);
     }
 
-
     /**
      * Initializes, renders and displays a controller.
      *
@@ -210,6 +191,32 @@ public abstract class FulibFxApp extends Application {
      */
     public @NotNull Parent show(@NotNull String route) {
         return show(route, Map.of());
+    }
+
+    /**
+     * Initializes, renders and displays a controller.
+     *
+     * @param controller The controller to render
+     * @return The rendered parent of the controller
+     */
+    public @NotNull Parent show(@NotNull Object controller) {
+        return show(controller, Map.of());
+    }
+
+    /**
+     * Initializes, renders and displays a controller.
+     *
+     * @param controller The controller to render
+     * @param params     The arguments passed to the controller
+     * @return The rendered parent of the controller
+     */
+    public @NotNull Parent show(@NotNull Object controller, @NotNull Map<String, Object> params) {
+        cleanup();
+        Parent renderedParent = this.frameworkComponent().controllerManager().initAndRender(controller, params);
+        this.currentMainController = controller;
+        onShow(Optional.empty(), controller, renderedParent, params);
+        display(renderedParent);
+        return renderedParent;
     }
 
     /**
@@ -224,7 +231,7 @@ public abstract class FulibFxApp extends Application {
         Tuple<Object, Parent> rendered = this.component.router().renderRoute(route, params);
         this.currentMainController = rendered.first();
         display(rendered.second());
-        onShow(route, rendered.first(), rendered.second(), params);
+        onShow(Optional.of(route), rendered.first(), rendered.second(), params);
         return rendered.second();
     }
 
@@ -248,12 +255,12 @@ public abstract class FulibFxApp extends Application {
      * <p>
      * This method is called after the controller is initialized and rendered.
      *
-     * @param route      The route of the controller
+     * @param route      The route of the controller (empty if the controller has been shown directly)
      * @param controller The controller instance
      * @param rendered   The rendered parent of the controller
      * @param params     The arguments passed to the controller
      */
-    protected void onShow(String route, Object controller, Parent rendered, Map<String, Object> params) {
+    protected void onShow(Optional<String> route, Object controller, Parent rendered, Map<String, Object> params) {
         // Override this method
     }
 

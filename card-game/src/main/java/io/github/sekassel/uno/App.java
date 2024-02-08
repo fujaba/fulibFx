@@ -9,6 +9,7 @@ import javafx.stage.Stage;
 
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Level;
 
 import static javafx.scene.input.KeyEvent.KEY_PRESSED;
@@ -71,7 +72,7 @@ public class App extends FulibFxApp {
     }
 
     @Override
-    protected void onShow(String route, Object controller, Parent rendered, Map<String, Object> params) {
+    protected void onShow(Optional<String> route, Object controller, Parent rendered, Map<String, Object> params) {
         // This method is called whenever a new controller is shown.
         // We use this method to set the title of the window to the title of the controller, if the controller implements
         // the Titleable interface. This is a good example of how you can use the onShow method to do some additional operations.

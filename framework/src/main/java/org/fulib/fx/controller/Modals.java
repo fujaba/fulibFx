@@ -90,10 +90,11 @@ public class Modals {
      */
     public static <Display extends Node> void showModal(Stage currentStage, Display component, TriConsumer<Stage, Scene, Display> initializer, Map<String, Object> params, boolean destroyOnClose) {
         FulibFxApp.scheduler().scheduleDirect(() -> {
-            ModalStage modalStage = new ModalStage(destroyOnClose ? () -> FulibFxApp.framework().frameworkComponent().controllerManager().destroy(component) : null);
+            ModalStage modalStage = new ModalStage(destroyOnClose ? () -> ControllerManager.destroy(component) : null);
 
 
-            Parent rendered = FulibFxApp.framework().frameworkComponent().controllerManager().initAndRender(component, params);
+            ControllerManager.init(component, params);
+            Parent rendered = ControllerManager.render(component, params);
 
             Scene scene = new Scene(rendered);
             scene.setFill(Paint.valueOf("transparent"));

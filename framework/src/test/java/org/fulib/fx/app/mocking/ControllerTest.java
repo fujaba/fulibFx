@@ -1,21 +1,21 @@
-package org.fulib.fx.app;
+package org.fulib.fx.app.mocking;
 
-import org.fulib.fx.FulibFxApp;
 import javafx.stage.Stage;
+import org.mockito.Spy;
 import org.testfx.framework.junit5.ApplicationTest;
 
 public class ControllerTest extends ApplicationTest {
 
-    public final FulibFxApp app = new FulibFxApp() {
-        @Override
-        public void start(Stage stage) {
-            super.start(stage);
-        }
-    };
+    @Spy
+    public final MyApp app = new MyApp();
+
+    protected Stage stage;
 
     @Override
     public void start(Stage stage) throws Exception {
         super.start(stage);
+        this.stage = stage;
         stage.requestFocus();
+        app.start(stage);
     }
 }

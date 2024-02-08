@@ -44,9 +44,6 @@ public class ControllerManager {
     private final RefreshableCompositeDisposable cleanup = new RefreshableCompositeDisposable();
 
     @Inject
-    Lazy<Router> router;
-
-    @Inject
     public ControllerManager() {
     }
 
@@ -101,7 +98,7 @@ public class ControllerManager {
      * @param instance   The controller/component instance
      * @param parameters The parameters to pass to the controller
      */
-    private void init(@NotNull Object instance, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
+    public static void init(@NotNull Object instance, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
 
         // Check if the instance is a controller
         if (!Util.isController(instance))
@@ -139,7 +136,7 @@ public class ControllerManager {
      * @param parameters The parameters to pass to the controller
      * @return The rendered controller/component
      */
-    public Parent render(Object instance, Map<String, Object> parameters) {
+    public static Parent render(Object instance, Map<String, Object> parameters) {
 
         // Check if the instance is a controller/component
         boolean component = instance.getClass().isAnnotationPresent(Component.class) && Util.isComponent(instance);
@@ -201,7 +198,7 @@ public class ControllerManager {
      *
      * @param instance The controller/component instance to destroy
      */
-    public void destroy(@NotNull Object instance) {
+    public static void destroy(@NotNull Object instance) {
         if (!Util.isController(instance))
             throw new IllegalArgumentException("Class '%s' is not a controller or component.".formatted(instance.getClass().getName()));
 
@@ -210,7 +207,7 @@ public class ControllerManager {
         Collections.reverse(subComponentFields);
 
         // Destroy all sub-controllers
-        Reflection.callMethodsForFieldInstances(instance, subComponentFields, this::destroy);
+        Reflection.callMethodsForFieldInstances(instance, subComponentFields, ControllerManager::destroy);
 
         // Call destroy methods
         Reflection.callMethodsWithAnnotation(instance, onDestroy.class, Map.of());
@@ -255,7 +252,7 @@ public class ControllerManager {
      * @param instance The controller instance to use
      * @return A parent representing the fxml file
      */
-    public @NotNull Parent loadFXML(@NotNull String fileName, @NotNull Object instance, boolean setRoot) {
+    private @NotNull static Parent loadFXML(@NotNull String fileName, @NotNull Object instance, boolean setRoot) {
 
         URL url = instance.getClass().getResource(fileName);
         if (url == null) {
@@ -298,7 +295,7 @@ public class ControllerManager {
      * @return A list of all fields in the given instance that are annotated with {@link SubComponent}
      */
     @Unmodifiable
-    private List<Field> getSubComponentFields(Object instance) {
+    private static List<Field> getSubComponentFields(Object instance) {
         return Reflection.getFieldsWithAnnotation(instance.getClass(), SubComponent.class)
                 .stream()
                 .filter(field -> {

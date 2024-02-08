@@ -2,6 +2,7 @@ package org.fulib.fx.constructs;
 
 import org.fulib.fx.FulibFxApp;
 import org.fulib.fx.annotation.controller.Component;
+import org.fulib.fx.controller.ControllerManager;
 import org.fulib.fx.util.Util;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.disposables.Disposable;
@@ -232,7 +233,7 @@ public class For<Node extends javafx.scene.Node, Item> {
 
         // Destroy the controller if the node is a component
         if (Util.isComponent(node)) {
-            FulibFxApp.framework().frameworkComponent().controllerManager().destroy(node);
+            ControllerManager.destroy(node);
         }
 
         // Remove the node from the container
@@ -261,8 +262,8 @@ public class For<Node extends javafx.scene.Node, Item> {
 
         // Initialize and render the controller if the node is a component
         if (Util.isComponent(node)) {
-            FulibFxApp.framework().frameworkComponent().controllerManager().init(node, params, false);
-            FulibFxApp.framework().frameworkComponent().controllerManager().render(node, params);
+            ControllerManager.init(node, params);
+            ControllerManager.render(node, params);
         }
 
         // Add the node to the container

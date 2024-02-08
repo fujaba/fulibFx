@@ -1,6 +1,10 @@
 # ☕ fulibFx
 
 fulibFx is a versatile framework for JavaFX applications that is specifically designed for MVC pattern projects.
+It provides a simple way to create and manage controllers, views, routes, sub-controllers, modals, and more.
+
+The framework is built on top of JavaFx and uses Dagger for dependency injection and RxJava for reactive programming.
+It also provides a few utility classes and data structures to simplify the creation of JavaFX applications.
 
 ## ❓ How to start?
 
@@ -351,15 +355,15 @@ public class TodoController {
     @Inject
     Provider<TodoListComponent> todoListComponentProvider;
 
-			@Inject
-			@SubComponent // This component will be framework
-			TodoManagerComponent todoManagerComponent;
+	@Inject 
+    @SubComponent // This component will be framework
+    TodoManagerComponent todoManagerComponent;
 
     @Inject // Do not use @SubComponent annotation, as we want to manage the sub-controller manually
     TodoInputComponent todoInputComponent;
 
-			@Inject
-			Subscriber subscriber;
+    @Inject
+    Subscriber subscriber;
 
     // Default constructor (for dependency injection etc.)
     @Inject
