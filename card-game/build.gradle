@@ -95,7 +95,10 @@ jar {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
-compileJava { options.encoding = "UTF-8" }
+compileJava {
+    options.encoding = "UTF-8"
+    options.sourcepath = sourceSets.main.resources.getSourceDirectories()
+}
 javadoc { options.encoding = "UTF-8" }
 
 repositories {
