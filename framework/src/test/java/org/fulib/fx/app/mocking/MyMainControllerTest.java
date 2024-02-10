@@ -18,6 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
+import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
 
 @ExtendWith(MockitoExtension.class)
 public class MyMainControllerTest extends ControllerTest {
@@ -39,6 +40,9 @@ public class MyMainControllerTest extends ControllerTest {
         when(myService.getObservable()).thenReturn(Observable.just("This is a test string."));
         // We want to mock the subcomponent to override the onRender method
         doNothing().when(mySubComponent).onRender();
+
+        MyApp.scheduler().scheduleDirect(() -> stage.requestFocus());
+        waitForFxEvents();
 
         app.show(myMainController); // Show the main controller
 
