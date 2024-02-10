@@ -1,15 +1,8 @@
 package org.fulib.fx;
 
-import io.reactivex.rxjava3.disposables.DisposableContainer;
-import org.fulib.fx.annotation.controller.Component;
-import org.fulib.fx.controller.AutoRefresher;
-import org.fulib.fx.controller.ControllerManager;
-import org.fulib.fx.dagger.FrameworkComponent;
-import org.fulib.fx.data.Tuple;
-import org.fulib.fx.dagger.DaggerFrameworkComponent;
-import org.fulib.fx.util.Util;
 import io.reactivex.rxjava3.core.Scheduler;
 import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.disposables.DisposableContainer;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -17,6 +10,13 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
+import javafx.util.Pair;
+import org.fulib.fx.annotation.controller.Component;
+import org.fulib.fx.controller.AutoRefresher;
+import org.fulib.fx.controller.ControllerManager;
+import org.fulib.fx.dagger.DaggerFrameworkComponent;
+import org.fulib.fx.dagger.FrameworkComponent;
+import org.fulib.fx.util.Util;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -229,11 +229,11 @@ public abstract class FulibFxApp extends Application {
      */
     public @NotNull Parent show(@NotNull String route, @NotNull Map<@NotNull String, @Nullable Object> params) {
         cleanup();
-        Tuple<Object, Parent> rendered = this.component.router().renderRoute(route, params);
-        this.currentMainController = rendered.first();
-        display(rendered.second());
-        onShow(Optional.of(route), rendered.first(), rendered.second(), params);
-        return rendered.second();
+        Pair<Object, Parent> rendered = this.component.router().renderRoute(route, params);
+        this.currentMainController = rendered.getKey();
+        display(rendered.getValue());
+        onShow(Optional.of(route), rendered.getKey(), rendered.getValue(), params);
+        return rendered.getValue();
     }
 
     /**
@@ -329,7 +329,7 @@ public abstract class FulibFxApp extends Application {
      */
     public void refresh() {
         cleanup();
-        Map<String, Object> params = this.component.router().current().second(); // Use the same parameters as before
+        Map<String, Object> params = this.component.router().current().getValue(); // Use the same parameters as before
         this.component.controllerManager().init(currentMainController, params, true); // Re-initialize the controller
         Parent parent = ControllerManager.render(currentMainController, params); // Re-render the controller
         display(parent); // Display the controller

@@ -3,6 +3,7 @@ package org.fulib.fx.controller;
 import io.reactivex.rxjava3.disposables.Disposable;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
+import javafx.util.Pair;
 import org.fulib.fx.FulibFxApp;
 import org.fulib.fx.annotation.controller.Component;
 import org.fulib.fx.annotation.controller.Controller;
@@ -12,7 +13,6 @@ import org.fulib.fx.annotation.event.onInit;
 import org.fulib.fx.annotation.event.onRender;
 import org.fulib.fx.controller.building.ControllerBuildFactory;
 import org.fulib.fx.controller.exception.IllegalControllerException;
-import org.fulib.fx.data.Tuple;
 import org.fulib.fx.util.Util;
 import org.fulib.fx.util.disposable.RefreshableCompositeDisposable;
 import org.fulib.fx.util.reflection.Reflection;
@@ -218,16 +218,16 @@ public class ControllerManager {
                     .map(field -> {
                         try {
                             field.setAccessible(true);
-                            return Tuple.of(field, (Subscriber) field.get(instance)); // Get the Subscriber instance, if it exists
+                            return new Pair<>(field, (Subscriber) field.get(instance)); // Get the Subscriber instance, if it exists
                         } catch (IllegalAccessException e) {
                             return null;
                         }
                     })
                     .filter(Objects::nonNull)
-                    .filter(tuple -> tuple.first() != null)
-                    .filter(tuple -> !tuple.second().isDisposed()) // Filter out disposed subscribers
-                    .forEach(tuple ->
-                            FulibFxApp.logger().warning("Found undestroyed subscriber '%s' in class '%s'.".formatted(tuple.first().getName(), instance.getClass().getName()))
+                    .filter(pair -> pair.getKey() != null)
+                    .filter(pair -> !pair.getValue().isDisposed()) // Filter out disposed subscribers
+                    .forEach(pair ->
+                            FulibFxApp.logger().warning("Found undestroyed subscriber '%s' in class '%s'.".formatted(pair.getKey().getName(), instance.getClass().getName()))
                     );
         }
     }

@@ -773,10 +773,6 @@ make it usable again, after it has been disposed. An example for this is the `Re
 The ItemListDisposable will run an action for all added items upon disposal. This can be used to clean up items in a list
 with a certain action in a single disposable.
 
-### Tuple
-A tuple represents a pair of two values. It can be used to return multiple values from a method. The framework uses
-tuples for storing the history of routes and the parameters of a route.
-
 ```java
 ItemListDisposable<String> disposable = ItemListDisposable.of(item -> print(item), "!", "World");
 disposable.add("Hello");
