@@ -1,6 +1,7 @@
 package org.fulib.fx;
 
 import com.google.auto.service.AutoService;
+import org.fulib.fx.annotation.Route;
 import org.fulib.fx.annotation.controller.Component;
 import org.fulib.fx.annotation.controller.Controller;
 import org.fulib.fx.annotation.controller.SubComponent;
@@ -12,6 +13,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
 import javax.tools.FileObject;
@@ -21,7 +23,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 @SupportedAnnotationTypes({
-        "org.fulib.fx.annotation.controller.*"
+        "org.fulib.fx.annotation.controller.*",
+        "org.fulib.fx.annotation.Route"
 })
 @SupportedSourceVersion(SourceVersion.RELEASE_17)
 @AutoService(Processor.class)
@@ -53,7 +56,37 @@ public class ControllerAnnotationProcessor extends AbstractProcessor {
             checkSubComponentElement(element);
         }
 
+        for (Element element : roundEnv.getElementsAnnotatedWith(Route.class)) {
+            checkRoute(element);
+        }
+
         return true;
+    }
+
+    private void checkRoute(Element element) {
+        // Check if the element is a field
+        if (element.getKind() != ElementKind.FIELD) {
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "The @Route annotation can only be used on fields.", element);
+            return;
+        }
+
+        System.out.println(element.asType().toString());
+        System.out.println(processingEnv.getElementUtils().getTypeElement("javax.inject.Provider").asType().toString());
+
+
+        // Check if the field is of a provider type
+        if (!element.asType().toString().startsWith("javax.inject.Provider")) {
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "The route field must be of a provider type.", element);
+            return;
+        }
+
+        // Check if the provided class is of a controller or component type
+        for (TypeMirror generic : ((DeclaredType) element.asType()).getTypeArguments()) {
+            if (!isController(generic) && !isComponent(generic)) {
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "The route field must provide a controller or component type.", element);
+            }
+        }
+
     }
 
 
@@ -76,9 +109,17 @@ public class ControllerAnnotationProcessor extends AbstractProcessor {
 
     private void checkComponent(Element element) {
         final String view = element.getAnnotation(Component.class).view();
+
+        // Check if the specified view file exists
         if (!view.isEmpty()) {
             checkViewResource(element, view);
         }
+
+        // Check if the element is a subclass of javafx.scene.Parent
+        if (!processingEnv.getTypeUtils().isAssignable(element.asType(), processingEnv.getElementUtils().getTypeElement("javafx.scene.Parent").asType())) {
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Component must extend (a subclass of) javafx.scene.Parent.", element);
+        }
+
         components.add(element);
     }
 
@@ -90,6 +131,7 @@ public class ControllerAnnotationProcessor extends AbstractProcessor {
 
     private void checkViewResource(Element element, String view) {
         try {
+            // Check if the specified view file exists in the source path
             final FileObject resource = processingEnv.getFiler().getResource(StandardLocation.SOURCE_PATH,
                     processingEnv.getElementUtils().getPackageOf(element).getQualifiedName().toString(), view);
         } catch (IOException e) {
@@ -136,6 +178,11 @@ public class ControllerAnnotationProcessor extends AbstractProcessor {
     // This method only works after the components/controllers have been processed
     private boolean isComponent(TypeMirror typeMirror) {
         return components.stream().anyMatch(element -> element.asType() == typeMirror);
+    }
+
+    // This method only works after the components/controllers have been processed
+    private boolean isController(TypeMirror typeMirror) {
+        return controllers.stream().anyMatch(element -> element.asType() == typeMirror);
     }
 
 }
