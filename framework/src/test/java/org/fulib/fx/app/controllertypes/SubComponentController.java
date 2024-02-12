@@ -1,8 +1,8 @@
-package org.fulib.fx.app.controller;
+package org.fulib.fx.app.controllertypes;
 
 import org.fulib.fx.annotation.controller.Controller;
 import org.fulib.fx.annotation.controller.SubComponent;
-import org.fulib.fx.app.controller.sub.ButtonSubComponent;
+import org.fulib.fx.app.controllertypes.sub.ButtonSubComponent;
 import javafx.fxml.FXML;
 
 import javax.inject.Inject;

@@ -1,9 +1,9 @@
-package org.fulib.fx.app.mocking;
+package org.fulib.fx.mocking;
 
 import io.reactivex.rxjava3.core.Observable;
-import org.fulib.fx.app.mocking.controller.MyMainController;
-import org.fulib.fx.app.mocking.controller.MySubComponent;
-import org.fulib.fx.app.mocking.service.MyService;
+import org.fulib.fx.mocking.controller.MyMainController;
+import org.fulib.fx.mocking.controller.MySubComponent;
+import org.fulib.fx.mocking.service.MyService;
 import org.fulib.fx.controller.Subscriber;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

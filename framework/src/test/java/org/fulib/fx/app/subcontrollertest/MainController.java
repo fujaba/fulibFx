@@ -29,7 +29,6 @@ public class MainController {
         return new VBox();
     }
 
-
     @onInit()
     public void init(@Param("initList") List<String> initList) {
         initList.add("main");
