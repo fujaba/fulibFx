@@ -1,5 +1,6 @@
 package org.fulib.fx.app.mocking.controller;
 
+import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import org.fulib.fx.annotation.controller.Controller;
@@ -10,7 +11,7 @@ import org.fulib.fx.controller.Subscriber;
 
 import javax.inject.Inject;
 
-@Controller(view = "#render")
+@Controller
 public class MyMainController {
 
     @Inject
@@ -19,6 +20,7 @@ public class MyMainController {
     @Inject
     Subscriber subscriber;
 
+    @FXML
     public VBox render;
 
     @SubComponent
@@ -27,10 +29,6 @@ public class MyMainController {
 
     @Inject
     public MyMainController() {
-    }
-
-    public VBox render() {
-        return render = new VBox();
     }
 
     @onRender
