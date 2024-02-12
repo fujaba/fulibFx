@@ -752,10 +752,6 @@ onRender ForController
 ## 📦 Other Data structures
 The framework provides a few data structures that can be used to simplify the creation of JavaFX applications.
 
-### TriConsumer
-A TriConsumer is a functional interface that takes three arguments and returns nothing (like a Consumer). It can be used
-to define actions that take three arguments. The framework uses TriConsumers for the Modals.
-
 ### Duplicator
 A Duplicator is a functional interface that takes an object and returns a duplicate of the object. It can be used to
 create copies of Objects such as JavaFX nodes. The framework used Duplicators for the For-Loops.

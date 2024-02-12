@@ -141,7 +141,7 @@ public class FrameworkTest extends ApplicationTest {
         verifyThat("Basic Controller", Node::isVisible);
         sleep(200);
 
-        Modals.showModal(app.stage(), new ModalComponent(), (stage, scene, controller) -> {
+        Modals.showModal(app.stage(), new ModalComponent(), (stage, controller) -> {
             stage.setTitle("Modal");
             stage.setWidth(200);
             stage.setHeight(200);
