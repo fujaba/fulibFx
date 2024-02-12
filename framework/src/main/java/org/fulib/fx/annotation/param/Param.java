@@ -1,17 +1,27 @@
 package org.fulib.fx.annotation.param;
 
+import org.fulib.fx.annotation.event.onInit;
+import org.fulib.fx.annotation.event.onRender;
 import org.fulib.fx.controller.Router;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.Map;
+
 
 /**
- * Annotation used to mark controller parameters.
- * Used by the {@link Router} to inject parameters into controllers.
+ * Fields, parameters and methods annotated with this annotation will be injected with a parameter provided when using the {@link org.fulib.fx.FulibFxApp#show(String, Map)} method.
+ * <p>
+ * If the annotation is used on a field, the field will be injected with the specified parameter's value before initializing the controller/component.
+ * If the field is a writable property, the value will be set using the property's setter method (e.g. {@link javafx.beans.property.SimpleStringProperty}).
+ * <p>
+ * If the annotation is used on a method, the method will be called with the specified parameter's value initializing the controller/component.
+ * <p>
+ * If the annotation is used on a method argument, the argument will be injected with the specified parameter's value (method has to be annotated with {@link onRender} or {@link onInit}).
  */
-@Target({ElementType.PARAMETER, ElementType.FIELD})
+@Target({ElementType.PARAMETER, ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Param {
 
