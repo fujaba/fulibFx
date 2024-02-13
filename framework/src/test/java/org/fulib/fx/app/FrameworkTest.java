@@ -175,14 +175,12 @@ public class FrameworkTest extends ApplicationTest {
 
         assertEquals("string", controller.fieldPropertyParamProperty().get());
 
-        assertEquals(Map.of("integer", 1, "string", "string", "character", 'a', "bool", true), controller.getOnInitParams());
-        assertEquals(Map.of("integer", 1, "string", "string", "character", 'a', "bool", true), controller.getSetterParams());
-        assertEquals(Map.of("integer", 1, "string", "string", "character", 'a', "bool", true), controller.getFieldParams());
+        assertEquals(Map.of("integer", 1, "string", "string", "character", 'a', "bool", true), controller.getOnInitParamsMap());
+        assertEquals(Map.of("integer", 1, "string", "string", "character", 'a', "bool", true), controller.getSetterParamsMap());
+        assertEquals(Map.of("integer", 1, "string", "string", "character", 'a', "bool", true), controller.getFieldParamsMap());
 
-        assertEquals(Map.of("string", "string", "integer", 1), controller.getOnInitPartialParams());
-        assertEquals('a', controller.getSetterPartialParams1());
-        assertEquals(true, controller.getSetterPartialParams2());
-        assertEquals(Map.of("string", "string", "integer", 1), controller.getFieldPartialParams());
+        assertEquals('a', controller.getSetterMultiParams1());
+        assertEquals(true, controller.getSetterMultiParams2());
     }
 
 }

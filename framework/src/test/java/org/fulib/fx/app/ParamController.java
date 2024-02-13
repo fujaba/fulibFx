@@ -7,6 +7,7 @@ import org.fulib.fx.annotation.controller.Controller;
 import org.fulib.fx.annotation.event.onInit;
 import org.fulib.fx.annotation.param.Param;
 import org.fulib.fx.annotation.param.Params;
+import org.fulib.fx.annotation.param.ParamsMap;
 
 import javax.inject.Inject;
 import java.util.Map;
@@ -19,20 +20,16 @@ public class ParamController {
     private String setterParam;
     @Param("integer")
     private int fieldParam;
-
     @Param("string")
     private final StringProperty fieldPropertyParam = new SimpleStringProperty();
 
-    private Map<String, Object> onInitParams;
-    private Map<String, Object> setterParams;
-    @Params
-    private Map<String, Object> fieldParams;
+    private Map<String, Object> onInitParamsMap;
+    private Map<String, Object> setterParamsMap;
+    @ParamsMap
+    private Map<String, Object> fieldParamsMap;
 
-    private Map<String, Object> onInitPartialParams;
-    private Character setterPartialParams1;
-    private Boolean setterPartialParams2;
-    @Params({"string", "integer"})
-    private Map<String, Object> fieldPartialParams;
+    private Character setterMultiParams1;
+    private Boolean setterMultiParams2;
 
     @Inject
     public ParamController() {
@@ -45,20 +42,19 @@ public class ParamController {
 
     @Params({"character", "bool"})
     public void setParams(Character character, Boolean bool) {
-        this.setterPartialParams1 = character;
-        this.setterPartialParams2 = bool;
+        this.setterMultiParams1 = character;
+        this.setterMultiParams2 = bool;
     }
 
-    @Params
+    @ParamsMap
     public void setParams(Map<String, Object> map) {
-        this.setterParams = map;
+        this.setterParamsMap = map;
     }
 
     @onInit
-    public void init(@Param("integer") Integer integer, @Params Map<String, Object> map, @Params({"string", "integer"}) Map<String, Object> partialMap) {
+    public void init(@Param("integer") Integer integer, @ParamsMap Map<String, Object> map) {
         this.onInitParam = integer;
-        this.onInitParams = map;
-        this.onInitPartialParams = partialMap;
+        this.onInitParamsMap = map;
     }
 
     public VBox paramView() {
@@ -85,32 +81,24 @@ public class ParamController {
         return fieldPropertyParam;
     }
 
-    public Map<String, Object> getOnInitParams() {
-        return onInitParams;
+    public Map<String, Object> getOnInitParamsMap() {
+        return onInitParamsMap;
     }
 
-    public Map<String, Object> getSetterParams() {
-        return setterParams;
+    public Map<String, Object> getSetterParamsMap() {
+        return setterParamsMap;
     }
 
-    public Map<String, Object> getFieldParams() {
-        return fieldParams;
+    public Map<String, Object> getFieldParamsMap() {
+        return fieldParamsMap;
     }
 
-    public Map<String, Object> getOnInitPartialParams() {
-        return onInitPartialParams;
+    public Character getSetterMultiParams1() {
+        return setterMultiParams1;
     }
 
-    public Character getSetterPartialParams1() {
-        return setterPartialParams1;
-    }
-
-    public Boolean getSetterPartialParams2() {
-        return setterPartialParams2;
-    }
-
-    public Map<String, Object> getFieldPartialParams() {
-        return fieldPartialParams;
+    public Boolean getSetterMultiParams2() {
+        return setterMultiParams2;
     }
 
 }
