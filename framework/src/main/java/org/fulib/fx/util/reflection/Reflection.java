@@ -10,6 +10,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -79,5 +80,43 @@ public class Reflection {
         return Arrays.stream(clazz.getDeclaredMethods()).filter(method -> method.isAnnotationPresent(annotation)).toList();
     }
 
+    /**
+     * Checks if the value can be assigned to the given type.
+     *
+     * @param type  The type to check
+     * @param value The value to check
+     * @return True if the value can be assigned to the type, false otherwise
+     */
+    public static boolean canBeAssigned(Class<?> type, Object value) {
+        if (value == null) {
+            System.out.println("value is null");
+            System.out.println("type is primitive: " + type.isPrimitive());
+            return !type.isPrimitive();
+        }
+
+        Class<?> valueType = value.getClass();
+        return getWrapperType(type).isAssignableFrom(valueType);
+    }
+
+    public static Class<?> getWrapperType(Class<?> type) {
+        if (type.equals(int.class)) {
+            return Integer.class;
+        } else if (type.equals(long.class)) {
+            return Long.class;
+        } else if (type.equals(double.class)) {
+            return Double.class;
+        } else if (type.equals(float.class)) {
+            return Float.class;
+        } else if (type.equals(boolean.class)) {
+            return Boolean.class;
+        } else if (type.equals(char.class)) {
+            return Character.class;
+        } else if (type.equals(byte.class)) {
+            return Byte.class;
+        } else if (type.equals(short.class)) {
+            return Short.class;
+        }
+        return type;
+    }
 
 }

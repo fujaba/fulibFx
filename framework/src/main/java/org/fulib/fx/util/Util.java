@@ -77,25 +77,44 @@ public class Util {
         return null;
     }
 
-
     /**
-     * Checks if the given parameter is a valid map field with the given key and value types.
+     * Checks if the given parameter is a map with the given key and value types.
      *
-     * @param mapParameter The parameter to check
-     * @param key          The key type
-     * @param value        The value type
+     * @param parameter The parameter to check
+     * @param key       The key type
+     * @param value     The value type
      * @return True if the parameter is a valid map field with the given key and value types
      */
-    public static boolean isMapWithTypes(@NotNull Parameter mapParameter, @NotNull Class<?> key, @NotNull Class<?> value) {
-        if (Map.class.isAssignableFrom(mapParameter.getType())) {
-            Type genericType = mapParameter.getParameterizedType();
+    public static boolean isMapWithTypes(@NotNull Parameter parameter, @NotNull Class<?> key, @NotNull Class<?> value) {
+        if (Map.class.isAssignableFrom(parameter.getType())) {
+            Type genericType = parameter.getParameterizedType();
+            return isMapWithTypes(genericType, key, value);
+        }
+        return false;
+    }
 
-            if (genericType instanceof ParameterizedType parameterizedType) {
-                Type[] typeArguments = parameterizedType.getActualTypeArguments();
+    /**
+     * Checks if the given field is a map with the given key and value types.
+     *
+     * @param field The field to check
+     * @param key   The key type
+     * @param value The value type
+     * @return True if the parameter is a valid map field with the given key and value types
+     */
+    public static boolean isMapWithTypes(@NotNull Field field, @NotNull Class<?> key, @NotNull Class<?> value) {
+        if (Map.class.isAssignableFrom(field.getType())) {
+            Type genericType = field.getGenericType();
+            return isMapWithTypes(genericType, key, value);
+        }
+        return false;
+    }
 
-                if (typeArguments.length == 2 && typeArguments[0] instanceof Class<?> genericKey && typeArguments[1] instanceof Class<?> genericValue) {
-                    return genericKey == key && genericValue == value;
-                }
+    private static boolean isMapWithTypes(@NotNull Type type, @NotNull Class<?> key, @NotNull Class<?> value) {
+        if (type instanceof ParameterizedType parameterizedType) {
+            Type[] typeArguments = parameterizedType.getActualTypeArguments();
+
+            if (typeArguments.length == 2 && typeArguments[0] instanceof Class<?> genericKey && typeArguments[1] instanceof Class<?> genericValue) {
+                return genericKey == key && genericValue == value;
             }
         }
         return false;
