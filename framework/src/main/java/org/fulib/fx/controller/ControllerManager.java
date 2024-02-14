@@ -327,10 +327,8 @@ public class ControllerManager {
     private static void callMethodsWithAnnotation(@NotNull Object instance, @NotNull Class<? extends Annotation> annotation, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
         for (Method method : Reflection.getMethodsWithAnnotation(instance.getClass(), annotation)) {
             try {
-                boolean accessible = method.canAccess(instance);
                 method.setAccessible(true);
                 method.invoke(instance, getApplicableParameters(method, parameters));
-                method.setAccessible(accessible);
             } catch (IllegalAccessException | InvocationTargetException e) {
                 throw new RuntimeException("Couldn't run method '" + method.getName() + "' annotated with '" + annotation.getName() + "' in '" + instance.getClass().getName() + "'", e);
             }
@@ -409,19 +407,16 @@ public class ControllerManager {
     private static void callParamMethods(Object instance, Map<String, Object> parameters) {
         Reflection.getMethodsWithAnnotation(instance.getClass(), Param.class).forEach(method -> {
             try {
-                boolean accessible = method.canAccess(instance);
                 method.setAccessible(true);
                 Object value = parameters.get(method.getAnnotation(Param.class).value());
 
                 if (value == null) {
                     method.invoke(instance, (Object) null);
-                    method.setAccessible(accessible);
                     return;
                 }
 
                 if (Reflection.canBeAssigned(method.getParameterTypes()[0], value)) {
                     method.invoke(instance, value);
-                    method.setAccessible(accessible);
                 } else {
                     throw new RuntimeException("Parameter named '" + method.getAnnotation(Param.class).value() + "' in method '" + method.getName() + "' is of type " + method.getParameterTypes()[0].getName() + " but the provided value is of type " + value.getClass().getName());
                 }
@@ -441,7 +436,6 @@ public class ControllerManager {
     private static void callParamsMethods(Object instance, Map<String, Object> parameters) {
         Reflection.getMethodsWithAnnotation(instance.getClass(), Params.class).forEach(method -> {
             try {
-                boolean accessible = method.canAccess(instance);
                 method.setAccessible(true);
 
                 String[] paramNames = method.getAnnotation(Params.class).value();
@@ -461,7 +455,6 @@ public class ControllerManager {
                 }
 
                 method.invoke(instance, methodParams);
-                method.setAccessible(accessible);
             } catch (IllegalAccessException | InvocationTargetException e) {
                 throw new RuntimeException("Couldn't fill parameters into method '" + method.getName() + "' in '" + instance.getClass().getName() + "'", e);
             }
@@ -483,10 +476,8 @@ public class ControllerManager {
             }
 
             try {
-                boolean accessible = method.canAccess(instance);
                 method.setAccessible(true);
                 method.invoke(instance, parameters);
-                method.setAccessible(accessible);
             } catch (IllegalAccessException | InvocationTargetException e) {
                 throw new RuntimeException("Couldn't fill parameters into method '" + method.getName() + "' in '" + instance.getClass().getName() + "'", e);
             }
