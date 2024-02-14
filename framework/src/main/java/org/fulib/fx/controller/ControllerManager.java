@@ -22,6 +22,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -36,6 +37,7 @@ import java.util.*;
  * <p>
  * This class is used internally by the framework and should not be used directly.
  */
+@Singleton
 @ApiStatus.Internal
 public class ControllerManager {
 
