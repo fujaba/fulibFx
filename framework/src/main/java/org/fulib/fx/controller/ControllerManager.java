@@ -16,6 +16,7 @@ import org.fulib.fx.controller.exception.IllegalControllerException;
 import org.fulib.fx.util.Util;
 import org.fulib.fx.util.disposable.RefreshableCompositeDisposable;
 import org.fulib.fx.util.reflection.Reflection;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
@@ -36,7 +37,7 @@ import java.util.*;
  * <p>
  * This class is used internally by the framework and should not be used directly.
  */
-@Singleton
+@ApiStatus.Internal
 public class ControllerManager {
 
     // Map of controllers that have been initialized

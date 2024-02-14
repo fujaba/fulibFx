@@ -92,7 +92,6 @@ public class Modals {
         FulibFxApp.scheduler().scheduleDirect(() -> {
             ModalStage modalStage = new ModalStage(destroyOnClose ? () -> ControllerManager.destroy(component) : null);
 
-
             ControllerManager.init(component, params);
             Parent rendered = ControllerManager.render(component, params);
 
