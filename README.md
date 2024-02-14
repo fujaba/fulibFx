@@ -112,8 +112,11 @@ the field will be injected with the value of the parameter before the controller
 on a method, the method will be called with the value of the parameter before the controller is initialized. If the
 annotation is used on a method parameter of a render/init method, the method will be called with the value of the parameter.
 
+If `@Param` is used on a field containing a `WriteableValue` (e.g. a `StringProperty`), the value will be set to the parameter.
+
 Instead of accessing the parameters one by one, you can also use the `@ParamsMap` annotation to inject a map of all parameters.
-This annotation can be used for fields and method parameters of type `Map<String, Object>`.
+This annotation can be used for fields and method parameters of type `Map<String, Object>`. If the annotated field is final,
+`putAll` will be called instead.
 
 If you want to call a setter method with multiple parameters, you can use the `@Params` annotation to specify the names of
 the parameters that should be passed to the method. This annotation can be used for methods with multiple parameters.
