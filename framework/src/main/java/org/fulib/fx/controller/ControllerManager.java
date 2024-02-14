@@ -2,7 +2,6 @@ package org.fulib.fx.controller;
 
 import io.reactivex.rxjava3.disposables.Disposable;
 import javafx.beans.value.WritableValue;
-import javafx.collections.ObservableMap;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.util.Pair;
