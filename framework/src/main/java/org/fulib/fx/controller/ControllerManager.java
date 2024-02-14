@@ -445,10 +445,6 @@ public class ControllerManager {
                 method.setAccessible(true);
 
                 String[] paramNames = method.getAnnotation(Params.class).value();
-
-                if (paramNames.length == 0)
-                    paramNames = parameters.keySet().toArray(new String[0]);
-
                 if (method.getParameters().length != paramNames.length)
                     throw new RuntimeException("Method '" + method.getName() + "' in class '" + instance.getClass().getName() + "' has a different amount of parameters than the provided parameters map (%d != %d)".formatted(method.getParameters().length, paramNames.length));
 

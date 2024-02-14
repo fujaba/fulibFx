@@ -20,6 +20,6 @@ public @interface Params {
      *
      * @return The name of the parameter.
      */
-    String[] value() default {};
+    String[] value();
 
 }
