@@ -263,8 +263,7 @@ public class ControllerManager {
      * @param instance The controller instance to use
      * @return A parent representing the fxml file
      */
-    private @NotNull
-    static Parent loadFXML(@NotNull String fileName, @NotNull Object instance, boolean setRoot) {
+    private static @NotNull Parent loadFXML(@NotNull String fileName, @NotNull Object instance, boolean setRoot) {
 
         URL url = instance.getClass().getResource(fileName);
         if (url == null) {
