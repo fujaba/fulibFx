@@ -37,14 +37,10 @@ public class ControllerAnnotationProcessor extends AbstractProcessor {
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
 
-        // Check if a class is annotated with both @Controller and @Component
-        for (Element element : roundEnv.getRootElements()) {
-            checkDoubleAnnotation(element);
-        }
-
         // Check if the element is a valid component
         for (Element element : roundEnv.getElementsAnnotatedWith(Component.class)) {
             checkComponent(element);
+            checkDoubleAnnotation(element); // Check if a class is annotated with both @Controller and @Component
         }
 
         // Check if the element is a valid controller
@@ -64,15 +60,6 @@ public class ControllerAnnotationProcessor extends AbstractProcessor {
     }
 
     private void checkRoute(Element element) {
-        // Check if the element is a field
-        if (element.getKind() != ElementKind.FIELD) {
-            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "The @Route annotation can only be used on fields.", element);
-            return;
-        }
-
-        System.out.println(element.asType().toString());
-        System.out.println(processingEnv.getElementUtils().getTypeElement("javax.inject.Provider").asType().toString());
-
 
         // Check if the field is of a provider type
         if (!element.asType().toString().startsWith("javax.inject.Provider")) {
@@ -117,7 +104,7 @@ public class ControllerAnnotationProcessor extends AbstractProcessor {
 
         // Check if the element is a subclass of javafx.scene.Parent
         if (!processingEnv.getTypeUtils().isAssignable(element.asType(), processingEnv.getElementUtils().getTypeElement("javafx.scene.Parent").asType())) {
-            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Component must extend (a subclass of) javafx.scene.Parent.", element);
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Component must extend (a subtype of) javafx.scene.Parent.", element);
         }
 
         components.add(element);
@@ -125,7 +112,7 @@ public class ControllerAnnotationProcessor extends AbstractProcessor {
 
     private void checkDoubleAnnotation(Element element) {
         if (element.getAnnotation(Controller.class) != null && element.getAnnotation(Component.class) != null) {
-            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "A class cannot be annotated with @Controller and @Component.", element);
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "A class cannot be annotated with both @Controller and @Component.", element);
         }
     }
 
@@ -150,13 +137,13 @@ public class ControllerAnnotationProcessor extends AbstractProcessor {
                 .ifPresentOrElse(
                         method -> {
                             if (!method.getParameters().isEmpty()) {
-                                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Method must not have parameters: " + methodName + "()", element);
+                                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Method must not have parameters: " + methodName + "()", method);
                             }
 
                             TypeMirror parent = processingEnv.getElementUtils().getTypeElement("javafx.scene.Parent").asType();
 
                             if (!processingEnv.getTypeUtils().isAssignable(method.getReturnType(), parent)) {
-                                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Method must return a (subclass of) javafx.scene.Parent: " + methodName + "()", element);
+                                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Method must return a (subtype of) javafx.scene.Parent: " + methodName + "()", method);
                             }
                         },
                         () -> processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Method not found: " + methodName + "()", element)
@@ -164,14 +151,23 @@ public class ControllerAnnotationProcessor extends AbstractProcessor {
     }
 
     private void checkSubComponentElement(Element element) {
-        if (element.getKind() != ElementKind.FIELD) {
-            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "The @SubComponent annotation can only be used on fields.", element);
+
+        // Check if the field is of a component type
+        if (isComponent(element.asType())) {
             return;
         }
 
-        if (!isComponent(element.asType())) {
-            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "The field must be of a component type.", element);
+        // Check if the field is of a provider type
+        if (isProvider(element.asType())) {
+            // Check if the provided class is of a component type
+            if (element.asType() instanceof DeclaredType type) {
+                final TypeMirror componentType = type.getTypeArguments().get(0);
+                if (isComponent(componentType)) {
+                    return;
+                }
+            }
         }
+        processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "The field must be of a component type or a provider thereof.", element);
 
     }
 
@@ -183,6 +179,10 @@ public class ControllerAnnotationProcessor extends AbstractProcessor {
     // This method only works after the components/controllers have been processed
     private boolean isController(TypeMirror typeMirror) {
         return controllers.stream().anyMatch(element -> element.asType() == typeMirror);
+    }
+
+    private boolean isProvider(TypeMirror typeMirror) {
+        return typeMirror.toString().startsWith("javax.inject.Provider");
     }
 
 }
