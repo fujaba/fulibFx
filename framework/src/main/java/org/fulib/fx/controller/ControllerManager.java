@@ -527,7 +527,7 @@ public class ControllerManager {
             // Check if the parameter is annotated with @Params and if the parameter is of the type Map<String, Object>
             if (paramsMap != null) {
                 if (!Util.isMapWithTypes(parameter, String.class, Object.class)) {
-                    throw new RuntimeException("Parameter annotated with @Params in method '" + method.getClass().getName() + "#" + method.getName() + "' is not of type " + Map.class.getName());
+                    throw new RuntimeException("Parameter annotated with @Params in method '" + method.getClass().getName() + "#" + method.getName() + "' is not of type " + Map.class.getName() + "<String, Object>");
                 }
                 return parameters;
             }
