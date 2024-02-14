@@ -23,7 +23,6 @@ import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.Objects;
 
-@Singleton
 public class Router {
 
     private final TraversableTree<Field> routes;
