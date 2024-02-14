@@ -89,8 +89,6 @@ public class Reflection {
      */
     public static boolean canBeAssigned(Class<?> type, Object value) {
         if (value == null) {
-            System.out.println("value is null");
-            System.out.println("type is primitive: " + type.isPrimitive());
             return !type.isPrimitive();
         }
 
