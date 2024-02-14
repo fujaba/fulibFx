@@ -385,8 +385,8 @@ public class ControllerManager {
                 // Check if field is final
                 if (Modifier.isFinal(field.getModifiers())) {
                     @SuppressWarnings("unchecked")
-                    Map<String, Object> observableMap = (Map<String, Object>) field.get(instance);
-                    observableMap.putAll(parameters);
+                    Map<String, Object> map = (Map<String, Object>) field.get(instance);
+                    map.putAll(parameters);
                 } else {
                     field.set(instance, parameters);
                 }
