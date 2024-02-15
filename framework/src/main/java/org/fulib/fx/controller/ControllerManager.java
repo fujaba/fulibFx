@@ -385,6 +385,7 @@ public class ControllerManager {
                 if (Modifier.isFinal(field.getModifiers())) {
                     @SuppressWarnings("unchecked")
                     Map<String, Object> map = (Map<String, Object>) field.get(instance);
+                    map.clear();
                     map.putAll(parameters);
                 } else {
                     field.set(instance, parameters);

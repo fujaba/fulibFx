@@ -116,7 +116,7 @@ If `@Param` is used on a field containing a `WriteableValue` (e.g. a `StringProp
 
 Instead of accessing the parameters one by one, you can also use the `@ParamsMap` annotation to inject a map of all parameters.
 This annotation can be used for fields and method parameters of type `Map<String, Object>`. If the annotated field is final,
-`putAll` will be called instead.
+`clear` and `putAll` will be called instead.
 
 If you want to call a setter method with multiple parameters, you can use the `@Params` annotation to specify the names of
 the parameters that should be passed to the method. This annotation can be used for methods with multiple parameters.
