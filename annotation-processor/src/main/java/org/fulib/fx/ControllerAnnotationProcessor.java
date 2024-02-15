@@ -63,14 +63,14 @@ public class ControllerAnnotationProcessor extends AbstractProcessor {
 
         // Check if the field is of a provider type
         if (!element.asType().toString().startsWith("javax.inject.Provider")) {
-            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "The route field must be of a provider type.", element);
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Fields annotated with @Route must be of a Provider type.", element);
             return;
         }
 
         // Check if the provided class is of a controller or component type
         for (TypeMirror generic : ((DeclaredType) element.asType()).getTypeArguments()) {
             if (!isController(generic) && !isComponent(generic)) {
-                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "The route field must provide a controller or component type.", element);
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Fields annotated with @Route must provide a component.", element);
             }
         }
 
@@ -104,7 +104,7 @@ public class ControllerAnnotationProcessor extends AbstractProcessor {
 
         // Check if the element is a subclass of javafx.scene.Parent
         if (!processingEnv.getTypeUtils().isAssignable(element.asType(), processingEnv.getElementUtils().getTypeElement("javafx.scene.Parent").asType())) {
-            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Component must extend (a subtype of) javafx.scene.Parent.", element);
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Components must extend (a subtype of) javafx.scene.Parent.", element);
         }
 
         components.add(element);
@@ -122,8 +122,8 @@ public class ControllerAnnotationProcessor extends AbstractProcessor {
             final FileObject resource = processingEnv.getFiler().getResource(StandardLocation.SOURCE_PATH,
                     processingEnv.getElementUtils().getPackageOf(element).getQualifiedName().toString(), view);
         } catch (IOException e) {
-            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "View file not found: " + view, element);
-            processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "(or source path not set, see https://stackoverflow.com/a/74159042)");
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "The view file for '%s' couldn't be found.".formatted(view), element);
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "(or the source path has not been set, see https://stackoverflow.com/a/74159042)");
         }
     }
 
@@ -137,13 +137,13 @@ public class ControllerAnnotationProcessor extends AbstractProcessor {
                 .ifPresentOrElse(
                         method -> {
                             if (!method.getParameters().isEmpty()) {
-                                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Method must not have parameters: " + methodName + "()", method);
+                                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Methods providing a controller view must not have any arguments: " + methodName + "().", method);
                             }
 
                             TypeMirror parent = processingEnv.getElementUtils().getTypeElement("javafx.scene.Parent").asType();
 
                             if (!processingEnv.getTypeUtils().isAssignable(method.getReturnType(), parent)) {
-                                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Method must return a (subtype of) javafx.scene.Parent: " + methodName + "()", method);
+                                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Methods providing a controller view must return a (subtype of) Parent: " + methodName + "().", method);
                             }
                         },
                         () -> processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Method not found: " + methodName + "()", element)
@@ -167,7 +167,7 @@ public class ControllerAnnotationProcessor extends AbstractProcessor {
                 }
             }
         }
-        processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "The field must be of a component type or a provider thereof.", element);
+        processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Fields annotated with @SubComponent must be of a component type or a provider thereof.", element);
 
     }
 
