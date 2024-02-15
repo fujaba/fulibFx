@@ -1,6 +1,7 @@
 package org.fulib.fx.util.reflection;
 
 import java.lang.annotation.Annotation;
+import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -88,24 +89,18 @@ public class Reflection {
     }
 
     public static Class<?> getWrapperType(Class<?> type) {
-        if (type.equals(int.class)) {
-            return Integer.class;
-        } else if (type.equals(long.class)) {
-            return Long.class;
-        } else if (type.equals(double.class)) {
-            return Double.class;
-        } else if (type.equals(float.class)) {
-            return Float.class;
-        } else if (type.equals(boolean.class)) {
-            return Boolean.class;
-        } else if (type.equals(char.class)) {
-            return Character.class;
-        } else if (type.equals(byte.class)) {
-            return Byte.class;
-        } else if (type.equals(short.class)) {
-            return Short.class;
-        }
-        return type;
+        return type.isPrimitive() ? wrap(type) : type;
+    }
+
+    // https://stackoverflow.com/questions/1704634/simple-way-to-get-wrapper-class-type-in-java/62219759#62219759
+    @SuppressWarnings("unchecked")
+    public static <T> Class<T> wrap(Class<T> unwrapped) {
+        return (Class<T>) MethodType.methodType(unwrapped).wrap().returnType();
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> Class<T> unwrap(Class<T> wrapped) {
+        return (Class<T>) MethodType.methodType(wrapped).unwrap().returnType();
     }
 
 }
