@@ -79,6 +79,8 @@ public class Util {
 
     /**
      * Checks if the given parameter is a map with the given key and value types.
+     * <p>
+     * This will not work for maps not directly specifying the generic types, such as MyMap extends HashMap<Key, Value>.
      *
      * @param parameter The parameter to check
      * @param key       The key type
@@ -95,6 +97,8 @@ public class Util {
 
     /**
      * Checks if the given field is a map with the given key and value types.
+     * <p>
+     * This will not work for maps not directly specifying the generic types, such as MyMap extends HashMap<Key, Value>.
      *
      * @param field The field to check
      * @param key   The key type
