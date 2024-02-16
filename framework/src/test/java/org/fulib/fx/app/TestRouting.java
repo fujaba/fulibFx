@@ -1,7 +1,7 @@
 package org.fulib.fx.app;
 
 import org.fulib.fx.annotation.Route;
-import org.fulib.fx.app.controller.*;
+import org.fulib.fx.app.controllertypes.*;
 import org.fulib.fx.app.subcontrollertest.MainController;
 
 import javax.inject.Inject;

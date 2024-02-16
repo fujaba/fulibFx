@@ -1,4 +1,4 @@
-package org.fulib.fx.app.mocking;
+package org.fulib.fx.mocking;
 
 import javafx.stage.Stage;
 import org.fulib.fx.FulibFxApp;

@@ -1,6 +1,7 @@
 package org.fulib.fx.controller;
 
 import io.reactivex.rxjava3.disposables.Disposable;
+import javafx.beans.value.WritableValue;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.util.Pair;
@@ -11,6 +12,9 @@ import org.fulib.fx.annotation.controller.SubComponent;
 import org.fulib.fx.annotation.event.onDestroy;
 import org.fulib.fx.annotation.event.onInit;
 import org.fulib.fx.annotation.event.onRender;
+import org.fulib.fx.annotation.param.Param;
+import org.fulib.fx.annotation.param.Params;
+import org.fulib.fx.annotation.param.ParamsMap;
 import org.fulib.fx.controller.building.ControllerBuildFactory;
 import org.fulib.fx.controller.exception.IllegalControllerException;
 import org.fulib.fx.util.Util;
@@ -25,9 +29,11 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.File;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
@@ -106,10 +112,15 @@ public class ControllerManager {
             throw new IllegalControllerException("Class '%s' is not a controller or component.".formatted(instance.getClass().getName()));
 
         // Inject parameters into the controller fields
-        Reflection.fillParametersIntoFields(instance, parameters);
+        fillParametersIntoFields(instance, parameters);
+
+        // Call parameter setter methods
+        callParamMethods(instance, parameters);
+        callParamsMethods(instance, parameters);
+        callParamsMapMethods(instance, parameters);
 
         // Call the onInit method(s)
-        Reflection.callMethodsWithAnnotation(instance, onInit.class, parameters);
+        callMethodsWithAnnotation(instance, onInit.class, parameters);
 
         // Initialize all sub-controllers
         Reflection.callMethodsForFieldInstances(instance, getSubComponentFields(instance), (subController) -> init(subController, parameters));
@@ -183,7 +194,7 @@ public class ControllerManager {
         }
 
         // Call the onRender method
-        Reflection.callMethodsWithAnnotation(instance, onRender.class, parameters);
+        callMethodsWithAnnotation(instance, onRender.class, parameters);
 
         return parent;
     }
@@ -211,7 +222,7 @@ public class ControllerManager {
         Reflection.callMethodsForFieldInstances(instance, subComponentFields, ControllerManager::destroy);
 
         // Call destroy methods
-        Reflection.callMethodsWithAnnotation(instance, onDestroy.class, Map.of());
+        callMethodsWithAnnotation(instance, onDestroy.class, Map.of());
 
         // In development mode, check for undestroyed subscribers
         if (Util.runningInDev()) {
@@ -253,11 +264,11 @@ public class ControllerManager {
      * @param instance The controller instance to use
      * @return A parent representing the fxml file
      */
-    private @NotNull static Parent loadFXML(@NotNull String fileName, @NotNull Object instance, boolean setRoot) {
+    private static @NotNull Parent loadFXML(@NotNull String fileName, @NotNull Object instance, boolean setRoot) {
 
         URL url = instance.getClass().getResource(fileName);
         if (url == null) {
-            String urlPath = instance.getClass().getPackageName().replace(".", "/") + "/" +  fileName;
+            String urlPath = instance.getClass().getPackageName().replace(".", "/") + "/" + fileName;
             throw new RuntimeException("Could not find resource '" + urlPath + "'");
         }
 
@@ -306,6 +317,211 @@ public class ControllerManager {
                     }
                     return true;
                 }).toList();
+    }
+
+    /**
+     * Calls all methods annotated with a certain annotation in the provided controller. The method will be called with the given parameters if they're annotated with @Param or @Params.
+     *
+     * @param annotation The annotation to look for
+     * @param parameters The parameters to pass to the methods
+     */
+    private static void callMethodsWithAnnotation(@NotNull Object instance, @NotNull Class<? extends Annotation> annotation, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
+        for (Method method : Reflection.getMethodsWithAnnotation(instance.getClass(), annotation)) {
+            try {
+                method.setAccessible(true);
+                method.invoke(instance, getApplicableParameters(method, parameters));
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                throw new RuntimeException("Couldn't run method '" + method.getName() + "' annotated with '" + annotation.getName() + "' in '" + instance.getClass().getName() + "'", e);
+            }
+        }
+    }
+
+    /**
+     * Fills the parameters map into the fields annotated with @Param and @ParamsMap in the given instance.
+     * (Parameter/Map injection into fields)
+     *
+     * @param instance   The instance to fill the parameters into
+     * @param parameters The parameters to fill into the fields
+     */
+    private static void fillParametersIntoFields(@NotNull Object instance, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
+        // Fill the parameters into fields annotated with @Param
+        for (Field field : Reflection.getFieldsWithAnnotation(instance.getClass(), Param.class)) {
+            try {
+                boolean accessible = field.canAccess(instance);
+                field.setAccessible(true);
+
+                // If the field is a WriteableValue, use the setValue method
+                if (WritableValue.class.isAssignableFrom(field.getType())) {
+                    field.get(instance).getClass().getMethod("setValue", Object.class).invoke(field.get(instance), parameters.get(field.getAnnotation(Param.class).value()));
+                } else {
+                    Object value = parameters.get(field.getAnnotation(Param.class).value());
+                    if (value == null) { // If the value is null, we don't need to check the type
+                        field.set(instance, null);
+                    } else if (Reflection.canBeAssigned(field.getType(), value)) {
+                        field.set(instance, value);
+                    } else {
+                        throw new RuntimeException("Parameter named '" + field.getAnnotation(Param.class).value() + "' in field '" + field.getName() + "' is of type " + field.getType().getName() + " but the provided value is of type " + value.getClass().getName());
+                    }
+                }
+
+                field.setAccessible(accessible);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException("Couldn't fill parameter '" + field.getAnnotation(Param.class).value() + "' into field '" + field.getName() + "' in '" + instance.getClass().getName() + "'", e);
+            } catch (InvocationTargetException | NoSuchMethodException e) {
+                throw new RuntimeException("Couldn't execute setter method with parameter '" + field.getAnnotation(Param.class).value() + "' for field '" + field.getName() + "' in '" + instance.getClass().getName() + "'", e);
+            }
+        }
+
+        // Fill the parameters into fields annotated with @ParamsMap
+        for (Field field : Reflection.getFieldsWithAnnotation(instance.getClass(), ParamsMap.class)) {
+
+            if (!Util.isMapWithTypes(field, String.class, Object.class)) {
+                throw new RuntimeException("Field annotated with @ParamsMap in class '" + instance.getClass().getName() + "' is not of type " + Map.class.getName() + "<String, Object>");
+            }
+
+            try {
+                boolean accessible = field.canAccess(instance);
+                field.setAccessible(true);
+
+                // Check if field is final
+                if (Modifier.isFinal(field.getModifiers())) {
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> map = (Map<String, Object>) field.get(instance);
+                    map.clear();
+                    map.putAll(parameters);
+                } else {
+                    field.set(instance, parameters);
+                }
+                field.setAccessible(accessible);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException("Couldn't fill parameters into field '" + field.getName() + "' in '" + instance.getClass().getName() + "'", e);
+            }
+        }
+    }
+
+    /**
+     * Calls all methods annotated with @Param in the given instance with the values of the specified parameter.
+     * (Parameter injection into setters)
+     *
+     * @param instance   The instance to fill the parameters into
+     * @param parameters The parameters to fill into the methods
+     */
+    private static void callParamMethods(Object instance, Map<String, Object> parameters) {
+        Reflection.getMethodsWithAnnotation(instance.getClass(), Param.class).forEach(method -> {
+            try {
+                method.setAccessible(true);
+                Object value = parameters.get(method.getAnnotation(Param.class).value());
+
+                if (value == null) {
+                    method.invoke(instance, (Object) null);
+                    return;
+                }
+
+                if (Reflection.canBeAssigned(method.getParameterTypes()[0], value)) {
+                    method.invoke(instance, value);
+                } else {
+                    throw new RuntimeException("Parameter named '" + method.getAnnotation(Param.class).value() + "' in method '" + method.getName() + "' is of type " + method.getParameterTypes()[0].getName() + " but the provided value is of type " + value.getClass().getName());
+                }
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                throw new RuntimeException("Couldn't fill parameter '" + method.getAnnotation(Param.class).value() + "' into method '" + method.getName() + "' in '" + instance.getClass().getName() + "'", e);
+            }
+        });
+    }
+
+    /**
+     * Calls all methods annotated with @Params in the given instance with the values of the specified parameters.
+     * (Multiple parameter injection into methods)
+     *
+     * @param instance   The instance to fill the parameters into
+     * @param parameters The parameters to fill into the methods
+     */
+    private static void callParamsMethods(Object instance, Map<String, Object> parameters) {
+        Reflection.getMethodsWithAnnotation(instance.getClass(), Params.class).forEach(method -> {
+            try {
+                method.setAccessible(true);
+
+                String[] paramNames = method.getAnnotation(Params.class).value();
+                if (method.getParameters().length != paramNames.length)
+                    throw new RuntimeException("Method '" + method.getName() + "' in class '" + instance.getClass().getName() + "' has a different amount of parameters than the provided parameters map (%d != %d)".formatted(method.getParameters().length, paramNames.length));
+
+                Object[] methodParams = new Object[paramNames.length];
+
+                // Fill the parameters into the method
+                for (int i = 0; i < paramNames.length; i++) {
+                    Object value = parameters.get(paramNames[i]);
+                    if (Reflection.canBeAssigned(method.getParameterTypes()[i], value)) {
+                        methodParams[i] = value;
+                    } else {
+                        throw new RuntimeException("Parameter named '" + paramNames[i] + "' in method '" + method.getName() + "' is of type " + method.getParameterTypes()[i].getName() + " but the provided value is of type " + value.getClass().getName());
+                    }
+                }
+
+                method.invoke(instance, methodParams);
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                throw new RuntimeException("Couldn't fill parameters into method '" + method.getName() + "' in '" + instance.getClass().getName() + "'", e);
+            }
+        });
+    }
+
+    /**
+     * Fills the parameters map into the methods annotated with @ParamsMap in the given instance.
+     * (Map injection into setters)
+     *
+     * @param instance   The instance to fill the parameters into
+     * @param parameters The parameters to fill into the methods
+     */
+    private static void callParamsMapMethods(Object instance, Map<String, Object> parameters) {
+        Reflection.getMethodsWithAnnotation(instance.getClass(), ParamsMap.class).forEach(method -> {
+
+            if (method.getParameterCount() != 1 || !Util.isMapWithTypes(method.getParameters()[0], String.class, Object.class)) {
+                throw new RuntimeException("Method '" + method.getName() + "' in class '" + instance.getClass().getName() + "' annotated with @ParamsMap has to have exactly one parameter of type " + Map.class.getName() + "<String, Object>");
+            }
+
+            try {
+                method.setAccessible(true);
+                method.invoke(instance, parameters);
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                throw new RuntimeException("Couldn't fill parameters into method '" + method.getName() + "' in '" + instance.getClass().getName() + "'", e);
+            }
+        });
+    }
+
+    /**
+     * Returns an array with all parameters that are applicable to the given method in the correct order.
+     * <p>
+     * If the method has a parameter annotated with @Param, the value of the parameter with the same key as the annotation will be used.
+     * <p>
+     * If the method has a parameter annotated with @ParamsMap, the whole parameters map will be used.
+     *
+     * @param method     The method to check
+     * @param parameters The values of the parameters
+     * @return An array with all applicable parameters
+     */
+    private static @Nullable Object @NotNull [] getApplicableParameters(@NotNull Method method, @NotNull Map<String, Object> parameters) {
+        return Arrays.stream(method.getParameters()).map(parameter -> {
+            Param param = parameter.getAnnotation(Param.class);
+            ParamsMap paramsMap = parameter.getAnnotation(ParamsMap.class);
+
+            if (param != null && paramsMap != null)
+                throw new RuntimeException("Parameter '" + parameter.getName() + "' in method '" + method.getDeclaringClass().getName() + "#" + method.getName() + "' is annotated with both @Param and @Params");
+
+            // Check if the parameter is annotated with @Param and if the parameter is of the correct type
+            if (param != null) {
+                if (parameters.containsKey(param.value()) && !Reflection.canBeAssigned(parameter.getType(), parameters.get(param.value()))) {
+                    throw new RuntimeException("Parameter named '" + param.value() + "' in method '" + method.getDeclaringClass().getName() + "#" + method.getName() + "' is of type " + parameter.getType().getName() + " but the provided value is of type " + parameters.get(param.value()).getClass().getName());
+                }
+                return parameters.get(param.value());
+            }
+
+            // Check if the parameter is annotated with @Params and if the parameter is of the type Map<String, Object>
+            if (paramsMap != null) {
+                if (!Util.isMapWithTypes(parameter, String.class, Object.class)) {
+                    throw new RuntimeException("Parameter annotated with @Params in method '" + method.getClass().getName() + "#" + method.getName() + "' is not of type " + Map.class.getName() + "<String, Object>");
+                }
+                return parameters;
+            }
+            return null;
+        }).toArray();
     }
 
 }

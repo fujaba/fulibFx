@@ -1,8 +1,8 @@
 package org.fulib.fx.app;
 
 import org.fulib.fx.FulibFxApp;
-import org.fulib.fx.app.controller.modal.ModalComponent;
-import org.fulib.fx.app.controller.sub.ButtonSubComponent;
+import org.fulib.fx.app.modal.ModalComponent;
+import org.fulib.fx.app.controllertypes.sub.ButtonSubComponent;
 import org.fulib.fx.controller.Modals;
 import org.fulib.fx.controller.exception.ControllerInvalidRouteException;
 import org.fulib.fx.controller.exception.IllegalControllerException;
@@ -46,7 +46,7 @@ public class FrameworkTest extends ApplicationTest {
      * Tests if the framework is able to load the routes and different kinds of controllers.
      */
     @Test
-    public void controllers() {
+    public void controllerTypes() {
         app.show("/controller/basic");
         verifyThat("Basic Controller", Node::isVisible);
         sleep(200);
@@ -156,6 +156,31 @@ public class FrameworkTest extends ApplicationTest {
         assertEquals(200, modal.getWidth());
         assertEquals(200, modal.getHeight());
         assertEquals("Modal", modal.getTitle());
+    }
+
+    @Test
+    public void params() {
+        ParamController controller = new ParamController();
+        Map<String, Object> params = Map.of(
+                "integer", 1,
+                "string", "string",
+                "character", 'a',
+                "bool", true
+        );
+        app.show(controller, params);
+
+        assertEquals(1, controller.getOnInitParam());
+        assertEquals("string", controller.getSetterParam());
+        assertEquals(1, controller.getFieldParam());
+
+        assertEquals("string", controller.fieldPropertyParamProperty().get());
+
+        assertEquals(Map.of("integer", 1, "string", "string", "character", 'a', "bool", true), controller.getOnInitParamsMap());
+        assertEquals(Map.of("integer", 1, "string", "string", "character", 'a', "bool", true), controller.getSetterParamsMap());
+        assertEquals(Map.of("integer", 1, "string", "string", "character", 'a', "bool", true), controller.getFieldParamsMap());
+
+        assertEquals('a', controller.getSetterMultiParams1());
+        assertEquals(true, controller.getSetterMultiParams2());
     }
 
 }

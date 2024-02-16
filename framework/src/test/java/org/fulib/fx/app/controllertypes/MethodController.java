@@ -1,4 +1,4 @@
-package org.fulib.fx.app.controller;
+package org.fulib.fx.app.controllertypes;
 
 import org.fulib.fx.annotation.controller.Controller;
 import javafx.scene.control.Label;

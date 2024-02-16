@@ -1,4 +1,4 @@
-package org.fulib.fx.app.mocking.controller;
+package org.fulib.fx.mocking.controller;
 
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
