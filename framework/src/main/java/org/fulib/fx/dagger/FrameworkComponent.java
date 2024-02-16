@@ -6,11 +6,13 @@ import org.fulib.fx.FulibFxApp;
 import org.fulib.fx.controller.AutoRefresher;
 import org.fulib.fx.controller.ControllerManager;
 import org.fulib.fx.controller.Router;
+import org.jetbrains.annotations.ApiStatus;
 
 import javax.inject.Singleton;
 
 @Component()
 @Singleton
+@ApiStatus.Internal
 public interface FrameworkComponent {
 
     @Singleton

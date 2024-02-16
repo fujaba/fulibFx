@@ -146,7 +146,6 @@ public class Router {
         }
     }
 
-
     /**
      * Returns the current field and its parameters.
      * This is used internally for reloading the current controller.

@@ -28,6 +28,7 @@ import com.sun.javafx.fxml.BeanAdapter;
 import com.sun.javafx.fxml.ModuleHelper;
 import com.sun.javafx.reflect.ReflectUtil;
 import javafx.util.Builder;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Array;
@@ -42,6 +43,7 @@ import java.util.*;
  * This builder is strongly modified to support the injection of subcontrollers.
  * Besides the modification of the instance creation, various parts have been optimized and simplified with new Java features.
  */
+@ApiStatus.Internal
 public class ControllerProxyBuilder<T> extends AbstractMap<String, Object> implements Builder<T> {
 
     private static final String SETTER_PREFIX = "set";

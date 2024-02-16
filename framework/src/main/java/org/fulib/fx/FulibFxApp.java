@@ -17,6 +17,8 @@ import org.fulib.fx.controller.ControllerManager;
 import org.fulib.fx.dagger.DaggerFrameworkComponent;
 import org.fulib.fx.dagger.FrameworkComponent;
 import org.fulib.fx.util.Util;
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -164,6 +166,7 @@ public abstract class FulibFxApp extends Application {
         return rendered;
     }
 
+    @MustBeInvokedByOverriders
     @Override
     public void start(Stage primaryStage) {
         this.stage = primaryStage;
@@ -281,6 +284,7 @@ public abstract class FulibFxApp extends Application {
      *
      * @return The component
      */
+    @ApiStatus.Internal
     public FrameworkComponent frameworkComponent() {
         return this.component;
     }
@@ -337,6 +341,7 @@ public abstract class FulibFxApp extends Application {
 
     /**
      * Returns the instance of the current main controller.
+     * This should not be used to change the current main controller.
      *
      * @return The instance of the currently displayed controller
      */

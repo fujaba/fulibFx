@@ -6,6 +6,7 @@ import org.fulib.fx.util.Util;
 import org.fulib.fx.util.reflection.Reflection;
 import javafx.util.Builder;
 import javafx.util.BuilderFactory;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import javax.inject.Provider;
@@ -14,6 +15,7 @@ import java.util.*;
 /**
  * A custom building-factory for instantiating controllers. If an element in an FXML file is of a class annotated with @Controller and a field providing an instance of the same class exists, the provided instance will be used as the controller for the element.
  */
+@ApiStatus.Internal
 public class ControllerBuildFactory implements BuilderFactory {
 
     private final Object instance;
