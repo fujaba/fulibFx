@@ -115,7 +115,7 @@ public class ControllerAnnotationProcessor extends AbstractProcessor {
                     processingEnv.getElementUtils().getPackageOf(element).getQualifiedName().toString(), view);
         } catch (IOException e) {
             String viewPath = processingEnv.getElementUtils().getPackageOf(element).getQualifiedName().toString().replace('.', '/') + "/" + view;
-            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "The view file for '%s' couldn't be found.".formatted(viewPath), element);
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "The view file '%s' couldn't be found.".formatted(viewPath), element);
             processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "(or the source path has not been set, see https://stackoverflow.com/a/74159042)");
         }
     }
