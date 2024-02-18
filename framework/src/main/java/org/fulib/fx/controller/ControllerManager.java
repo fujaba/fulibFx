@@ -38,6 +38,7 @@ import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
+import java.util.stream.Stream;
 
 /**
  * Manages the initialization, rendering and destroying of controllers.
@@ -308,8 +309,25 @@ public class ControllerManager {
         }
     }
 
+    /**
+     * Returns the resource bundle of the given instance if it has one.
+     *
+     * @param instance The instance to get the resource bundle from
+     * @return The resource bundle of the given instance if it has one
+     * @throws RuntimeException If the instance has more than one field annotated with {@link Resource}
+     */
     private static @Nullable ResourceBundle getResourceBundle(@NotNull Object instance) {
-        return Reflection.getFieldsWithAnnotation(instance.getClass(), Resource.class)
+
+        List<Field> fields = Reflection.getFieldsWithAnnotation(instance.getClass(), Resource.class).toList();
+
+        if (fields.isEmpty())
+            return null;
+
+        if (fields.size() > 1)
+            throw new RuntimeException("Class '%s' has more than one field annotated with @Resource.".formatted(instance.getClass().getName()));
+
+        return fields
+                .stream()
                 .filter(field -> {
                     if (field.getType().isAssignableFrom(ResourceBundle.class))
                         return true;
