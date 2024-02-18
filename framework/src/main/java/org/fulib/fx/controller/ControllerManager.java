@@ -8,6 +8,7 @@ import javafx.util.Pair;
 import org.fulib.fx.FulibFxApp;
 import org.fulib.fx.annotation.controller.Component;
 import org.fulib.fx.annotation.controller.Controller;
+import org.fulib.fx.annotation.controller.Resource;
 import org.fulib.fx.annotation.controller.SubComponent;
 import org.fulib.fx.annotation.event.onDestroy;
 import org.fulib.fx.annotation.event.onInit;
@@ -227,7 +228,6 @@ public class ControllerManager {
         // In development mode, check for undestroyed subscribers
         if (Util.runningInDev()) {
             Reflection.getFieldsOfType(instance.getClass(), Subscriber.class) // Get all Subscriber fields
-                    .stream()
                     .map(field -> {
                         try {
                             field.setAccessible(true);
@@ -309,7 +309,6 @@ public class ControllerManager {
     @Unmodifiable
     private static List<Field> getSubComponentFields(Object instance) {
         return Reflection.getFieldsWithAnnotation(instance.getClass(), SubComponent.class)
-                .stream()
                 .filter(field -> {
                     if (!field.getType().isAnnotationPresent(Component.class)) {
                         FulibFxApp.logger().warning("Field '%s' in class '%s' is annotated with @SubComponent but is not a subcomponent.".formatted(field.getName(), instance.getClass().getName()));
@@ -326,7 +325,7 @@ public class ControllerManager {
      * @param parameters The parameters to pass to the methods
      */
     private static void callMethodsWithAnnotation(@NotNull Object instance, @NotNull Class<? extends Annotation> annotation, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
-        for (Method method : Reflection.getMethodsWithAnnotation(instance.getClass(), annotation)) {
+        for (Method method : Reflection.getMethodsWithAnnotation(instance.getClass(), annotation).toList()) {
             try {
                 method.setAccessible(true);
                 method.invoke(instance, getApplicableParameters(method, parameters));
@@ -345,7 +344,7 @@ public class ControllerManager {
      */
     private static void fillParametersIntoFields(@NotNull Object instance, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
         // Fill the parameters into fields annotated with @Param
-        for (Field field : Reflection.getFieldsWithAnnotation(instance.getClass(), Param.class)) {
+        for (Field field : Reflection.getFieldsWithAnnotation(instance.getClass(), Param.class).toList()) {
             try {
                 boolean accessible = field.canAccess(instance);
                 field.setAccessible(true);
@@ -373,7 +372,7 @@ public class ControllerManager {
         }
 
         // Fill the parameters into fields annotated with @ParamsMap
-        for (Field field : Reflection.getFieldsWithAnnotation(instance.getClass(), ParamsMap.class)) {
+        for (Field field : Reflection.getFieldsWithAnnotation(instance.getClass(), ParamsMap.class).toList()) {
 
             if (!Util.isMapWithTypes(field, String.class, Object.class)) {
                 throw new RuntimeException("Field annotated with @ParamsMap in class '" + instance.getClass().getName() + "' is not of type " + Map.class.getName() + "<String, Object>");
