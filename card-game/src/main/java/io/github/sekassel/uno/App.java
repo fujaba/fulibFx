@@ -51,6 +51,9 @@ public class App extends FulibFxApp {
             // Registering the routes of the application. See UnoRouting.java for more information.
             registerRoutes(component.routes());
 
+            // Setting the default resource bundle of the application to the resource bundle provided by the component
+            setDefaultResourceBundle(component.bundle());
+
             stage().addEventHandler(KEY_PRESSED, event -> {
                 if (event.getCode().toString().equals("F5")) {
                     this.refresh();

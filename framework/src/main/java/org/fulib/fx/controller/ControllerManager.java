@@ -52,6 +52,8 @@ public class ControllerManager {
     // Map of controllers that have been initialized
     private final RefreshableCompositeDisposable cleanup = new RefreshableCompositeDisposable();
 
+    private static ResourceBundle defaultResourceBundle;
+
     @Inject
     public ControllerManager() {
     }
@@ -311,9 +313,11 @@ public class ControllerManager {
 
     /**
      * Returns the resource bundle of the given instance if it has one.
+     * If no resource bundle is set, the default resource bundle will be used.
+     * If no default resource bundle is set, null will be returned.
      *
      * @param instance The instance to get the resource bundle from
-     * @return The resource bundle of the given instance if it has one
+     * @return The resource bundle of the given instance if it has one or the default resource bundle
      * @throws RuntimeException If the instance has more than one field annotated with {@link Resource}
      */
     private static @Nullable ResourceBundle getResourceBundle(@NotNull Object instance) {
@@ -321,7 +325,7 @@ public class ControllerManager {
         List<Field> fields = Reflection.getFieldsWithAnnotation(instance.getClass(), Resource.class).toList();
 
         if (fields.isEmpty())
-            return null;
+            return defaultResourceBundle;
 
         if (fields.size() > 1)
             throw new RuntimeException("Class '%s' has more than one field annotated with @Resource.".formatted(instance.getClass().getName()));
@@ -343,7 +347,7 @@ public class ControllerManager {
                 })
                 .filter(Objects::nonNull)
                 .findFirst()
-                .orElse(null);
+                .orElse(defaultResourceBundle);
     }
 
     /**
@@ -569,4 +573,12 @@ public class ControllerManager {
         }).toArray();
     }
 
+    /**
+     * Sets the default resource bundle for all controllers that don't have a resource bundle set.
+     *
+     * @param resourceBundle The default resource bundle
+     */
+    public void setDefaultResourceBundle(ResourceBundle resourceBundle) {
+        defaultResourceBundle = resourceBundle;
+    }
 }
