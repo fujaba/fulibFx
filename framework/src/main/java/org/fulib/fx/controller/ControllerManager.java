@@ -283,21 +283,49 @@ public class ControllerManager {
             }
         }
 
+        // Set the controller factory and builder factory
         ControllerBuildFactory builderFactory = new ControllerBuildFactory(instance);
-
         FXMLLoader loader = new FXMLLoader(url);
         loader.setControllerFactory(c -> instance);
         loader.setBuilderFactory(builderFactory);
 
+        // If the controller has a resource bundle, use it
+        ResourceBundle resourceBundle = getResourceBundle(instance);
+        if (resourceBundle != null) {
+            loader.setResources(resourceBundle);
+        }
+
+        // Set the root of the FXML file when a component specifies a view
         if (setRoot) {
             loader.setRoot(instance);
         }
 
+        // Load the FXML file
         try {
             return loader.load();
         } catch (IOException exception) {
-            throw new RuntimeException("Couldn't load the FXML file for controller '%s'".formatted(instance.getClass()), exception);
+            throw new RuntimeException("Couldn't load the FXML file for controller/component '%s'".formatted(instance.getClass()), exception);
         }
+    }
+
+    private static @Nullable ResourceBundle getResourceBundle(@NotNull Object instance) {
+        return Reflection.getFieldsWithAnnotation(instance.getClass(), Resource.class)
+                .filter(field -> {
+                    if (field.getType().isAssignableFrom(ResourceBundle.class))
+                        return true;
+                    throw new RuntimeException("Field '%s' in class '%s' annotated with @Resource is not of type ResourceBundle.".formatted(field.getName(), instance.getClass().getName()));
+                })
+                .map(field -> {
+                    try {
+                        field.setAccessible(true);
+                        return (ResourceBundle) field.get(instance);
+                    } catch (IllegalAccessException e) {
+                        throw new RuntimeException("Couldn't access the resource bundle field '%s' in class '%s'.".formatted(field.getName(), instance.getClass().getName()), e);
+                    }
+                })
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElse(null);
     }
 
     /**
