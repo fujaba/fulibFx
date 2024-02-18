@@ -19,6 +19,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import org.fulib.fx.annotation.controller.Controller;
+import org.fulib.fx.annotation.controller.Resource;
 import org.fulib.fx.annotation.controller.SubComponent;
 import org.fulib.fx.annotation.event.onDestroy;
 import org.fulib.fx.annotation.event.onInit;
@@ -32,6 +33,7 @@ import javax.inject.Provider;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 
 /**
  * The controller for the ingame screen.
@@ -64,6 +66,10 @@ public class IngameController implements Titleable {
     Provider<BotController> botControllerProvider;
     @Inject
     Provider<CardController> cardControllerProvider;
+
+    @Inject
+    @Resource
+    ResourceBundle resourceBundle;
 
     @Inject
     @SubComponent

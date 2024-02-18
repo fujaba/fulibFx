@@ -171,6 +171,14 @@ The order of injection is as follows:
 5. The controller will be initialized (`@onInit`)
 6. The controller will be rendered (`@onRender`)
 
+### 🚩 Internationalization
+
+JavaFX already provides a way to internationalize your application by using resource bundles. 
+In order to use resource bundles in your controller's FXML file, you have to provide an instance of the resource bundle to the
+framework. This can be done by creating a field containing your instance (e.g. with Dagger) and annotating it with `@Resource`.
+When the corresponding controller is rendered, the framework will automatically set the resource bundle as the resource
+bundle of the FXML file.
+
 ## 💭 Components
 
 Components are a special type of controller that can be used to create reusable components. Components have to extend 
@@ -819,3 +827,10 @@ If an object has been passed as a parameter and the object has been modified dur
 the already modified object will be passed after the refresh, just to be modified again. This can lead to unexpected 
 behaviour. To avoid this, you should try to not modify objects passed as parameters. Instead, you should create a copy 
 of the object and modify the copy or modify the object before passing it to the controller.
+
+### 3. The SceneBuilder doesn't recognize my controller
+When using the SceneBuilder, it might not recognize your controller's FXML file. This can happen when the FXML file contains
+elements which are not present in the basic JavaFX library. To fix this, you can add a jar file containing the missing
+elements to the SceneBuilder. The simplest way is to build your project and then add the jar file by clicking on the small
+gear icon next to the search bar and selecting "JAR/FXML Manager". Then you can add the jar file by clicking on the "Add
+Library/FXML from file system" button.
