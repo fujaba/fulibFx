@@ -20,7 +20,6 @@ import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 import java.io.IOException;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 @SupportedAnnotationTypes({
         "org.fulib.fx.annotation.controller.*",
@@ -30,9 +29,6 @@ import java.util.concurrent.ConcurrentHashMap;
 @AutoService(Processor.class)
 @SuppressWarnings("unused")
 public class ControllerAnnotationProcessor extends AbstractProcessor {
-
-    private final Set<Element> components = ConcurrentHashMap.newKeySet();
-    private final Set<Element> controllers = ConcurrentHashMap.newKeySet();
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
@@ -70,12 +66,11 @@ public class ControllerAnnotationProcessor extends AbstractProcessor {
         // Check if the provided class is of a controller or component type
         for (TypeMirror generic : ((DeclaredType) element.asType()).getTypeArguments()) {
             if (!isController(generic) && !isComponent(generic)) {
-                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Fields annotated with @Route must provide a component.", element);
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Fields annotated with @Route must provide a controller or component.", element);
             }
         }
 
     }
-
 
     private void checkController(Element element) {
         final String view = element.getAnnotation(Controller.class).view();
@@ -91,7 +86,6 @@ public class ControllerAnnotationProcessor extends AbstractProcessor {
             // No view specified, so we transform the class name to a view file name
             checkViewResource(element, Util.transform(element.getSimpleName().toString()) + ".fxml");
         }
-        controllers.add(element);
     }
 
     private void checkComponent(Element element) {
@@ -106,8 +100,6 @@ public class ControllerAnnotationProcessor extends AbstractProcessor {
         if (!processingEnv.getTypeUtils().isAssignable(element.asType(), processingEnv.getElementUtils().getTypeElement("javafx.scene.Parent").asType())) {
             processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Components must extend (a subtype of) javafx.scene.Parent.", element);
         }
-
-        components.add(element);
     }
 
     private void checkDoubleAnnotation(Element element) {
@@ -151,7 +143,6 @@ public class ControllerAnnotationProcessor extends AbstractProcessor {
     }
 
     private void checkSubComponentElement(Element element) {
-
         // Check if the field is of a component type
         if (isComponent(element.asType())) {
             return;
@@ -168,17 +159,18 @@ public class ControllerAnnotationProcessor extends AbstractProcessor {
             }
         }
         processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Fields annotated with @SubComponent must be of a component type or a provider thereof.", element);
-
     }
 
-    // This method only works after the components/controllers have been processed
+    // The method expects the typeMirror to be a declared type
     private boolean isComponent(TypeMirror typeMirror) {
-        return components.stream().anyMatch(element -> element.asType() == typeMirror);
+        DeclaredType declaredType = (DeclaredType) typeMirror;
+        return declaredType.asElement().getAnnotation(Component.class) != null;
     }
 
-    // This method only works after the components/controllers have been processed
+    // The method expects the typeMirror to be a declared type
     private boolean isController(TypeMirror typeMirror) {
-        return controllers.stream().anyMatch(element -> element.asType() == typeMirror);
+        DeclaredType declaredType = (DeclaredType) typeMirror;
+        return declaredType.asElement().getAnnotation(Controller.class) != null;
     }
 
     private boolean isProvider(TypeMirror typeMirror) {
