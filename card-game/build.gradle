@@ -59,6 +59,8 @@ dependencies {
 
     // https://mvnrepository.com/artifact/org.glassfish.tyrus/tyrus-container-grizzly-client/1.15
     implementation group: "org.glassfish.tyrus", name: "tyrus-container-grizzly-client", version: "1.15"
+
+    annotationProcessor project(':annotation-processor')
 }
 
 java {
@@ -93,7 +95,10 @@ jar {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
-compileJava { options.encoding = "UTF-8" }
+compileJava {
+    options.encoding = "UTF-8"
+    options.sourcepath = sourceSets.main.resources.getSourceDirectories()
+}
 javadoc { options.encoding = "UTF-8" }
 
 repositories {

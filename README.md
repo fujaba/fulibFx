@@ -806,6 +806,31 @@ meaning you can go back and forth between items in the queue. When you go back i
 items after the current item will be removed. This can be compared to the history of a browser and is used for the
 history of routes.
 
+## 🔗 Annotation Processor
+The framework uses an annotation processor for checking some of the annotations at compile time. This can be used to
+detect errors before running the application. The processor checks if the `@Controller` and `@Component` annotations are
+used correctly and if the `@Route` annotation is used on a field of type `Provider<T>`. The processor also checks the parameters
+to some extent.
+
+In order to use the processor, you have to add the following dependency to your `build.gradle` file:
+
+```groovy
+dependencies {
+    annotationProcessor 'org.fulib.fx:annotation-processor:<VERSION>'
+}
+```
+
+In order to be able to detect issues with non-existing view files, you have to add the following to your `compileJava` task:
+
+```groovy
+compileJava {
+    // ...
+    options.sourcepath = sourceSets.main.resources.getSourceDirectories()
+}
+```
+
+This will add the resources directory to the source path, allowing the processor to check if the view file exists.
+
 ## 🛑 Common issues
 
 ### 1. My route is not found even though it is registered
@@ -819,3 +844,8 @@ If an object has been passed as a parameter and the object has been modified dur
 the already modified object will be passed after the refresh, just to be modified again. This can lead to unexpected 
 behaviour. To avoid this, you should try to not modify objects passed as parameters. Instead, you should create a copy 
 of the object and modify the copy or modify the object before passing it to the controller.
+
+### 3. The framework doesn't compile even though the view file exists
+The framework uses an annotation processor to check if the view file exists. If the view file is not found, the processor
+will throw an error. Please make sure that the view file is in the correct location and that `options.sourcepath` is set
+correctly in your `compileJava` task (see [Annotation Processor](#-annotation-processor)).

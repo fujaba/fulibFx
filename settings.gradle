@@ -2,5 +2,5 @@
 rootProject.name = projectName
 
 include "framework"
-include "example"
+include "annotation-processor"
 include "card-game"
