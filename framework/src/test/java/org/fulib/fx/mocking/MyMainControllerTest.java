@@ -1,9 +1,9 @@
-package org.fulib.fx.app.mocking;
+package org.fulib.fx.mocking;
 
 import io.reactivex.rxjava3.core.Observable;
-import org.fulib.fx.app.mocking.controller.MyMainController;
-import org.fulib.fx.app.mocking.controller.MySubComponent;
-import org.fulib.fx.app.mocking.service.MyService;
+import org.fulib.fx.mocking.controller.MyMainController;
+import org.fulib.fx.mocking.controller.MySubComponent;
+import org.fulib.fx.mocking.service.MyService;
 import org.fulib.fx.controller.Subscriber;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,6 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
+import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
 
 @ExtendWith(MockitoExtension.class)
 public class MyMainControllerTest extends ControllerTest {
@@ -39,6 +40,9 @@ public class MyMainControllerTest extends ControllerTest {
         when(myService.getObservable()).thenReturn(Observable.just("This is a test string."));
         // We want to mock the subcomponent to override the onRender method
         doNothing().when(mySubComponent).onRender();
+
+        MyApp.scheduler().scheduleDirect(() -> stage.requestFocus());
+        waitForFxEvents();
 
         app.show(myMainController); // Show the main controller
 

@@ -1,4 +1,4 @@
-package org.fulib.fx.app.mocking.service;
+package org.fulib.fx.mocking.service;
 
 import io.reactivex.rxjava3.core.Observable;
 

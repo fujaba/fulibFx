@@ -1,15 +1,19 @@
 package org.fulib.fx.controller;
 
 import dagger.Lazy;
+import javafx.scene.Parent;
+import javafx.util.Pair;
 import org.fulib.fx.annotation.Route;
 import org.fulib.fx.annotation.controller.Component;
 import org.fulib.fx.annotation.controller.Controller;
 import org.fulib.fx.controller.exception.ControllerDuplicatedRouteException;
 import org.fulib.fx.controller.exception.ControllerInvalidRouteException;
-import org.fulib.fx.data.*;
+import org.fulib.fx.data.EvictingQueue;
+import org.fulib.fx.data.TraversableNodeTree;
+import org.fulib.fx.data.TraversableQueue;
+import org.fulib.fx.data.TraversableTree;
 import org.fulib.fx.util.Util;
 import org.fulib.fx.util.reflection.Reflection;
-import javafx.scene.Parent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -23,7 +27,7 @@ import java.util.Objects;
 public class Router {
 
     private final TraversableTree<Field> routes;
-    private final TraversableQueue<Tuple<TraversableNodeTree.Node<Field>, Map<String, Object>>> history;
+    private final TraversableQueue<Pair<TraversableNodeTree.Node<Field>, Map<String, Object>>> history;
 
     @Inject
     Lazy<ControllerManager> manager;
@@ -82,10 +86,10 @@ public class Router {
      *
      * @param route      The route of the controller
      * @param parameters The parameters to pass to the controller
-     * @return A tuple containing the controller instance and the rendered parent (will be the same if the controller is a component)
+     * @return A pair containing the controller instance and the rendered parent (will be the same if the controller is a component)
      * @throws ControllerInvalidRouteException If the route couldn't be found
      */
-    public @NotNull Tuple<Object, Parent> renderRoute(@NotNull String route, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
+    public @NotNull Pair<Object, Parent> renderRoute(@NotNull String route, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
         // Check if the route exists and has a valid controller
         if (!this.routes.containsPath(route)) throw new ControllerInvalidRouteException(route);
 
@@ -94,7 +98,7 @@ public class Router {
         TraversableNodeTree.Node<Field> node = ((TraversableNodeTree<Field>) this.routes).currentNode();
 
         // Since we visited this route with the given parameters, we can add it to the history
-        this.history.insert(Tuple.of(node, parameters));
+        this.history.insert(new Pair<>(node, parameters));
         Class<?> controllerClass = Util.getProvidedClass(Objects.requireNonNull(provider));
 
         // Check if the provider is providing a valid controller/component
@@ -108,7 +112,7 @@ public class Router {
         Object controllerInstance = Util.getInstanceOfProviderField(provider, this.routerObject);
         Parent renderedParent = this.manager.get().initAndRender(controllerInstance, parameters);
 
-        return Tuple.of(controllerInstance, renderedParent);
+        return new Pair<>(controllerInstance, renderedParent);
     }
 
     /**
@@ -118,9 +122,9 @@ public class Router {
      */
     public Parent back() {
         try {
-            Tuple<TraversableNodeTree.Node<Field>, Map<String, Object>> tuple = this.history.back();
-            ((TraversableNodeTree<Field>) routes).setCurrentNode(tuple.first());
-            return this.manager.get().initAndRender(Util.getInstanceOfProviderField(tuple.first().value(), this.routerObject), tuple.second());
+            Pair<TraversableNodeTree.Node<Field>, Map<String, Object>> pair = this.history.back();
+            ((TraversableNodeTree<Field>) routes).setCurrentNode(pair.getKey());
+            return this.manager.get().initAndRender(Util.getInstanceOfProviderField(pair.getKey().value(), this.routerObject), pair.getValue());
 
         } catch (Exception e) {
             return null;
@@ -134,14 +138,13 @@ public class Router {
      */
     public Parent forward() {
         try {
-            Tuple<TraversableNodeTree.Node<Field>, Map<String, Object>> tuple = this.history.forward();
-            ((TraversableNodeTree<Field>) routes).setCurrentNode(tuple.first());
-            return this.manager.get().initAndRender(Util.getInstanceOfProviderField(tuple.first().value(), this.routerObject), tuple.second());
+            Pair<TraversableNodeTree.Node<Field>, Map<String, Object>> pair = this.history.forward();
+            ((TraversableNodeTree<Field>) routes).setCurrentNode(pair.getKey());
+            return this.manager.get().initAndRender(Util.getInstanceOfProviderField(pair.getKey().value(), this.routerObject), pair.getValue());
         } catch (Exception e) {
             return null;
         }
     }
-
 
     /**
      * Returns the current field and its parameters.
@@ -149,8 +152,8 @@ public class Router {
      *
      * @return The current field and its parameters
      */
-    public Tuple<Field, Map<String, Object>> current() {
-        return Tuple.of(this.history.current().first().value(), this.history.current().second());
+    public Pair<Field, Map<String, Object>> current() {
+        return new Pair<>(this.history.current().getKey().value(), this.history.current().getValue());
     }
 
 }

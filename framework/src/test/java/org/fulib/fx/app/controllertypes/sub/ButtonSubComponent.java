@@ -1,4 +1,4 @@
-package org.fulib.fx.app.controller.sub;
+package org.fulib.fx.app.controllertypes.sub;
 
 import org.fulib.fx.annotation.controller.Component;
 import javafx.scene.control.Button;

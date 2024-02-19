@@ -62,7 +62,7 @@ public class App extends FulibFxApp {
             setResourcesPath(Path.of("card-game/src/main/resources/"));
 
             // Setting the path which the auto refresher should watch (required for auto-reloading in dev)
-            autoRefresher().setup(Path.of("card-game/src/main/resources/io/github/sekassel/uno/view"));
+            autoRefresher().setup(Path.of("card-game/src/main/resources/io/github/sekassel/uno"));
             show("", Map.of());
 
         } catch (Exception e) {

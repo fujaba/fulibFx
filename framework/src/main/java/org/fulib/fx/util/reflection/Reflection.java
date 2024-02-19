@@ -1,19 +1,12 @@
 package org.fulib.fx.util.reflection;
 
-import org.fulib.fx.annotation.param.Param;
-import org.fulib.fx.annotation.param.Params;
-import org.fulib.fx.util.Util;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import java.lang.annotation.Annotation;
+import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Consumer;
 
 /**
@@ -80,86 +73,34 @@ public class Reflection {
     }
 
     /**
-     * Calls all methods annotated with a certain annotation in the provided controller. The method will be called with the given parameters if they're annotated with @Param or @Params.
+     * Checks if the value can be assigned to the given type.
      *
-     * @param annotation The annotation to look for
-     * @param parameters The parameters to pass to the methods
+     * @param type  The type to check
+     * @param value The value to check
+     * @return True if the value can be assigned to the type, false otherwise
      */
-    public static void callMethodsWithAnnotation(@NotNull Object instance, @NotNull Class<? extends Annotation> annotation, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
-        for (Method method : Reflection.getMethodsWithAnnotation(instance.getClass(), annotation)) {
-            try {
-                boolean accessible = method.canAccess(instance);
-                method.setAccessible(true);
-                method.invoke(instance, getApplicableParameters(method, parameters));
-                method.setAccessible(accessible);
-            } catch (IllegalAccessException | InvocationTargetException e) {
-                throw new RuntimeException("Couldn't run method '" + method.getName() + "' annotated with '" + annotation.getName() + "' in '" + instance.getClass().getName() + "'", e);
-            }
+    public static boolean canBeAssigned(Class<?> type, Object value) {
+        if (value == null) {
+            return !type.isPrimitive();
         }
+
+        Class<?> valueType = value.getClass();
+        return getWrapperType(type).isAssignableFrom(valueType);
     }
 
-    public static void fillParametersIntoFields(@NotNull Object instance, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
-        for (Field field : Reflection.getFieldsWithAnnotation(instance.getClass(), Param.class)) {
-            try {
-                boolean accessible = field.canAccess(instance);
-                field.setAccessible(true);
-                field.set(instance, parameters.get(field.getAnnotation(Param.class).value()));
-                field.setAccessible(accessible);
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-                throw new RuntimeException("Couldn't fill parameter '" + field.getAnnotation(Param.class).value() + "' into field '" + field.getName() + "' in '" + instance.getClass().getName() + "'", e);
-            }
-        }
-
-        for (Field field : Reflection.getFieldsWithAnnotation(instance.getClass(), Params.class)) {
-            try {
-                boolean accessible = field.canAccess(instance);
-                field.setAccessible(true);
-                field.set(instance, parameters);
-                field.setAccessible(accessible);
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException("Couldn't fill parameters into field '" + field.getName() + "' in '" + instance.getClass().getName() + "'", e);
-            }
-        }
+    public static Class<?> getWrapperType(Class<?> type) {
+        return type.isPrimitive() ? wrap(type) : type;
     }
 
-    /**
-     * Returns an array with all parameters that are applicable to the given method in the correct order.
-     * <p>
-     * If the method has a parameter annotated with @Param, the value of the parameter with the same key as the annotation will be used.
-     * <p>
-     * If the method has a parameter annotated with @Params, the whole parameters map will be used.
-     *
-     * @param method     The method to check
-     * @param parameters The values of the parameters
-     * @return An array with all applicable parameters
-     */
-    private static @Nullable Object @NotNull [] getApplicableParameters(@NotNull Method method, @NotNull Map<String, Object> parameters) {
-        return Arrays.stream(method.getParameters()).map(parameter -> {
-            Param param = parameter.getAnnotation(Param.class);
-            Params params = parameter.getAnnotation(Params.class);
+    // https://stackoverflow.com/questions/1704634/simple-way-to-get-wrapper-class-type-in-java/62219759#62219759
+    @SuppressWarnings("unchecked")
+    public static <T> Class<T> wrap(Class<T> unwrapped) {
+        return (Class<T>) MethodType.methodType(unwrapped).wrap().returnType();
+    }
 
-            if (param != null && params != null)
-                throw new RuntimeException("Parameter '" + parameter.getName() + "' in method '" + method.getDeclaringClass().getName() + "#" + method.getName() + "' is annotated with both @Param and @Params");
-
-            // Check if the parameter is annotated with @Param and if the parameter is of the correct type
-            if (param != null) {
-                if (parameters.containsKey(param.value()) && !parameter.getType().isAssignableFrom(parameters.get(param.value()).getClass())) {
-                    throw new RuntimeException("Parameter named '" + param.value() + "' in method '" + method.getDeclaringClass().getName() + "#" + method.getName() + "' is of type " + parameter.getType().getName() + " but the provided value is of type " + parameters.get(param.value()).getClass().getName());
-                }
-                return parameters.get(param.value());
-            }
-
-            // Check if the parameter is annotated with @Params and if the parameter is of the type Map<String, Object>
-            if (params != null) {
-                if (!Util.isMapWithTypes(parameter, String.class, Object.class)) {
-                    throw new RuntimeException("Parameter annotated with @Params in method '" + method.getClass().getName() + "#" + method.getName() + "' is not of type " + Map.class.getName());
-                }
-                return parameters;
-            }
-
-            return null;
-        }).toArray();
+    @SuppressWarnings("unchecked")
+    public static <T> Class<T> unwrap(Class<T> wrapped) {
+        return (Class<T>) MethodType.methodType(wrapped).unwrap().returnType();
     }
 
 }

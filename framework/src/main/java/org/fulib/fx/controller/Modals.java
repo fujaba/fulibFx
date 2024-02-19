@@ -1,7 +1,5 @@
 package org.fulib.fx.controller;
 
-import org.fulib.fx.FulibFxApp;
-import org.fulib.fx.data.TriConsumer;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.Parent;
@@ -10,9 +8,11 @@ import javafx.scene.paint.Paint;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import org.fulib.fx.FulibFxApp;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
+import java.util.function.BiConsumer;
 
 public class Modals {
 
@@ -35,7 +35,7 @@ public class Modals {
      * @param initializer  the initializer for passing more arguments to the stage and controller
      * @param <Display>    the type of the controller
      */
-    public static <Display extends Node> void showModal(Stage currentStage, Display component, TriConsumer<Stage, Scene, Display> initializer) {
+    public static <Display extends Node> void showModal(Stage currentStage, Display component, BiConsumer<Stage, Display> initializer) {
         showModal(currentStage, component, initializer, Map.of(), true);
     }
 
@@ -53,7 +53,7 @@ public class Modals {
      * @param <Display>    the type of the controller
      */
     public static <Display extends Node> void showModal(Stage currentStage, Display component, Map<String, Object> params) {
-        showModal(currentStage, component, (stage, scene, controller) -> {
+        showModal(currentStage, component, (stage, controller) -> {
         }, params, true);
     }
 
@@ -70,7 +70,7 @@ public class Modals {
      * @param <Display>    the type of the controller
      */
     public static <Display extends Node> void showModal(Stage currentStage, Display component) {
-        showModal(currentStage, component, (stage, scene, controller) -> {
+        showModal(currentStage, component, (stage, controller) -> {
         }, Map.of(), true);
     }
 
@@ -88,10 +88,9 @@ public class Modals {
      * @param params       the parameters to pass to the controller
      * @param <Display>    the type of the controller
      */
-    public static <Display extends Node> void showModal(Stage currentStage, Display component, TriConsumer<Stage, Scene, Display> initializer, Map<String, Object> params, boolean destroyOnClose) {
+    public static <Display extends Node> void showModal(Stage currentStage, Display component, BiConsumer<Stage,  Display> initializer, Map<String, Object> params, boolean destroyOnClose) {
         FulibFxApp.scheduler().scheduleDirect(() -> {
             ModalStage modalStage = new ModalStage(destroyOnClose ? () -> ControllerManager.destroy(component) : null);
-
 
             ControllerManager.init(component, params);
             Parent rendered = ControllerManager.render(component, params);
@@ -105,7 +104,7 @@ public class Modals {
             modalStage.initModality(Modality.WINDOW_MODAL);
             modalStage.show();
             modalStage.requestFocus();
-            initializer.accept(modalStage, scene, component);
+            initializer.accept(modalStage, component);
         });
     }
 

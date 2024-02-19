@@ -1,10 +1,10 @@
-package org.fulib.fx.app.controller;
+package org.fulib.fx.app.controllertypes;
 
 import org.fulib.fx.annotation.controller.Controller;
 import org.fulib.fx.annotation.controller.SubComponent;
 import org.fulib.fx.annotation.event.onRender;
 import org.fulib.fx.annotation.param.Param;
-import org.fulib.fx.app.controller.sub.ButtonSubComponent;
+import org.fulib.fx.app.controllertypes.sub.ButtonSubComponent;
 import org.fulib.fx.constructs.For;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Labeled;
