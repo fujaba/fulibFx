@@ -5,6 +5,8 @@ import org.fulib.fx.annotation.Route;
 import org.fulib.fx.annotation.controller.Component;
 import org.fulib.fx.annotation.controller.Controller;
 import org.fulib.fx.annotation.controller.SubComponent;
+import org.fulib.fx.annotation.param.Params;
+import org.fulib.fx.annotation.param.ParamsMap;
 import org.fulib.fx.util.Util;
 
 import javax.annotation.processing.*;
@@ -23,7 +25,8 @@ import java.util.Set;
 
 @SupportedAnnotationTypes({
         "org.fulib.fx.annotation.controller.*",
-        "org.fulib.fx.annotation.Route"
+        "org.fulib.fx.annotation.Route",
+        "org.fulib.fx.annotation.param.*",
 })
 @SupportedSourceVersion(SourceVersion.RELEASE_17)
 @AutoService(Processor.class)
@@ -52,7 +55,32 @@ public class ControllerAnnotationProcessor extends AbstractProcessor {
             checkRoute(element);
         }
 
+        for (Element element : roundEnv.getElementsAnnotatedWith(ParamsMap.class)) {
+            checkParamsMap(element);
+        }
+
+        for (Element element : roundEnv.getElementsAnnotatedWith(Params.class)) {
+            checkParams(element);
+        }
+
         return true;
+    }
+
+    private void checkParams(Element element) {
+        if (element instanceof ExecutableElement method) {
+            Params annotation = method.getAnnotation(Params.class);
+            if (method.getParameters().size() != annotation.value().length) {
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "The number of parameters in the method does not match the number of parameters in the @Params annotation.", method);
+            }
+        }
+    }
+
+    private void checkParamsMap(Element element) {
+        if (element instanceof ExecutableElement method) {
+            if (method.getParameters().size() != 1) {
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Methods annotated with @ParamsMap must have exactly one parameter.", method);
+            }
+        }
     }
 
     private void checkRoute(Element element) {
