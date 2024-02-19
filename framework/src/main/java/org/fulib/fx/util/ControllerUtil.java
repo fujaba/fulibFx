@@ -15,6 +15,10 @@ import static org.fulib.fx.util.ReflectionUtil.getProvidedClass;
 
 public class ControllerUtil {
 
+    private ControllerUtil() {
+        // Prevent instantiation
+    }
+
     /**
      * Checks if an instance is a component (controller extending a Parent).
      * <p>

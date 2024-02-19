@@ -2,6 +2,10 @@ package org.fulib.fx.util;
 
 public class FrameworkUtil {
 
+    private FrameworkUtil() {
+        // Prevent instantiation
+    }
+
     // Environment variable for telling the framework that it's running in development mode
     private static final String INDEV_ENVIRONMENT_VARIABLE = "INDEV";
 

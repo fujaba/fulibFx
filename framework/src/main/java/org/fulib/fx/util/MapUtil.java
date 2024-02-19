@@ -12,6 +12,10 @@ import java.util.Objects;
 
 public class MapUtil {
 
+    private MapUtil() {
+        // Prevent instantiation
+    }
+
     /**
      * Returns the key for the given value in the given map.
      *

@@ -9,6 +9,9 @@ import java.nio.file.Path;
 
 public class FileUtil {
 
+    private FileUtil() {
+        // Prevent instantiation
+    }
 
     /**
      * Returns the content of the given file as a string.
