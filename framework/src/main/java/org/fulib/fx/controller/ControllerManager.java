@@ -17,9 +17,7 @@ import org.fulib.fx.annotation.param.Params;
 import org.fulib.fx.annotation.param.ParamsMap;
 import org.fulib.fx.controller.building.ControllerBuildFactory;
 import org.fulib.fx.controller.exception.IllegalControllerException;
-import org.fulib.fx.util.ControllerUtil;
-import org.fulib.fx.util.MapUtil;
-import org.fulib.fx.util.Util;
+import org.fulib.fx.util.*;
 import org.fulib.fx.util.disposable.RefreshableCompositeDisposable;
 import org.fulib.fx.util.reflection.Reflection;
 import org.jetbrains.annotations.ApiStatus;
@@ -191,7 +189,7 @@ public class ControllerManager {
 
         // If the controller specifies a fxml file, load it. This will also load sub-controllers specified in the FXML file
         else {
-            String fxmlPath = view.isEmpty() ? Util.transform(instance.getClass().getSimpleName()) + ".fxml" : view;
+            String fxmlPath = view.isEmpty() ? ControllerUtil.transform(instance.getClass().getSimpleName()) + ".fxml" : view;
             parent = loadFXML(fxmlPath, instance, false);
         }
 
@@ -227,7 +225,7 @@ public class ControllerManager {
         callMethodsWithAnnotation(instance, onDestroy.class, Map.of());
 
         // In development mode, check for undestroyed subscribers
-        if (Util.runningInDev()) {
+        if (FrameworkUtil.runningInDev()) {
             Reflection.getFieldsOfType(instance.getClass(), Subscriber.class) // Get all Subscriber fields
                     .stream()
                     .map(field -> {
@@ -274,7 +272,7 @@ public class ControllerManager {
             throw new RuntimeException("Could not find resource '" + urlPath + "'");
         }
 
-        File file = Util.getResourceAsLocalFile(instance.getClass(), fileName);
+        File file = FileUtil.getResourceAsLocalFile(FulibFxApp.resourcesPath(), instance.getClass(), fileName);
 
         // If the file exists, use it instead of the resource (development mode, allows for hot reloading)
         if (file.exists()) {

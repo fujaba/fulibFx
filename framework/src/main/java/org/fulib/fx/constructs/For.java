@@ -9,7 +9,7 @@ import javafx.scene.Parent;
 import org.fulib.fx.annotation.controller.Component;
 import org.fulib.fx.controller.ControllerManager;
 import org.fulib.fx.util.ControllerUtil;
-import org.fulib.fx.util.Util;
+import org.fulib.fx.util.ReflectionUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -181,7 +181,7 @@ public class For<Node extends javafx.scene.Node, Item> {
 
     private void setContainer(Parent container) {
         this.container = container;
-        this.children = Util.getChildrenList(container.getClass(), container);
+        this.children = ReflectionUtil.getChildrenList(container.getClass(), container);
 
         init();
     }

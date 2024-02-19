@@ -5,7 +5,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 
-import static org.fulib.fx.util.Util.getChildrenList;
+import static org.fulib.fx.util.ReflectionUtil.getChildrenList;
 
 public abstract class ParentDuplicator<T extends Parent> extends NodeDuplicator<T> {
 
