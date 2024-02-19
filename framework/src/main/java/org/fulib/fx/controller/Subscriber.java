@@ -10,8 +10,8 @@ import javafx.beans.property.Property;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import org.fulib.fx.FulibFxApp;
-import org.fulib.fx.util.disposable.RefreshableCompositeDisposable;
-import org.fulib.fx.util.disposable.RefreshableDisposableContainer;
+import org.fulib.fx.data.disposable.RefreshableCompositeDisposable;
+import org.fulib.fx.data.disposable.RefreshableDisposableContainer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

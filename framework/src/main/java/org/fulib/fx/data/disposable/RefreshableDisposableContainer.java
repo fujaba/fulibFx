@@ -1,4 +1,4 @@
-package org.fulib.fx.util.disposable;
+package org.fulib.fx.data.disposable;
 
 import io.reactivex.rxjava3.disposables.DisposableContainer;
 

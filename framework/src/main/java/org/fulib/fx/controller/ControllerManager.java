@@ -18,7 +18,7 @@ import org.fulib.fx.annotation.param.ParamsMap;
 import org.fulib.fx.controller.building.ControllerBuildFactory;
 import org.fulib.fx.controller.exception.IllegalControllerException;
 import org.fulib.fx.util.*;
-import org.fulib.fx.util.disposable.RefreshableCompositeDisposable;
+import org.fulib.fx.data.disposable.RefreshableCompositeDisposable;
 import org.fulib.fx.util.reflection.Reflection;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
