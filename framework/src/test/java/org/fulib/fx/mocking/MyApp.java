@@ -12,7 +12,7 @@ public class MyApp extends FulibFxApp {
         try {
             super.start(primaryStage);
         } catch (Exception e) {
-            logger().log(Level.SEVERE, "Error while starting the application", e);
+            LOGGER.log(Level.SEVERE, "Error while starting the application", e);
         }
     }
 

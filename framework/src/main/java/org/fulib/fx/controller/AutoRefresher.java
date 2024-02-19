@@ -32,7 +32,7 @@ public class AutoRefresher {
     public void setup(Path directory) {
 
         if (!Util.runningInDev()) {
-            FulibFxApp.logger().warning("AutoRefresher is only meant to be used in development mode! Not starting.");
+            FulibFxApp.LOGGER.warning("AutoRefresher is only meant to be used in development mode! Not starting.");
             return;
         }
 
@@ -60,8 +60,8 @@ public class AutoRefresher {
                         if (file.getFileName().toString().contains(".fxml")) {
                             // Check if the file contains the current main controller as fx:controller (only reload if the fxml file is actually used)
                             if (Util.getContent(file.toFile()).contains(String.format(Constants.FX_CONTROLLER_STRING, framework.get().currentMainController().getClass().getName()))) {
-                                FulibFxApp.scheduler().scheduleDirect(() -> {
-                                    FulibFxApp.logger().info("Reloading " + file.getFileName() + " because it was modified.");
+                                FulibFxApp.FX_SCHEDULER.scheduleDirect(() -> {
+                                    FulibFxApp.LOGGER.info("Reloading " + file.getFileName() + " because it was modified.");
                                     framework.get().refresh();
                                 });
                             }

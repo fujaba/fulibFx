@@ -41,7 +41,7 @@ public class MyMainControllerTest extends ControllerTest {
         // We want to mock the subcomponent to override the onRender method
         doNothing().when(mySubComponent).onRender();
 
-        MyApp.scheduler().scheduleDirect(() -> stage.requestFocus());
+        MyApp.FX_SCHEDULER.scheduleDirect(() -> stage.requestFocus());
         waitForFxEvents();
 
         app.show(myMainController); // Show the main controller

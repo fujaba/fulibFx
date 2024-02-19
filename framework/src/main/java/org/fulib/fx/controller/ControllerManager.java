@@ -240,7 +240,7 @@ public class ControllerManager {
                     .filter(pair -> pair.getKey() != null)
                     .filter(pair -> !pair.getValue().isDisposed()) // Filter out disposed subscribers
                     .forEach(pair ->
-                            FulibFxApp.logger().warning("Found undestroyed subscriber '%s' in class '%s'.".formatted(pair.getKey().getName(), instance.getClass().getName()))
+                            FulibFxApp.LOGGER.warning("Found undestroyed subscriber '%s' in class '%s'.".formatted(pair.getKey().getName(), instance.getClass().getName()))
                     );
         }
     }
@@ -312,7 +312,7 @@ public class ControllerManager {
                 .stream()
                 .filter(field -> {
                     if (!field.getType().isAnnotationPresent(Component.class)) {
-                        FulibFxApp.logger().warning("Field '%s' in class '%s' is annotated with @SubComponent but is not a subcomponent.".formatted(field.getName(), instance.getClass().getName()));
+                        FulibFxApp.LOGGER.warning("Field '%s' in class '%s' is annotated with @SubComponent but is not a subcomponent.".formatted(field.getName(), instance.getClass().getName()));
                         return false;
                     }
                     return true;

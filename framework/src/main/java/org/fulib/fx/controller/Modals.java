@@ -89,7 +89,7 @@ public class Modals {
      * @param <Display>    the type of the controller
      */
     public static <Display extends Node> void showModal(Stage currentStage, Display component, BiConsumer<Stage,  Display> initializer, Map<String, Object> params, boolean destroyOnClose) {
-        FulibFxApp.scheduler().scheduleDirect(() -> {
+        FulibFxApp.FX_SCHEDULER.scheduleDirect(() -> {
             ModalStage modalStage = new ModalStage(destroyOnClose ? () -> ControllerManager.destroy(component) : null);
 
             ControllerManager.init(component, params);

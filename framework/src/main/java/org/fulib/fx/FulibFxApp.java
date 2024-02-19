@@ -29,8 +29,8 @@ import java.util.logging.Logger;
 
 public abstract class FulibFxApp extends Application {
 
-    private static final Scheduler FX_SCHEDULER = Schedulers.from(Platform::runLater);
-    private static final Logger LOGGER = Logger.getLogger(FulibFxApp.class.getName());
+    public static final Scheduler FX_SCHEDULER = Schedulers.from(Platform::runLater);
+    public static final Logger LOGGER = Logger.getLogger(FulibFxApp.class.getName());
 
     private static Path resourcesPath = Path.of("src/main/resources");
 
@@ -42,25 +42,6 @@ public abstract class FulibFxApp extends Application {
 
     // The instance of the current main controller (last controller displayed with show())
     private Object currentMainController;
-
-
-    /**
-     * Returns the framework's logger.
-     *
-     * @return The logger
-     */
-    public static Logger logger() {
-        return LOGGER;
-    }
-
-    /**
-     * Returns the scheduler of the framework.
-     *
-     * @return The scheduler
-     */
-    public static Scheduler scheduler() {
-        return FX_SCHEDULER;
-    }
 
     /**
      * Returns the path to the 'resources' directory.
