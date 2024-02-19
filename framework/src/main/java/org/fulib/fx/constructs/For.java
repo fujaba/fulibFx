@@ -8,6 +8,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.Parent;
 import org.fulib.fx.annotation.controller.Component;
 import org.fulib.fx.controller.ControllerManager;
+import org.fulib.fx.util.ControllerUtil;
 import org.fulib.fx.util.Util;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -231,7 +232,7 @@ public class For<Node extends javafx.scene.Node, Item> {
         Node node = this.itemsToNodes.get(item);
 
         // Destroy the controller if the node is a component
-        if (Util.isComponent(node)) {
+        if (ControllerUtil.isComponent(node)) {
             ControllerManager.destroy(node);
         }
 
@@ -260,7 +261,7 @@ public class For<Node extends javafx.scene.Node, Item> {
         }
 
         // Initialize and render the controller if the node is a component
-        if (Util.isComponent(node)) {
+        if (ControllerUtil.isComponent(node)) {
             ControllerManager.init(node, params);
             ControllerManager.render(node, params);
         }

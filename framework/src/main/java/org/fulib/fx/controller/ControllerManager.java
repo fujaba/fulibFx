@@ -17,6 +17,8 @@ import org.fulib.fx.annotation.param.Params;
 import org.fulib.fx.annotation.param.ParamsMap;
 import org.fulib.fx.controller.building.ControllerBuildFactory;
 import org.fulib.fx.controller.exception.IllegalControllerException;
+import org.fulib.fx.util.ControllerUtil;
+import org.fulib.fx.util.MapUtil;
 import org.fulib.fx.util.Util;
 import org.fulib.fx.util.disposable.RefreshableCompositeDisposable;
 import org.fulib.fx.util.reflection.Reflection;
@@ -108,7 +110,7 @@ public class ControllerManager {
     public static void init(@NotNull Object instance, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
 
         // Check if the instance is a controller
-        if (!Util.isController(instance))
+        if (!ControllerUtil.isController(instance))
             throw new IllegalControllerException("Class '%s' is not a controller or component.".formatted(instance.getClass().getName()));
 
         // Inject parameters into the controller fields
@@ -151,7 +153,7 @@ public class ControllerManager {
     public static Parent render(Object instance, Map<String, Object> parameters) {
 
         // Check if the instance is a controller/component
-        boolean component = instance.getClass().isAnnotationPresent(Component.class) && Util.isComponent(instance);
+        boolean component = instance.getClass().isAnnotationPresent(Component.class) && ControllerUtil.isComponent(instance);
 
         if (!component && !instance.getClass().isAnnotationPresent(Controller.class))
             throw new IllegalArgumentException("Class '%s' is not a controller or component.".formatted(instance.getClass().getName()));
@@ -211,7 +213,7 @@ public class ControllerManager {
      * @param instance The controller/component instance to destroy
      */
     public static void destroy(@NotNull Object instance) {
-        if (!Util.isController(instance))
+        if (!ControllerUtil.isController(instance))
             throw new IllegalArgumentException("Class '%s' is not a controller or component.".formatted(instance.getClass().getName()));
 
         // Destroying should be done in exactly the reverse order of initialization
@@ -375,7 +377,7 @@ public class ControllerManager {
         // Fill the parameters into fields annotated with @ParamsMap
         for (Field field : Reflection.getFieldsWithAnnotation(instance.getClass(), ParamsMap.class)) {
 
-            if (!Util.isMapWithTypes(field, String.class, Object.class)) {
+            if (!MapUtil.isMapWithTypes(field, String.class, Object.class)) {
                 throw new RuntimeException("Field annotated with @ParamsMap in class '" + instance.getClass().getName() + "' is not of type " + Map.class.getName() + "<String, Object>");
             }
 
@@ -473,7 +475,7 @@ public class ControllerManager {
     private static void callParamsMapMethods(Object instance, Map<String, Object> parameters) {
         Reflection.getMethodsWithAnnotation(instance.getClass(), ParamsMap.class).forEach(method -> {
 
-            if (method.getParameterCount() != 1 || !Util.isMapWithTypes(method.getParameters()[0], String.class, Object.class)) {
+            if (method.getParameterCount() != 1 || !MapUtil.isMapWithTypes(method.getParameters()[0], String.class, Object.class)) {
                 throw new RuntimeException("Method '" + method.getName() + "' in class '" + instance.getClass().getName() + "' annotated with @ParamsMap has to have exactly one parameter of type " + Map.class.getName() + "<String, Object>");
             }
 
@@ -515,7 +517,7 @@ public class ControllerManager {
 
             // Check if the parameter is annotated with @Params and if the parameter is of the type Map<String, Object>
             if (paramsMap != null) {
-                if (!Util.isMapWithTypes(parameter, String.class, Object.class)) {
+                if (!MapUtil.isMapWithTypes(parameter, String.class, Object.class)) {
                     throw new RuntimeException("Parameter annotated with @Params in method '" + method.getClass().getName() + "#" + method.getName() + "' is not of type " + Map.class.getName() + "<String, Object>");
                 }
                 return parameters;

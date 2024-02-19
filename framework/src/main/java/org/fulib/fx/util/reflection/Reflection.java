@@ -1,12 +1,12 @@
 package org.fulib.fx.util.reflection;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.lang.annotation.Annotation;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 
 /**
@@ -86,6 +86,26 @@ public class Reflection {
 
         Class<?> valueType = value.getClass();
         return getWrapperType(type).isAssignableFrom(valueType);
+    }
+
+
+    /**
+     * Returns all fields of the given class and its superclasses.
+     *
+     * @param clazz The class to get the fields from
+     * @return A set of all fields of the given class and its superclasses
+     */
+    public static @NotNull Set<Field> getAllFields(@NotNull Class<?> clazz) {
+
+        Set<Field> fields = new HashSet<>(Arrays.asList(clazz.getDeclaredFields()));
+
+        // Recursively add fields from superclass until it reaches Object class
+        Class<?> superClass = clazz.getSuperclass();
+        if (superClass != null && superClass != Object.class) {
+            fields.addAll(getAllFields(superClass));
+        }
+
+        return fields;
     }
 
     public static Class<?> getWrapperType(Class<?> type) {

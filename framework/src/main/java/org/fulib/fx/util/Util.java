@@ -1,28 +1,33 @@
 package org.fulib.fx.util;
 
+import javafx.collections.ObservableList;
+import javafx.scene.Node;
+import javafx.scene.Parent;
 import org.fulib.fx.FulibFxApp;
 import org.fulib.fx.annotation.Route;
 import org.fulib.fx.annotation.controller.Component;
 import org.fulib.fx.annotation.controller.Controller;
 import org.fulib.fx.controller.exception.InvalidRouteFieldException;
-import javafx.collections.ObservableList;
-import javafx.scene.Node;
-import javafx.scene.Parent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.inject.Provider;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
 
 /**
  * Utility class containing different helper methods for the framework or the user.
  */
 public class Util {
+
+    // Environment variable for telling the framework that it's running in development mode
+    private static final String INDEV_ENVIRONMENT_VARIABLE = "INDEV";
 
     private Util() {
         // Prevent instantiation
@@ -77,71 +82,6 @@ public class Util {
         return null;
     }
 
-    /**
-     * Checks if the given parameter is a map with the given key and value types.
-     * <p>
-     * This will not work for maps not directly specifying the generic types, such as MyMap extends HashMap<Key, Value>.
-     *
-     * @param parameter The parameter to check
-     * @param key       The key type
-     * @param value     The value type
-     * @return True if the parameter is a valid map field with the given key and value types
-     */
-    public static boolean isMapWithTypes(@NotNull Parameter parameter, @NotNull Class<?> key, @NotNull Class<?> value) {
-        if (Map.class.isAssignableFrom(parameter.getType())) {
-            Type genericType = parameter.getParameterizedType();
-            return isMapWithTypes(genericType, key, value);
-        }
-        return false;
-    }
-
-    /**
-     * Checks if the given field is a map with the given key and value types.
-     * <p>
-     * This will not work for maps not directly specifying the generic types, such as MyMap extends HashMap<Key, Value>.
-     *
-     * @param field The field to check
-     * @param key   The key type
-     * @param value The value type
-     * @return True if the parameter is a valid map field with the given key and value types
-     */
-    public static boolean isMapWithTypes(@NotNull Field field, @NotNull Class<?> key, @NotNull Class<?> value) {
-        if (Map.class.isAssignableFrom(field.getType())) {
-            Type genericType = field.getGenericType();
-            return isMapWithTypes(genericType, key, value);
-        }
-        return false;
-    }
-
-    private static boolean isMapWithTypes(@NotNull Type type, @NotNull Class<?> key, @NotNull Class<?> value) {
-        if (type instanceof ParameterizedType parameterizedType) {
-            Type[] typeArguments = parameterizedType.getActualTypeArguments();
-
-            if (typeArguments.length == 2 && typeArguments[0] instanceof Class<?> genericKey && typeArguments[1] instanceof Class<?> genericValue) {
-                return genericKey == key && genericValue == value;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Returns all fields of the given class and its superclasses.
-     *
-     * @param clazz The class to get the fields from
-     * @return A set of all fields of the given class and its superclasses
-     */
-    public static @NotNull Set<Field> getAllFields(@NotNull Class<?> clazz) {
-
-        Set<Field> fields = new HashSet<>(Arrays.asList(clazz.getDeclaredFields()));
-
-        // Recursively add fields from superclass until it reaches Object class
-        Class<?> superClass = clazz.getSuperclass();
-        if (superClass != null && superClass != Object.class) {
-            fields.addAll(getAllFields(superClass));
-        }
-
-        return fields;
-    }
 
     /**
      * Returns the children list of the given parent. This method is used to access the children list of a Parent class
@@ -164,82 +104,6 @@ public class Util {
                 throw new RuntimeException("Couldn't access getChildren() method in class or superclass", e);
             return getChildrenList(clazz.getSuperclass(), parent);
         }
-    }
-
-    /**
-     * Returns the key for the given value in the given map.
-     *
-     * @param map   The map to search in
-     * @param value The value to search for
-     * @param <T>   The type of the key
-     * @param <E>   The type of the value
-     * @return The key for the given value in the given map or null if the value is not in the map
-     */
-    public static <T, E> @Nullable T keyForValue(@NotNull Map<@NotNull T, @NotNull E> map, @NotNull E value) {
-        Map.Entry<T, E> keyEntry = map.entrySet().stream().filter(entry -> Objects.equals(entry.getValue(), value)).findFirst().orElse(null);
-        return keyEntry == null ? null : keyEntry.getKey();
-    }
-
-    /**
-     * Inserts the given key and value into the given map if the key is not already present or is null.
-     * If the key is already present (not null), the value will not be inserted.
-     * <p>
-     * If the key is already present, the value for the key will be returned.
-     *
-     * @param map   The map to insert the key and value into
-     * @param key   The key to insert
-     * @param value The value to insert
-     * @param <T>   The type of the key
-     * @param <E>   The type of the value
-     * @return The value for the key if the key is already present, the new value otherwise
-     */
-    public static <T, E> @NotNull E putIfNull(@NotNull Map<@NotNull T, @NotNull E> map, @NotNull T key, @NotNull E value) {
-        if (map.containsKey(key) && map.get(key) != null) return map.get(key);
-        map.put(key, value);
-        return value;
-    }
-
-    /**
-     * Checks if an instance is a component (controller extending a Parent).
-     * <p>
-     * This method is used internally by the framework and shouldn't be required for developers.
-     *
-     * @param instance The instance to check
-     * @return True if the instance is a component (controller extending a Parent)
-     */
-    public static boolean isComponent(@Nullable Object instance) {
-        return instance != null && instance.getClass().isAnnotationPresent(Component.class) && Parent.class.isAssignableFrom(instance.getClass());
-    }
-
-    /**
-     * Checks if an instance is a controller or a component.
-     * <p>
-     * This method is used internally by the framework and shouldn't be required for developers.
-     *
-     * @param instance The instance to check
-     * @return True if the instance is a controller
-     */
-    public static boolean isController(@Nullable Object instance) {
-        if (instance == null) return false;
-
-        if (instance.getClass().isAnnotationPresent(Controller.class) && instance.getClass().isAnnotationPresent(Component.class))
-            return false;
-        return instance.getClass().isAnnotationPresent(Controller.class) || isComponent(instance);
-    }
-
-    /**
-     * Checks if the given field is a field that can provide a component.
-     *
-     * @param field The field to check
-     * @return True if the field is a field that can provide a component
-     */
-    public static boolean canProvideSubComponent(Field field) {
-        if (field.getType().isAnnotationPresent(Component.class) && Parent.class.isAssignableFrom(field.getType()))
-            return true; // Field is a component
-
-        Class<?> providedClass = getProvidedClass(field);
-
-        return providedClass != null && providedClass.isAnnotationPresent(Component.class) && Parent.class.isAssignableFrom(providedClass); // Field is a provider of a component
     }
 
     /**
@@ -277,9 +141,16 @@ public class Util {
      * @return True if the framework is running in development mode
      */
     public static boolean runningInDev() {
-        return System.getenv().getOrDefault(Constants.INDEV_ENVIRONMENT_VARIABLE, "false").equalsIgnoreCase("true");
+        return System.getenv().getOrDefault(INDEV_ENVIRONMENT_VARIABLE, "false").equalsIgnoreCase("true");
     }
 
+    /**
+     * Returns an instance provided by the given provider field.
+     *
+     * @param provider The provider field
+     * @param instance The instance to get the provider from
+     * @return The instance provided by the provider field
+     */
     public static Object getInstanceOfProviderField(Field provider, Object instance) {
         try {
             provider.setAccessible(true);

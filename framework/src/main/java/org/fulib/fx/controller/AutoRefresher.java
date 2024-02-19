@@ -2,7 +2,6 @@ package org.fulib.fx.controller;
 
 import dagger.Lazy;
 import org.fulib.fx.FulibFxApp;
-import org.fulib.fx.util.Constants;
 import org.fulib.fx.util.Util;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
@@ -17,6 +16,9 @@ import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 
 @Singleton
 public class AutoRefresher {
+
+    // The string to look for in fxml files to find the controller class
+    private static final String FX_CONTROLLER_STRING = "fx:controller=\"%s\"";
 
     @Inject
     Lazy<FulibFxApp> framework;
@@ -59,7 +61,7 @@ public class AutoRefresher {
                         // Check if the file is a fxml file (not 100% accurate, but good enough)
                         if (file.getFileName().toString().contains(".fxml")) {
                             // Check if the file contains the current main controller as fx:controller (only reload if the fxml file is actually used)
-                            if (Util.getContent(file.toFile()).contains(String.format(Constants.FX_CONTROLLER_STRING, framework.get().currentMainController().getClass().getName()))) {
+                            if (Util.getContent(file.toFile()).contains(String.format(FX_CONTROLLER_STRING, framework.get().currentMainController().getClass().getName()))) {
                                 FulibFxApp.FX_SCHEDULER.scheduleDirect(() -> {
                                     FulibFxApp.LOGGER.info("Reloading " + file.getFileName() + " because it was modified.");
                                     framework.get().refresh();

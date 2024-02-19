@@ -16,7 +16,7 @@ import org.fulib.fx.controller.AutoRefresher;
 import org.fulib.fx.controller.ControllerManager;
 import org.fulib.fx.dagger.DaggerFrameworkComponent;
 import org.fulib.fx.dagger.FrameworkComponent;
-import org.fulib.fx.util.Util;
+import org.fulib.fx.util.ControllerUtil;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.NotNull;
@@ -121,7 +121,7 @@ public abstract class FulibFxApp extends Application {
      * @return The rendered component
      */
     public @NotNull <T extends Parent> T initAndRender(@NotNull T component, Map<String, Object> params, DisposableContainer onDestroy) {
-        if (!Util.isComponent(component))
+        if (!ControllerUtil.isComponent(component))
             throw new IllegalArgumentException("Class '%s' is not a component.".formatted(component.getClass().getName()));
 
         Disposable disposable = this.component.controllerManager().init(component, params, false);
