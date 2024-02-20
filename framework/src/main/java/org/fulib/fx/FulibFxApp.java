@@ -130,7 +130,7 @@ public abstract class FulibFxApp extends Application {
         }
 
         @SuppressWarnings("unchecked") // We know that the component will return itself as the view
-        T rendered = (T) ControllerManager.render(component, params);
+        T rendered = (T) this.frameworkComponent().controllerManager().render(component, params);
         return rendered;
     }
 
