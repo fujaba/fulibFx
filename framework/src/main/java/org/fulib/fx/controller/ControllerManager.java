@@ -18,8 +18,8 @@ import org.fulib.fx.annotation.param.Params;
 import org.fulib.fx.annotation.param.ParamsMap;
 import org.fulib.fx.controller.building.ControllerBuildFactory;
 import org.fulib.fx.controller.exception.IllegalControllerException;
-import org.fulib.fx.util.Util;
-import org.fulib.fx.util.disposable.RefreshableCompositeDisposable;
+import org.fulib.fx.util.*;
+import org.fulib.fx.data.disposable.RefreshableCompositeDisposable;
 import org.fulib.fx.util.reflection.Reflection;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -109,10 +109,10 @@ public class ControllerManager {
      * @param instance   The controller/component instance
      * @param parameters The parameters to pass to the controller
      */
-    public static void init(@NotNull Object instance, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
+    public void init(@NotNull Object instance, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
 
         // Check if the instance is a controller
-        if (!Util.isController(instance))
+        if (!ControllerUtil.isController(instance))
             throw new IllegalControllerException("Class '%s' is not a controller or component.".formatted(instance.getClass().getName()));
 
         // Inject parameters into the controller fields
@@ -152,10 +152,10 @@ public class ControllerManager {
      * @param parameters The parameters to pass to the controller
      * @return The rendered controller/component
      */
-    public static Parent render(Object instance, Map<String, Object> parameters) {
+    public Parent render(Object instance, Map<String, Object> parameters) {
 
         // Check if the instance is a controller/component
-        boolean component = instance.getClass().isAnnotationPresent(Component.class) && Util.isComponent(instance);
+        boolean component = instance.getClass().isAnnotationPresent(Component.class) && ControllerUtil.isComponent(instance);
 
         if (!component && !instance.getClass().isAnnotationPresent(Controller.class))
             throw new IllegalArgumentException("Class '%s' is not a controller or component.".formatted(instance.getClass().getName()));
@@ -193,7 +193,7 @@ public class ControllerManager {
 
         // If the controller specifies a fxml file, load it. This will also load sub-controllers specified in the FXML file
         else {
-            String fxmlPath = view.isEmpty() ? Util.transform(instance.getClass().getSimpleName()) + ".fxml" : view;
+            String fxmlPath = view.isEmpty() ? ControllerUtil.transform(instance.getClass().getSimpleName()) + ".fxml" : view;
             parent = loadFXML(fxmlPath, instance, false);
         }
 
@@ -214,8 +214,8 @@ public class ControllerManager {
      *
      * @param instance The controller/component instance to destroy
      */
-    public static void destroy(@NotNull Object instance) {
-        if (!Util.isController(instance))
+    public void destroy(@NotNull Object instance) {
+        if (!ControllerUtil.isController(instance))
             throw new IllegalArgumentException("Class '%s' is not a controller or component.".formatted(instance.getClass().getName()));
 
         // Destroying should be done in exactly the reverse order of initialization
@@ -223,13 +223,13 @@ public class ControllerManager {
         Collections.reverse(subComponentFields);
 
         // Destroy all sub-controllers
-        Reflection.callMethodsForFieldInstances(instance, subComponentFields, ControllerManager::destroy);
+        Reflection.callMethodsForFieldInstances(instance, subComponentFields, this::destroy);
 
         // Call destroy methods
         callMethodsWithAnnotation(instance, onDestroy.class, Map.of());
 
         // In development mode, check for undestroyed subscribers
-        if (Util.runningInDev()) {
+        if (FrameworkUtil.runningInDev()) {
             Reflection.getFieldsOfType(instance.getClass(), Subscriber.class) // Get all Subscriber fields
                     .map(field -> {
                         try {
@@ -243,7 +243,7 @@ public class ControllerManager {
                     .filter(pair -> pair.getKey() != null)
                     .filter(pair -> !pair.getValue().isDisposed()) // Filter out disposed subscribers
                     .forEach(pair ->
-                            FulibFxApp.logger().warning("Found undestroyed subscriber '%s' in class '%s'.".formatted(pair.getKey().getName(), instance.getClass().getName()))
+                            FulibFxApp.LOGGER.warning("Found undestroyed subscriber '%s' in class '%s'.".formatted(pair.getKey().getName(), instance.getClass().getName()))
                     );
         }
     }
@@ -267,7 +267,7 @@ public class ControllerManager {
      * @param instance The controller instance to use
      * @return A parent representing the fxml file
      */
-    private static @NotNull Parent loadFXML(@NotNull String fileName, @NotNull Object instance, boolean setRoot) {
+    private @NotNull Parent loadFXML(@NotNull String fileName, @NotNull Object instance, boolean setRoot) {
 
         URL url = instance.getClass().getResource(fileName);
         if (url == null) {
@@ -275,7 +275,7 @@ public class ControllerManager {
             throw new RuntimeException("Could not find resource '" + urlPath + "'");
         }
 
-        File file = Util.getResourceAsLocalFile(instance.getClass(), fileName);
+        File file = FileUtil.getResourceAsLocalFile(FulibFxApp.resourcesPath(), instance.getClass(), fileName);
 
         // If the file exists, use it instead of the resource (development mode, allows for hot reloading)
         if (file.exists()) {
@@ -357,11 +357,11 @@ public class ControllerManager {
      * @return A list of all fields in the given instance that are annotated with {@link SubComponent}
      */
     @Unmodifiable
-    private static List<Field> getSubComponentFields(Object instance) {
+    private List<Field> getSubComponentFields(Object instance) {
         return Reflection.getFieldsWithAnnotation(instance.getClass(), SubComponent.class)
                 .filter(field -> {
                     if (!field.getType().isAnnotationPresent(Component.class)) {
-                        FulibFxApp.logger().warning("Field '%s' in class '%s' is annotated with @SubComponent but is not a subcomponent.".formatted(field.getName(), instance.getClass().getName()));
+                        FulibFxApp.LOGGER.warning("Field '%s' in class '%s' is annotated with @SubComponent but is not a subcomponent.".formatted(field.getName(), instance.getClass().getName()));
                         return false;
                     }
                     return true;
@@ -374,7 +374,7 @@ public class ControllerManager {
      * @param annotation The annotation to look for
      * @param parameters The parameters to pass to the methods
      */
-    private static void callMethodsWithAnnotation(@NotNull Object instance, @NotNull Class<? extends Annotation> annotation, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
+    private void callMethodsWithAnnotation(@NotNull Object instance, @NotNull Class<? extends Annotation> annotation, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
         for (Method method : Reflection.getMethodsWithAnnotation(instance.getClass(), annotation).toList()) {
             try {
                 method.setAccessible(true);
@@ -392,7 +392,7 @@ public class ControllerManager {
      * @param instance   The instance to fill the parameters into
      * @param parameters The parameters to fill into the fields
      */
-    private static void fillParametersIntoFields(@NotNull Object instance, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
+    private void fillParametersIntoFields(@NotNull Object instance, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
         // Fill the parameters into fields annotated with @Param
         for (Field field : Reflection.getFieldsWithAnnotation(instance.getClass(), Param.class).toList()) {
             try {
@@ -424,7 +424,7 @@ public class ControllerManager {
         // Fill the parameters into fields annotated with @ParamsMap
         for (Field field : Reflection.getFieldsWithAnnotation(instance.getClass(), ParamsMap.class).toList()) {
 
-            if (!Util.isMapWithTypes(field, String.class, Object.class)) {
+            if (!MapUtil.isMapWithTypes(field, String.class, Object.class)) {
                 throw new RuntimeException("Field annotated with @ParamsMap in class '" + instance.getClass().getName() + "' is not of type " + Map.class.getName() + "<String, Object>");
             }
 
@@ -455,7 +455,7 @@ public class ControllerManager {
      * @param instance   The instance to fill the parameters into
      * @param parameters The parameters to fill into the methods
      */
-    private static void callParamMethods(Object instance, Map<String, Object> parameters) {
+    private void callParamMethods(Object instance, Map<String, Object> parameters) {
         Reflection.getMethodsWithAnnotation(instance.getClass(), Param.class).forEach(method -> {
             try {
                 method.setAccessible(true);
@@ -484,7 +484,7 @@ public class ControllerManager {
      * @param instance   The instance to fill the parameters into
      * @param parameters The parameters to fill into the methods
      */
-    private static void callParamsMethods(Object instance, Map<String, Object> parameters) {
+    private void callParamsMethods(Object instance, Map<String, Object> parameters) {
         Reflection.getMethodsWithAnnotation(instance.getClass(), Params.class).forEach(method -> {
             try {
                 method.setAccessible(true);
@@ -519,10 +519,10 @@ public class ControllerManager {
      * @param instance   The instance to fill the parameters into
      * @param parameters The parameters to fill into the methods
      */
-    private static void callParamsMapMethods(Object instance, Map<String, Object> parameters) {
+    private void callParamsMapMethods(Object instance, Map<String, Object> parameters) {
         Reflection.getMethodsWithAnnotation(instance.getClass(), ParamsMap.class).forEach(method -> {
 
-            if (method.getParameterCount() != 1 || !Util.isMapWithTypes(method.getParameters()[0], String.class, Object.class)) {
+            if (method.getParameterCount() != 1 || !MapUtil.isMapWithTypes(method.getParameters()[0], String.class, Object.class)) {
                 throw new RuntimeException("Method '" + method.getName() + "' in class '" + instance.getClass().getName() + "' annotated with @ParamsMap has to have exactly one parameter of type " + Map.class.getName() + "<String, Object>");
             }
 
@@ -546,7 +546,7 @@ public class ControllerManager {
      * @param parameters The values of the parameters
      * @return An array with all applicable parameters
      */
-    private static @Nullable Object @NotNull [] getApplicableParameters(@NotNull Method method, @NotNull Map<String, Object> parameters) {
+    private @Nullable Object @NotNull [] getApplicableParameters(@NotNull Method method, @NotNull Map<String, Object> parameters) {
         return Arrays.stream(method.getParameters()).map(parameter -> {
             Param param = parameter.getAnnotation(Param.class);
             ParamsMap paramsMap = parameter.getAnnotation(ParamsMap.class);
@@ -564,7 +564,7 @@ public class ControllerManager {
 
             // Check if the parameter is annotated with @Params and if the parameter is of the type Map<String, Object>
             if (paramsMap != null) {
-                if (!Util.isMapWithTypes(parameter, String.class, Object.class)) {
+                if (!MapUtil.isMapWithTypes(parameter, String.class, Object.class)) {
                     throw new RuntimeException("Parameter annotated with @Params in method '" + method.getClass().getName() + "#" + method.getName() + "' is not of type " + Map.class.getName() + "<String, Object>");
                 }
                 return parameters;

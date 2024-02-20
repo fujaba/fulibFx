@@ -2,7 +2,7 @@ package org.fulib.fx.controller.building;
 
 import org.fulib.fx.annotation.controller.Component;
 import org.fulib.fx.annotation.controller.SubComponent;
-import org.fulib.fx.util.Util;
+import org.fulib.fx.util.ReflectionUtil;
 import org.fulib.fx.util.reflection.Reflection;
 import javafx.util.Builder;
 import javafx.util.BuilderFactory;
@@ -42,7 +42,7 @@ public class ControllerBuildFactory implements BuilderFactory {
             if (field.getType() == Provider.class) {
                 field.setAccessible(true);
                 try {
-                    Class<?> type = Util.getProvidedClass(field);
+                    Class<?> type = ReflectionUtil.getProvidedClass(field);
                     if (type == null) {
                         throw new RuntimeException("Couldn't determine the type of the provider '%s' in '%s'.".formatted(field.getName(), field.getClass().getName()));
                     }

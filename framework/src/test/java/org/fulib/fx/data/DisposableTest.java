@@ -2,8 +2,8 @@ package org.fulib.fx.data;
 
 import io.reactivex.rxjava3.disposables.Disposable;
 import org.fulib.fx.controller.Subscriber;
-import org.fulib.fx.util.disposable.ItemListDisposable;
-import org.fulib.fx.util.disposable.RefreshableCompositeDisposable;
+import org.fulib.fx.data.disposable.ItemListDisposable;
+import org.fulib.fx.data.disposable.RefreshableCompositeDisposable;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;

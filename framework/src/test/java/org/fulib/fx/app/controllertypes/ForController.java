@@ -2,13 +2,15 @@ package org.fulib.fx.app.controllertypes;
 
 import org.fulib.fx.annotation.controller.Controller;
 import org.fulib.fx.annotation.controller.SubComponent;
+import org.fulib.fx.annotation.event.onDestroy;
 import org.fulib.fx.annotation.event.onRender;
 import org.fulib.fx.annotation.param.Param;
 import org.fulib.fx.app.controllertypes.sub.ButtonSubComponent;
-import org.fulib.fx.constructs.For;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Labeled;
 import javafx.scene.layout.VBox;
+import org.fulib.fx.constructs.FxFor;
+import org.fulib.fx.controller.Subscriber;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -19,6 +21,12 @@ public class ForController {
     @Inject
     @SubComponent
     Provider<ButtonSubComponent> subComponentProvider;
+
+    @Inject
+    FxFor fxFor;
+
+    @Inject
+    Subscriber subscriber;
 
     private VBox container;
 
@@ -35,7 +43,12 @@ public class ForController {
 
     @onRender
     public void onRender(@Param("list") ObservableList<String> list) {
-        For.of(container, list, subComponentProvider, Labeled::setText);
+        subscriber.subscribe(fxFor.of(container, list, subComponentProvider, Labeled::setText).disposable());
+    }
+
+    @onDestroy
+    public void onDestroy() {
+        subscriber.dispose();
     }
 
 }

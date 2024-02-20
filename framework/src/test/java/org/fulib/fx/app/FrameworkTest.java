@@ -95,7 +95,7 @@ public class FrameworkTest extends ApplicationTest {
     @Test
     public void simpleForTest() {
         ObservableList<String> list = FXCollections.observableList(new ArrayList<>());
-        FulibFxApp.scheduler().scheduleDirect(() -> {
+        FulibFxApp.FX_SCHEDULER.scheduleDirect(() -> {
             list.add("Hello");
             list.add("World");
             list.add("!");
@@ -107,12 +107,12 @@ public class FrameworkTest extends ApplicationTest {
         VBox container = lookup("#container").queryAs(VBox.class);
         assertEquals(3, container.getChildren().size());
 
-        FulibFxApp.scheduler().scheduleDirect(() -> list.remove("World"));
+        FulibFxApp.FX_SCHEDULER.scheduleDirect(() -> list.remove("World"));
         waitForFxEvents();
 
         assertEquals(2, container.getChildren().size());
 
-        FulibFxApp.scheduler().scheduleDirect(() -> list.add(1, "World"));
+        FulibFxApp.FX_SCHEDULER.scheduleDirect(() -> list.add(1, "World"));
         waitForFxEvents();
 
         assertEquals(3, container.getChildren().size());
@@ -141,7 +141,7 @@ public class FrameworkTest extends ApplicationTest {
         verifyThat("Basic Controller", Node::isVisible);
         sleep(200);
 
-        Modals.showModal(app.stage(), new ModalComponent(), (stage, controller) -> {
+        Modals.showModal(app, new ModalComponent(), (stage, controller) -> {
             stage.setTitle("Modal");
             stage.setWidth(200);
             stage.setHeight(200);

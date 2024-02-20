@@ -1,7 +1,6 @@
 package org.fulib.fx.controller;
 
 import javafx.event.EventHandler;
-import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.paint.Paint;
@@ -9,7 +8,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import org.fulib.fx.FulibFxApp;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -30,13 +29,33 @@ public class Modals {
      * Warning: If the {@link Stage#setOnCloseRequest(EventHandler)} method is overridden,
      * the controller will not be destroyed automatically.
      *
+     * @param app          the app instance
      * @param currentStage the current stage (see {@link FulibFxApp#stage()}
      * @param component    The controller to show
      * @param initializer  the initializer for passing more arguments to the stage and controller
      * @param <Display>    the type of the controller
      */
-    public static <Display extends Node> void showModal(Stage currentStage, Display component, BiConsumer<Stage, Display> initializer) {
-        showModal(currentStage, component, initializer, Map.of(), true);
+    public static <Display extends Parent> void showModal(FulibFxApp app, Stage currentStage, Display component, BiConsumer<Stage, Display> initializer) {
+        showModal(app, currentStage, component, initializer, Map.of(), true);
+    }
+
+    /**
+     * Shows a component as a modal window.
+     * <p>
+     * <b>Important:</b> The component shouldn't be initialized/rendered before calling this method.
+     * <p>
+     * When closing the window, the component will be destroyed.
+     * <p>
+     * Warning: If the {@link Stage#setOnCloseRequest(EventHandler)} method is overridden,
+     * the controller will not be destroyed automatically.
+     *
+     * @param app         the app instance
+     * @param component   The controller to show
+     * @param initializer the initializer for passing more arguments to the stage and controller
+     * @param <Display>   the type of the controller
+     */
+    public static <Display extends Parent> void showModal(FulibFxApp app, Display component, BiConsumer<Stage, Display> initializer) {
+        showModal(app, app.stage(), component, initializer, Map.of(), true);
     }
 
     /**
@@ -47,13 +66,14 @@ public class Modals {
      * When closing the window, the controller will be destroyed. If the {@link Stage#setOnCloseRequest(EventHandler)}
      * method is overridden, the controller will not be destroyed automatically.
      *
+     * @param app          the app instance
      * @param currentStage the current stage
      * @param component    the class of the controller to show
      * @param params       the parameters to pass to the controller
      * @param <Display>    the type of the controller
      */
-    public static <Display extends Node> void showModal(Stage currentStage, Display component, Map<String, Object> params) {
-        showModal(currentStage, component, (stage, controller) -> {
+    public static <Display extends Parent> void showModal(FulibFxApp app, Stage currentStage, Display component, Map<String, Object> params) {
+        showModal(app, currentStage, component, (stage, controller) -> {
         }, params, true);
     }
 
@@ -65,12 +85,48 @@ public class Modals {
      * When closing the window, the controller will be destroyed. If the {@link Stage#setOnCloseRequest(EventHandler)}
      * method is overridden, the controller will not be destroyed automatically.
      *
+     * @param app          the app instance
+     * @param component    the class of the controller to show
+     * @param params       the parameters to pass to the controller
+     * @param <Display>    the type of the controller
+     */
+    public static <Display extends Parent> void showModal(FulibFxApp app, Display component, Map<String, Object> params) {
+        showModal(app, app.stage(), component, (stage, controller) -> {
+        }, params, true);
+    }
+
+    /**
+     * Shows a controller as a modal window.
+     * <p>
+     * <b>Important:</b> The component shouldn't be initialized/rendered before calling this method.
+     * <p>
+     * When closing the window, the controller will be destroyed. If the {@link Stage#setOnCloseRequest(EventHandler)}
+     * method is overridden, the controller will not be destroyed automatically.
+     *
+     * @param app          the app instance
      * @param currentStage the current stage
      * @param component    the class of the controller to show
      * @param <Display>    the type of the controller
      */
-    public static <Display extends Node> void showModal(Stage currentStage, Display component) {
-        showModal(currentStage, component, (stage, controller) -> {
+    public static <Display extends Parent> void showModal(FulibFxApp app, Stage currentStage, Display component) {
+        showModal(app, currentStage, component, (stage, controller) -> {
+        }, Map.of(), true);
+    }
+
+    /**
+     * Shows a controller as a modal window.
+     * <p>
+     * <b>Important:</b> The component shouldn't be initialized/rendered before calling this method.
+     * <p>
+     * When closing the window, the controller will be destroyed. If the {@link Stage#setOnCloseRequest(EventHandler)}
+     * method is overridden, the controller will not be destroyed automatically.
+     *
+     * @param app       the app instance
+     * @param component the class of the controller to show
+     * @param <Display> the type of the controller
+     */
+    public static <Display extends Parent> void showModal(FulibFxApp app, Display component) {
+        showModal(app, app.stage(), component, (stage, controller) -> {
         }, Map.of(), true);
     }
 
@@ -82,18 +138,38 @@ public class Modals {
      * If destroyOnClose is enabled, when closing (or to be more exact, hiding) the window, the controller will be destroyed.
      * The controller will be destroyed before the stage is hidden.
      *
+     * @param app            the app instance
+     * @param component      the class of the controller to show
+     * @param initializer    the initializer for passing more arguments to the stage and controller
+     * @param params         the parameters to pass to the controller
+     * @param destroyOnClose if the controller should be destroyed when the window is closed
+     * @param <Display>      the type of the controller
+     */
+    public static <Display extends Parent> void showModal(FulibFxApp app, Display component, BiConsumer<Stage, Display> initializer, Map<String, Object> params, boolean destroyOnClose) {
+        showModal(app, app.stage(), component, initializer, params, destroyOnClose);
+    }
+
+    /**
+     * Shows a controller as a modal window.
+     * <p>
+     * <b>Important:</b> The component shouldn't be initialized/rendered before calling this method.
+     * <p>
+     * If destroyOnClose is enabled, when closing (or to be more exact, hiding) the window, the controller will be destroyed.
+     * The controller will be destroyed before the stage is hidden.
+     *
+     * @param app          the app instance
      * @param currentStage the current stage
      * @param component    the class of the controller to show
      * @param initializer  the initializer for passing more arguments to the stage and controller
      * @param params       the parameters to pass to the controller
      * @param <Display>    the type of the controller
      */
-    public static <Display extends Node> void showModal(Stage currentStage, Display component, BiConsumer<Stage,  Display> initializer, Map<String, Object> params, boolean destroyOnClose) {
-        FulibFxApp.scheduler().scheduleDirect(() -> {
-            ModalStage modalStage = new ModalStage(destroyOnClose ? () -> ControllerManager.destroy(component) : null);
+    public static <Display extends Parent> void showModal(FulibFxApp app, Stage currentStage, Display component, BiConsumer<Stage, Display> initializer, Map<String, Object> params, boolean destroyOnClose) {
+        FulibFxApp.FX_SCHEDULER.scheduleDirect(() -> {
+            ModalStage modalStage = new ModalStage(app, destroyOnClose, component);
 
-            ControllerManager.init(component, params);
-            Parent rendered = ControllerManager.render(component, params);
+            app.frameworkComponent().controllerManager().init(component, params);
+            Parent rendered = app.frameworkComponent().controllerManager().render(component, params);
 
             Scene scene = new Scene(rendered);
             scene.setFill(Paint.valueOf("transparent"));
@@ -109,20 +185,24 @@ public class Modals {
     }
 
     /**
-     * Slightly modified version of {@link Stage} that calls a Runnable when the stage is hidden.
+     * Slightly modified version of {@link Stage} that destroys the controller when the stage is hidden.
      */
     public static class ModalStage extends Stage {
 
-        private final Runnable onClose;
+        private final FulibFxApp app;
+        private final Object component;
+        private final boolean destroyOnClose;
 
-        public ModalStage(@Nullable Runnable onClose) {
+        public ModalStage(FulibFxApp app, boolean destroyOnClose, @NotNull Object component) {
             super();
-            this.onClose = onClose;
+            this.destroyOnClose = destroyOnClose;
+            this.app = app;
+            this.component = component;
         }
 
+        @Override
         public void hide() {
-            if (onClose != null)
-                onClose.run();
+            if (destroyOnClose) app.frameworkComponent().controllerManager().destroy(component);
             super.hide();
         }
 

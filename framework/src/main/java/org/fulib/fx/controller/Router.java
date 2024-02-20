@@ -12,7 +12,8 @@ import org.fulib.fx.data.EvictingQueue;
 import org.fulib.fx.data.TraversableNodeTree;
 import org.fulib.fx.data.TraversableQueue;
 import org.fulib.fx.data.TraversableTree;
-import org.fulib.fx.util.Util;
+import org.fulib.fx.util.ControllerUtil;
+import org.fulib.fx.util.ReflectionUtil;
 import org.fulib.fx.util.reflection.Reflection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -67,7 +68,7 @@ public class Router {
             throw new RuntimeException("Field " + field.getName() + " is not annotated with @Route");
 
         // Check if the field is of type Provider<T> where T is annotated with @Controller
-        Util.requireControllerProvider(field);
+        ControllerUtil.requireControllerProvider(field);
 
         Route annotation = field.getAnnotation(Route.class);
         String route = annotation.value().equals("$name") ? "/" + field.getName() : annotation.value();
@@ -99,7 +100,7 @@ public class Router {
 
         // Since we visited this route with the given parameters, we can add it to the history
         this.history.insert(new Pair<>(node, parameters));
-        Class<?> controllerClass = Util.getProvidedClass(Objects.requireNonNull(provider));
+        Class<?> controllerClass = ReflectionUtil.getProvidedClass(Objects.requireNonNull(provider));
 
         // Check if the provider is providing a valid controller/component
         if (controllerClass == null)
@@ -109,7 +110,7 @@ public class Router {
             throw new RuntimeException("Class " + controllerClass.getName() + " is not annotated with @Controller or @Component");
 
         // Get the instance of the controller
-        Object controllerInstance = Util.getInstanceOfProviderField(provider, this.routerObject);
+        Object controllerInstance = ReflectionUtil.getInstanceOfProviderField(provider, this.routerObject);
         Parent renderedParent = this.manager.get().initAndRender(controllerInstance, parameters);
 
         return new Pair<>(controllerInstance, renderedParent);
@@ -124,7 +125,7 @@ public class Router {
         try {
             Pair<TraversableNodeTree.Node<Field>, Map<String, Object>> pair = this.history.back();
             ((TraversableNodeTree<Field>) routes).setCurrentNode(pair.getKey());
-            return this.manager.get().initAndRender(Util.getInstanceOfProviderField(pair.getKey().value(), this.routerObject), pair.getValue());
+            return this.manager.get().initAndRender(ReflectionUtil.getInstanceOfProviderField(pair.getKey().value(), this.routerObject), pair.getValue());
 
         } catch (Exception e) {
             return null;
@@ -140,7 +141,7 @@ public class Router {
         try {
             Pair<TraversableNodeTree.Node<Field>, Map<String, Object>> pair = this.history.forward();
             ((TraversableNodeTree<Field>) routes).setCurrentNode(pair.getKey());
-            return this.manager.get().initAndRender(Util.getInstanceOfProviderField(pair.getKey().value(), this.routerObject), pair.getValue());
+            return this.manager.get().initAndRender(ReflectionUtil.getInstanceOfProviderField(pair.getKey().value(), this.routerObject), pair.getValue());
         } catch (Exception e) {
             return null;
         }

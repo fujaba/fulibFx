@@ -593,10 +593,11 @@ changed. This can be used to quickly test changes to the view without having to 
 For-Loops can be used to easily display a node/sub-controller for all items in a list. Whenever an item is added to or
 removed from the list, the list of nodes updates accordingly.
 
+In order to create a for loop, acquire an instance of the `FxFor` class (e.g. using Dagger) and call the `of` method.
 The easiest form of a For-Loop can be achieved like this:
 
 ```java
-For.of(container, items, myComponentProvider);
+fxFor.of(container, items, myComponentProvider);
 ```
 
 This will create a component for each item in the list `items` and add it to the children of the `container` (e.g. a VBox).
@@ -605,29 +606,29 @@ Currently, no information is passed to the created label. In order to pass stati
 parameters like you would when using the `show`-method using a map.
 
 ```java
-For.of(container, items, myComponentProvider, Map.of("key", value));
-For.of(container, items, myComponentProvider, params); // Parameters can be taken from the @Params annotation for example
+fxFor.of(container, items, myComponentProvider, Map.of("key", value));
+fxFor.of(container, items, myComponentProvider, params); // Parameters can be taken from the @Params annotation for example
 ```
 
 If you want to pass dynamic information like binding the item to its controller, you can use an `BiConsumer`.
 The `BiConsumer` allows to define actions for initializing each controller based on its item.
 
 ```java
-For.of(container, items, myComponentProvider, (controller, item) -> {
+fxFor.of(container, items, myComponentProvider, (controller, item) -> {
     controller.setItem(item);
     controller.foo();
     controller.bar();
 });
 
-For.of(container, items, myComponentProvider, ExampleComponent::setItem); // Short form using method references
-For.of(container, items, myComponentProvider, Map.of("key", value), ExampleComponent::setItem); // Static and dynamic information can be passed together
+fxFor.of(container, items, myComponentProvider, ExampleComponent::setItem); // Short form using method references
+fxFor.of(container, items, myComponentProvider, Map.of("key", value), ExampleComponent::setItem); // Static and dynamic information can be passed together
 ```
 
 Instead of a controller you can also define a basic JavaFX node to display for every item.
 
 ```java
-For.of(container, items, () -> new Button("This is a button!"));
-For.of(container, items, () -> new VBox(new Button("This is a button!"))); // Nodes can have children
+fxFor.of(container, items, () -> new Button("This is a button!"));
+fxFor.of(container, items, () -> new VBox(new Button("This is a button!"))); // Nodes can have children
 ```
 
 Unlike with controllers, it is not possible to pass static information in the form of paramters to nodes, as there is no
@@ -635,7 +636,7 @@ way of accessing them in the code. However, dynamic information in the form of a
 controllers.
 
 ```java
-For.of(container, items, () -> new Button(), (button, item) -> {
+fxFor.of(container, items, () -> new Button(), (button, item) -> {
     button.setText("Delete " + item.name();
     button.setOnAction(event -> items.remove(item));
 });
@@ -652,7 +653,7 @@ can be used to display popup windows, dialogs, etc.
 The framework provides a `Modals` class that can be used to display a modal.
 
 ```java
-Modals.showModal(app.stage(), confirmComponent, (stage, scene, component) -> {
+Modals.showModal(app, confirmComponent, (stage, component) -> {
     stage.setTitle("Modal");
     component.setConfirmAction(() -> {
         // Do something
@@ -814,6 +815,31 @@ meaning you can go back and forth between items in the queue. When you go back i
 items after the current item will be removed. This can be compared to the history of a browser and is used for the
 history of routes.
 
+## 🔗 Annotation Processor
+The framework uses an annotation processor for checking some of the annotations at compile time. This can be used to
+detect errors before running the application. The processor checks if the `@Controller` and `@Component` annotations are
+used correctly and if the `@Route` annotation is used on a field of type `Provider<T>`. The processor also checks the parameters
+to some extent.
+
+In order to use the processor, you have to add the following dependency to your `build.gradle` file:
+
+```groovy
+dependencies {
+    annotationProcessor 'org.fulib.fx:annotation-processor:<VERSION>'
+}
+```
+
+In order to be able to detect issues with non-existing view files, you have to add the following to your `compileJava` task:
+
+```groovy
+compileJava {
+    // ...
+    options.sourcepath = sourceSets.main.resources.getSourceDirectories()
+}
+```
+
+This will add the resources directory to the source path, allowing the processor to check if the view file exists.
+
 ## 🛑 Common issues
 
 ### 1. My route is not found even though it is registered
@@ -828,7 +854,12 @@ the already modified object will be passed after the refresh, just to be modifie
 behaviour. To avoid this, you should try to not modify objects passed as parameters. Instead, you should create a copy 
 of the object and modify the copy or modify the object before passing it to the controller.
 
-### 3. The SceneBuilder doesn't recognize my controller
+### 3. The framework doesn't compile even though the view file exists
+The framework uses an annotation processor to check if the view file exists. If the view file is not found, the processor
+will throw an error. Please make sure that the view file is in the correct location and that `options.sourcepath` is set
+correctly in your `compileJava` task (see [Annotation Processor](#-annotation-processor)).
+
+### 4. The SceneBuilder doesn't recognize my controller
 When using the SceneBuilder, it might not recognize your controller's FXML file. This can happen when the FXML file contains
 elements which are not present in the basic JavaFX library. To fix this, you can add a jar file containing the missing
 elements to the SceneBuilder. The simplest way is to build your project and then add the jar file by clicking on the small

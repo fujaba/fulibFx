@@ -10,8 +10,8 @@ import javafx.beans.property.Property;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import org.fulib.fx.FulibFxApp;
-import org.fulib.fx.util.disposable.RefreshableCompositeDisposable;
-import org.fulib.fx.util.disposable.RefreshableDisposableContainer;
+import org.fulib.fx.data.disposable.RefreshableCompositeDisposable;
+import org.fulib.fx.data.disposable.RefreshableDisposableContainer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -66,7 +66,7 @@ public class Subscriber implements RefreshableDisposableContainer {
      * @param completable the completable to subscribe to
      */
     public void subscribe(@NotNull Completable completable) {
-        disposable().add(completable.observeOn(FulibFxApp.scheduler()).subscribe());
+        disposable().add(completable.observeOn(FulibFxApp.FX_SCHEDULER).subscribe());
     }
 
     /**
@@ -76,7 +76,7 @@ public class Subscriber implements RefreshableDisposableContainer {
      * @param onComplete  the consumer to call on each event
      */
     public void subscribe(@NotNull Completable completable, @NotNull Action onComplete) {
-        disposable().add(completable.observeOn(FulibFxApp.scheduler()).subscribe(onComplete));
+        disposable().add(completable.observeOn(FulibFxApp.FX_SCHEDULER).subscribe(onComplete));
     }
 
     /**
@@ -86,7 +86,7 @@ public class Subscriber implements RefreshableDisposableContainer {
      * @param onError     the consumer to call on an error
      */
     public void subscribe(@NotNull Completable completable, @NotNull Consumer<? super @NotNull Throwable> onError) {
-        disposable().add(completable.doOnError(onError).observeOn(FulibFxApp.scheduler()).subscribe());
+        disposable().add(completable.doOnError(onError).observeOn(FulibFxApp.FX_SCHEDULER).subscribe());
     }
 
     /**
@@ -99,7 +99,7 @@ public class Subscriber implements RefreshableDisposableContainer {
      * @param <T>         the type of the items emitted by the Observable
      */
     public <T> void subscribe(@NotNull Observable<@NotNull T> observable, @NotNull Scheduler subscribeOn, @NotNull Consumer<@NotNull T> onNext, @NotNull Consumer<? super @NotNull Throwable> onError) {
-        disposable().add(observable.subscribeOn(subscribeOn).observeOn(FulibFxApp.scheduler()).subscribe(onNext, onError));
+        disposable().add(observable.subscribeOn(subscribeOn).observeOn(FulibFxApp.FX_SCHEDULER).subscribe(onNext, onError));
     }
 
     /**
@@ -120,7 +120,7 @@ public class Subscriber implements RefreshableDisposableContainer {
      * @param <T>        the type of the items emitted by the Observable
      */
     public <T> void subscribe(@NotNull Observable<@NotNull T> observable, @NotNull Consumer<@NotNull T> onNext) {
-        disposable().add(observable.observeOn(FulibFxApp.scheduler()).subscribe(onNext));
+        disposable().add(observable.observeOn(FulibFxApp.FX_SCHEDULER).subscribe(onNext));
     }
 
     /**
@@ -132,7 +132,7 @@ public class Subscriber implements RefreshableDisposableContainer {
      * @param <T>        the type of the items emitted by the Observable
      */
     public <T> void subscribe(@NotNull Observable<@NotNull T> observable, @NotNull Consumer<@NotNull T> onNext, @NotNull Consumer<? super @NotNull Throwable> onError) {
-        disposable().add(observable.observeOn(FulibFxApp.scheduler()).subscribe(onNext, onError));
+        disposable().add(observable.observeOn(FulibFxApp.FX_SCHEDULER).subscribe(onNext, onError));
     }
 
     /**
