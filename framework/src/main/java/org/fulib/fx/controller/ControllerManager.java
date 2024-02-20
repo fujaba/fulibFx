@@ -105,7 +105,7 @@ public class ControllerManager {
      * @param instance   The controller/component instance
      * @param parameters The parameters to pass to the controller
      */
-    public static void init(@NotNull Object instance, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
+    public void init(@NotNull Object instance, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
 
         // Check if the instance is a controller
         if (!ControllerUtil.isController(instance))
@@ -148,7 +148,7 @@ public class ControllerManager {
      * @param parameters The parameters to pass to the controller
      * @return The rendered controller/component
      */
-    public static Parent render(Object instance, Map<String, Object> parameters) {
+    public Parent render(Object instance, Map<String, Object> parameters) {
 
         // Check if the instance is a controller/component
         boolean component = instance.getClass().isAnnotationPresent(Component.class) && ControllerUtil.isComponent(instance);
@@ -210,7 +210,7 @@ public class ControllerManager {
      *
      * @param instance The controller/component instance to destroy
      */
-    public static void destroy(@NotNull Object instance) {
+    public void destroy(@NotNull Object instance) {
         if (!ControllerUtil.isController(instance))
             throw new IllegalArgumentException("Class '%s' is not a controller or component.".formatted(instance.getClass().getName()));
 
@@ -219,7 +219,7 @@ public class ControllerManager {
         Collections.reverse(subComponentFields);
 
         // Destroy all sub-controllers
-        Reflection.callMethodsForFieldInstances(instance, subComponentFields, ControllerManager::destroy);
+        Reflection.callMethodsForFieldInstances(instance, subComponentFields, this::destroy);
 
         // Call destroy methods
         callMethodsWithAnnotation(instance, onDestroy.class, Map.of());
@@ -264,7 +264,7 @@ public class ControllerManager {
      * @param instance The controller instance to use
      * @return A parent representing the fxml file
      */
-    private static @NotNull Parent loadFXML(@NotNull String fileName, @NotNull Object instance, boolean setRoot) {
+    private @NotNull Parent loadFXML(@NotNull String fileName, @NotNull Object instance, boolean setRoot) {
 
         URL url = instance.getClass().getResource(fileName);
         if (url == null) {
@@ -307,7 +307,7 @@ public class ControllerManager {
      * @return A list of all fields in the given instance that are annotated with {@link SubComponent}
      */
     @Unmodifiable
-    private static List<Field> getSubComponentFields(Object instance) {
+    private List<Field> getSubComponentFields(Object instance) {
         return Reflection.getFieldsWithAnnotation(instance.getClass(), SubComponent.class)
                 .stream()
                 .filter(field -> {
@@ -325,7 +325,7 @@ public class ControllerManager {
      * @param annotation The annotation to look for
      * @param parameters The parameters to pass to the methods
      */
-    private static void callMethodsWithAnnotation(@NotNull Object instance, @NotNull Class<? extends Annotation> annotation, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
+    private void callMethodsWithAnnotation(@NotNull Object instance, @NotNull Class<? extends Annotation> annotation, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
         for (Method method : Reflection.getMethodsWithAnnotation(instance.getClass(), annotation)) {
             try {
                 method.setAccessible(true);
@@ -343,7 +343,7 @@ public class ControllerManager {
      * @param instance   The instance to fill the parameters into
      * @param parameters The parameters to fill into the fields
      */
-    private static void fillParametersIntoFields(@NotNull Object instance, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
+    private void fillParametersIntoFields(@NotNull Object instance, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
         // Fill the parameters into fields annotated with @Param
         for (Field field : Reflection.getFieldsWithAnnotation(instance.getClass(), Param.class)) {
             try {
@@ -406,7 +406,7 @@ public class ControllerManager {
      * @param instance   The instance to fill the parameters into
      * @param parameters The parameters to fill into the methods
      */
-    private static void callParamMethods(Object instance, Map<String, Object> parameters) {
+    private void callParamMethods(Object instance, Map<String, Object> parameters) {
         Reflection.getMethodsWithAnnotation(instance.getClass(), Param.class).forEach(method -> {
             try {
                 method.setAccessible(true);
@@ -435,7 +435,7 @@ public class ControllerManager {
      * @param instance   The instance to fill the parameters into
      * @param parameters The parameters to fill into the methods
      */
-    private static void callParamsMethods(Object instance, Map<String, Object> parameters) {
+    private void callParamsMethods(Object instance, Map<String, Object> parameters) {
         Reflection.getMethodsWithAnnotation(instance.getClass(), Params.class).forEach(method -> {
             try {
                 method.setAccessible(true);
@@ -470,7 +470,7 @@ public class ControllerManager {
      * @param instance   The instance to fill the parameters into
      * @param parameters The parameters to fill into the methods
      */
-    private static void callParamsMapMethods(Object instance, Map<String, Object> parameters) {
+    private void callParamsMapMethods(Object instance, Map<String, Object> parameters) {
         Reflection.getMethodsWithAnnotation(instance.getClass(), ParamsMap.class).forEach(method -> {
 
             if (method.getParameterCount() != 1 || !MapUtil.isMapWithTypes(method.getParameters()[0], String.class, Object.class)) {
@@ -497,7 +497,7 @@ public class ControllerManager {
      * @param parameters The values of the parameters
      * @return An array with all applicable parameters
      */
-    private static @Nullable Object @NotNull [] getApplicableParameters(@NotNull Method method, @NotNull Map<String, Object> parameters) {
+    private @Nullable Object @NotNull [] getApplicableParameters(@NotNull Method method, @NotNull Map<String, Object> parameters) {
         return Arrays.stream(method.getParameters()).map(parameter -> {
             Param param = parameter.getAnnotation(Param.class);
             ParamsMap paramsMap = parameter.getAnnotation(ParamsMap.class);

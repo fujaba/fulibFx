@@ -24,7 +24,7 @@ import org.fulib.fx.annotation.event.onDestroy;
 import org.fulib.fx.annotation.event.onInit;
 import org.fulib.fx.annotation.event.onRender;
 import org.fulib.fx.annotation.param.Param;
-import org.fulib.fx.constructs.For;
+import org.fulib.fx.constructs.FxFor;
 import org.fulib.fx.controller.Subscriber;
 
 import javax.inject.Inject;
@@ -58,6 +58,8 @@ public class IngameController implements Titleable {
     App app;
     @Inject
     Subscriber subscriber;
+    @Inject
+    FxFor fxFor;
     @Inject
     GameService gameService;
     @Inject
@@ -126,7 +128,7 @@ public class IngameController implements Titleable {
 
         // Render the cards of the player
         subscriber.subscribe(
-                For.of(this.cardListHBox, this.game.getFirstPlayer().getCards(), cardControllerProvider, (controller, card) -> {
+                fxFor.of(this.cardListHBox, this.game.getFirstPlayer().getCards(), cardControllerProvider, (controller, card) -> {
                     controller.setCard(card);
                     this.cards.put(card, controller);
                     controller.subscriber.subscribe(() -> this.cards.remove(card));
@@ -151,7 +153,6 @@ public class IngameController implements Titleable {
                 displayLastPlayed(newCard);
             }
         });
-
 
         // Listener for toggling the play/color picker buttons when a wild card is selected
         subscriber.listen(game.getFirstPlayer().listeners(), Player.PROPERTY_CURRENT_CARD, event ->
