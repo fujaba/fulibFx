@@ -67,7 +67,7 @@ public class App extends FulibFxApp {
 
         } catch (Exception e) {
             // If an error occurs while starting the application, we want to log it and exit the application
-            logger().log(Level.SEVERE, "An error occurred while starting the application: " + e.getMessage(), e);
+            LOGGER.log(Level.SEVERE, "An error occurred while starting the application: " + e.getMessage(), e);
         }
     }
 

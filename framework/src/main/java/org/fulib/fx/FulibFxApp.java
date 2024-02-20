@@ -13,10 +13,9 @@ import javafx.stage.Stage;
 import javafx.util.Pair;
 import org.fulib.fx.annotation.controller.Component;
 import org.fulib.fx.controller.AutoRefresher;
-import org.fulib.fx.controller.ControllerManager;
 import org.fulib.fx.dagger.DaggerFrameworkComponent;
 import org.fulib.fx.dagger.FrameworkComponent;
-import org.fulib.fx.util.Util;
+import org.fulib.fx.util.ControllerUtil;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.NotNull;
@@ -29,8 +28,8 @@ import java.util.logging.Logger;
 
 public abstract class FulibFxApp extends Application {
 
-    private static final Scheduler FX_SCHEDULER = Schedulers.from(Platform::runLater);
-    private static final Logger LOGGER = Logger.getLogger(FulibFxApp.class.getName());
+    public static final Scheduler FX_SCHEDULER = Schedulers.from(Platform::runLater);
+    public static final Logger LOGGER = Logger.getLogger(FulibFxApp.class.getName());
 
     private static Path resourcesPath = Path.of("src/main/resources");
 
@@ -42,25 +41,6 @@ public abstract class FulibFxApp extends Application {
 
     // The instance of the current main controller (last controller displayed with show())
     private Object currentMainController;
-
-
-    /**
-     * Returns the framework's logger.
-     *
-     * @return The logger
-     */
-    public static Logger logger() {
-        return LOGGER;
-    }
-
-    /**
-     * Returns the scheduler of the framework.
-     *
-     * @return The scheduler
-     */
-    public static Scheduler scheduler() {
-        return FX_SCHEDULER;
-    }
 
     /**
      * Returns the path to the 'resources' directory.
@@ -140,7 +120,7 @@ public abstract class FulibFxApp extends Application {
      * @return The rendered component
      */
     public @NotNull <T extends Parent> T initAndRender(@NotNull T component, Map<String, Object> params, DisposableContainer onDestroy) {
-        if (!Util.isComponent(component))
+        if (!ControllerUtil.isComponent(component))
             throw new IllegalArgumentException("Class '%s' is not a component.".formatted(component.getClass().getName()));
 
         Disposable disposable = this.component.controllerManager().init(component, params, false);
@@ -162,7 +142,7 @@ public abstract class FulibFxApp extends Application {
      * @throws IllegalArgumentException If the given instance is not a controller extending Parent
      */
     public @NotNull <T extends Parent> T destroy(@NotNull T rendered) {
-        ControllerManager.destroy(rendered);
+        this.frameworkComponent().controllerManager().destroy(rendered);
         return rendered;
     }
 
@@ -335,7 +315,7 @@ public abstract class FulibFxApp extends Application {
         cleanup();
         Map<String, Object> params = this.component.router().current().getValue(); // Use the same parameters as before
         this.component.controllerManager().init(currentMainController, params, true); // Re-initialize the controller
-        Parent parent = ControllerManager.render(currentMainController, params); // Re-render the controller
+        Parent parent = this.component.controllerManager().render(currentMainController, params); // Re-render the controller
         display(parent); // Display the controller
     }
 
