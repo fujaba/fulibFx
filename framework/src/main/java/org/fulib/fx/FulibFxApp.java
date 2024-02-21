@@ -21,6 +21,8 @@ import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
@@ -129,7 +131,7 @@ public abstract class FulibFxApp extends Application {
         }
 
         @SuppressWarnings("unchecked") // We know that the component will return itself as the view
-        T rendered = (T) ControllerManager.render(component, params);
+        T rendered = (T) this.frameworkComponent().controllerManager().render(component, params);
         return rendered;
     }
 
@@ -316,7 +318,21 @@ public abstract class FulibFxApp extends Application {
         Map<String, Object> params = this.component.router().current().getValue(); // Use the same parameters as before
         this.component.controllerManager().init(currentMainController, params, true); // Re-initialize the controller
         Parent parent = this.component.controllerManager().render(currentMainController, params); // Re-render the controller
-        display(parent); // Display the controller
+        // NB: This hack avoids problems with mouse drag events.
+        // In particular, the scene's MouseHandler would keep a list of it's previous nodes,
+        // which do not have a reference back to the scene and subsequently cause an NPE.
+        try {
+            final Scene scene = stage.getScene();
+            final Field mouseHandlerField = Scene.class.getDeclaredField("mouseHandler");
+            mouseHandlerField.setAccessible(true);
+            final Constructor<?> mouseHandlerCtor = Class.forName(Scene.class.getName() + "$MouseHandler").getDeclaredConstructor(Scene.class);
+            mouseHandlerCtor.setAccessible(true);
+            final Object mouseHandler = mouseHandlerCtor.newInstance(scene);
+            mouseHandlerField.set(scene, mouseHandler);
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException(e);
+        }
+        display(parent);
     }
 
     /**
