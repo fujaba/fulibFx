@@ -168,7 +168,14 @@ public class ControllerManager {
         // If the controller extends from a javafx Parent, render it
         // This can be combined with the view annotation to set the controller as the root of the fxml file
         if (component) {
-            parent = view.isEmpty() ? (Parent) instance : loadFXML(view, instance, true);
+            if (view.isEmpty()) {
+                parent = (Parent) instance;
+            } else {
+                Parent root = (Parent) instance;
+                // Due to the way JavaFX works, we have to clear the children list of the old root before loading its fxml file again
+                ReflectionUtil.getChildrenList(instance.getClass(), root).clear();
+                parent = loadFXML(view, instance, true);
+            }
         }
 
         // If the controller specifies a method as view, call it
