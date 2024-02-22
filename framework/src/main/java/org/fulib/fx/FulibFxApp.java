@@ -24,6 +24,7 @@ import org.jetbrains.annotations.Nullable;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
+import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
 public abstract class FulibFxApp extends Application {
@@ -129,7 +130,7 @@ public abstract class FulibFxApp extends Application {
         }
 
         @SuppressWarnings("unchecked") // We know that the component will return itself as the view
-        T rendered = (T) ControllerManager.render(component, params);
+        T rendered = (T) this.frameworkComponent().controllerManager().render(component, params);
         return rendered;
     }
 
@@ -276,6 +277,13 @@ public abstract class FulibFxApp extends Application {
      */
     public void registerRoutes(Object routes) {
         this.component.router().registerRoutes(routes);
+    }
+
+    /**
+     * Sets the default resource bundle to use for FXML files if no resource bundle is provided in the controller/component.
+     */
+    public void setDefaultResourceBundle(ResourceBundle resourceBundle) {
+        this.component.controllerManager().setDefaultResourceBundle(resourceBundle);
     }
 
     /**

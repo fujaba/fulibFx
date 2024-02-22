@@ -7,7 +7,7 @@ import org.fulib.fx.annotation.controller.Controller;
 import org.fulib.fx.annotation.controller.SubComponent;
 import org.fulib.fx.annotation.param.Params;
 import org.fulib.fx.annotation.param.ParamsMap;
-import org.fulib.fx.util.Util;
+import org.fulib.fx.util.ControllerUtil;
 
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
@@ -112,7 +112,7 @@ public class ControllerAnnotationProcessor extends AbstractProcessor {
             }
         } else {
             // No view specified, so we transform the class name to a view file name
-            checkViewResource(element, Util.transform(element.getSimpleName().toString()) + ".fxml");
+            checkViewResource(element, ControllerUtil.transform(element.getSimpleName().toString()) + ".fxml");
         }
     }
 

@@ -8,6 +8,7 @@ import javafx.util.Pair;
 import org.fulib.fx.FulibFxApp;
 import org.fulib.fx.annotation.controller.Component;
 import org.fulib.fx.annotation.controller.Controller;
+import org.fulib.fx.annotation.controller.Resource;
 import org.fulib.fx.annotation.controller.SubComponent;
 import org.fulib.fx.annotation.event.onDestroy;
 import org.fulib.fx.annotation.event.onInit;
@@ -37,6 +38,7 @@ import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
+import java.util.stream.Stream;
 
 /**
  * Manages the initialization, rendering and destroying of controllers.
@@ -49,6 +51,8 @@ public class ControllerManager {
 
     // Map of controllers that have been initialized
     private final RefreshableCompositeDisposable cleanup = new RefreshableCompositeDisposable();
+
+    private static ResourceBundle defaultResourceBundle;
 
     @Inject
     public ControllerManager() {
@@ -234,7 +238,6 @@ public class ControllerManager {
         // In development mode, check for undestroyed subscribers
         if (FrameworkUtil.runningInDev()) {
             Reflection.getFieldsOfType(instance.getClass(), Subscriber.class) // Get all Subscriber fields
-                    .stream()
                     .map(field -> {
                         try {
                             field.setAccessible(true);
@@ -290,21 +293,68 @@ public class ControllerManager {
             }
         }
 
+        // Set the controller factory and builder factory
         ControllerBuildFactory builderFactory = new ControllerBuildFactory(instance);
-
         FXMLLoader loader = new FXMLLoader(url);
         loader.setControllerFactory(c -> instance);
         loader.setBuilderFactory(builderFactory);
 
+        // If the controller has a resource bundle, use it
+        ResourceBundle resourceBundle = getResourceBundle(instance);
+        if (resourceBundle != null) {
+            loader.setResources(resourceBundle);
+        }
+
+        // Set the root of the FXML file when a component specifies a view
         if (setRoot) {
             loader.setRoot(instance);
         }
 
+        // Load the FXML file
         try {
             return loader.load();
         } catch (IOException exception) {
-            throw new RuntimeException("Couldn't load the FXML file for controller '%s'".formatted(instance.getClass()), exception);
+            throw new RuntimeException("Couldn't load the FXML file for controller/component '%s'".formatted(instance.getClass()), exception);
         }
+    }
+
+    /**
+     * Returns the resource bundle of the given instance if it has one.
+     * If no resource bundle is set, the default resource bundle will be used.
+     * If no default resource bundle is set, null will be returned.
+     *
+     * @param instance The instance to get the resource bundle from
+     * @return The resource bundle of the given instance if it has one or the default resource bundle
+     * @throws RuntimeException If the instance has more than one field annotated with {@link Resource}
+     */
+    private static @Nullable ResourceBundle getResourceBundle(@NotNull Object instance) {
+
+        List<Field> fields = Reflection.getFieldsWithAnnotation(instance.getClass(), Resource.class).toList();
+
+        if (fields.isEmpty())
+            return defaultResourceBundle;
+
+        if (fields.size() > 1)
+            throw new RuntimeException("Class '%s' has more than one field annotated with @Resource.".formatted(instance.getClass().getName()));
+
+        return fields
+                .stream()
+                .filter(field -> {
+                    if (field.getType().isAssignableFrom(ResourceBundle.class))
+                        return true;
+                    throw new RuntimeException("Field '%s' in class '%s' annotated with @Resource is not of type ResourceBundle.".formatted(field.getName(), instance.getClass().getName()));
+                })
+                .map(field -> {
+                    try {
+                        field.setAccessible(true);
+                        return (ResourceBundle) field.get(instance);
+                    } catch (IllegalAccessException e) {
+                        throw new RuntimeException("Couldn't access the resource bundle field '%s' in class '%s'.".formatted(field.getName(), instance.getClass().getName()), e);
+                    }
+                })
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElse(defaultResourceBundle);
     }
 
     /**
@@ -316,7 +366,6 @@ public class ControllerManager {
     @Unmodifiable
     private List<Field> getSubComponentFields(Object instance) {
         return Reflection.getFieldsWithAnnotation(instance.getClass(), SubComponent.class)
-                .stream()
                 .filter(field -> {
                     if (!field.getType().isAnnotationPresent(Component.class)) {
                         FulibFxApp.LOGGER.warning("Field '%s' in class '%s' is annotated with @SubComponent but is not a subcomponent.".formatted(field.getName(), instance.getClass().getName()));
@@ -333,7 +382,7 @@ public class ControllerManager {
      * @param parameters The parameters to pass to the methods
      */
     private void callMethodsWithAnnotation(@NotNull Object instance, @NotNull Class<? extends Annotation> annotation, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
-        for (Method method : Reflection.getMethodsWithAnnotation(instance.getClass(), annotation)) {
+        for (Method method : Reflection.getMethodsWithAnnotation(instance.getClass(), annotation).toList()) {
             try {
                 method.setAccessible(true);
                 method.invoke(instance, getApplicableParameters(method, parameters));
@@ -352,7 +401,7 @@ public class ControllerManager {
      */
     private void fillParametersIntoFields(@NotNull Object instance, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
         // Fill the parameters into fields annotated with @Param
-        for (Field field : Reflection.getFieldsWithAnnotation(instance.getClass(), Param.class)) {
+        for (Field field : Reflection.getFieldsWithAnnotation(instance.getClass(), Param.class).toList()) {
             try {
                 boolean accessible = field.canAccess(instance);
                 field.setAccessible(true);
@@ -380,7 +429,7 @@ public class ControllerManager {
         }
 
         // Fill the parameters into fields annotated with @ParamsMap
-        for (Field field : Reflection.getFieldsWithAnnotation(instance.getClass(), ParamsMap.class)) {
+        for (Field field : Reflection.getFieldsWithAnnotation(instance.getClass(), ParamsMap.class).toList()) {
 
             if (!MapUtil.isMapWithTypes(field, String.class, Object.class)) {
                 throw new RuntimeException("Field annotated with @ParamsMap in class '" + instance.getClass().getName() + "' is not of type " + Map.class.getName() + "<String, Object>");
@@ -531,4 +580,12 @@ public class ControllerManager {
         }).toArray();
     }
 
+    /**
+     * Sets the default resource bundle for all controllers that don't have a resource bundle set.
+     *
+     * @param resourceBundle The default resource bundle
+     */
+    public void setDefaultResourceBundle(ResourceBundle resourceBundle) {
+        defaultResourceBundle = resourceBundle;
+    }
 }

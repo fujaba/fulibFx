@@ -6,12 +6,15 @@ import io.github.sekassel.uno.App;
 import io.github.sekassel.uno.UnoRouting;
 
 import javax.inject.Singleton;
+import java.util.ResourceBundle;
 
 @Component(modules = {MainModule.class})
 @Singleton
 public interface MainComponent {
 
     UnoRouting routes();
+
+    ResourceBundle bundle();
 
     @Component.Builder
     interface Builder {

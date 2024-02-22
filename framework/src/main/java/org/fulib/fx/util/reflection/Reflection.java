@@ -8,6 +8,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 /**
  * Utility class containing different helper methods for reflection.
@@ -25,8 +26,8 @@ public class Reflection {
      * @param annotation The annotation to filter the fields by
      * @return A list of fields that are annotated with the given annotation
      */
-    public static List<Field> getFieldsWithAnnotation(Class<?> clazz, Class<? extends Annotation> annotation) {
-        return Arrays.stream(clazz.getDeclaredFields()).filter(field -> field.isAnnotationPresent(annotation)).toList();
+    public static Stream<Field> getFieldsWithAnnotation(Class<?> clazz, Class<? extends Annotation> annotation) {
+        return Arrays.stream(clazz.getDeclaredFields()).filter(field -> field.isAnnotationPresent(annotation));
     }
 
     /**
@@ -57,8 +58,8 @@ public class Reflection {
      * @param type  The type to filter the fields by
      * @return A list of fields that are of the given type
      */
-    public static List<Field> getFieldsOfType(Class<?> clazz, Class<?> type) {
-        return Arrays.stream(clazz.getDeclaredFields()).filter(field -> field.getType().equals(type)).toList();
+    public static Stream<Field> getFieldsOfType(Class<?> clazz, Class<?> type) {
+        return Arrays.stream(clazz.getDeclaredFields()).filter(field -> field.getType().equals(type));
     }
 
     /**
@@ -68,8 +69,8 @@ public class Reflection {
      * @param annotation The annotation to filter the methods by
      * @return A list of methods that are annotated with the given annotation
      */
-    public static List<Method> getMethodsWithAnnotation(Class<?> clazz, Class<? extends Annotation> annotation) {
-        return Arrays.stream(clazz.getDeclaredMethods()).filter(method -> method.isAnnotationPresent(annotation)).toList();
+    public static Stream<Method> getMethodsWithAnnotation(Class<?> clazz, Class<? extends Annotation> annotation) {
+        return Arrays.stream(clazz.getDeclaredMethods()).filter(method -> method.isAnnotationPresent(annotation));
     }
 
     /**
