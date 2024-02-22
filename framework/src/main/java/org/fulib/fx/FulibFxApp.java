@@ -33,6 +33,21 @@ public abstract class FulibFxApp extends Application {
     public static final Scheduler FX_SCHEDULER = Schedulers.from(Platform::runLater);
     public static final Logger LOGGER = Logger.getLogger(FulibFxApp.class.getName());
 
+    // Reflection for mouse handler
+    private static Field mouseHandlerField;
+    private static Constructor<?> mouseHandlerCtor;
+
+    static {
+        try {
+            mouseHandlerField = Scene.class.getDeclaredField("mouseHandler");
+            mouseHandlerCtor = Class.forName(Scene.class.getName() + "$MouseHandler").getDeclaredConstructor(Scene.class);
+            mouseHandlerField.setAccessible(true);
+            mouseHandlerCtor.setAccessible(true);
+        } catch (ReflectiveOperationException e) {
+            LOGGER.severe("Could not initialize mouse handler reflection. This may cause problems with mouse drag events.");
+        }
+    }
+
     private static Path resourcesPath = Path.of("src/main/resources");
 
     // The component holding the required dependencies like router, controller manager, etc.
@@ -319,18 +334,14 @@ public abstract class FulibFxApp extends Application {
         this.component.controllerManager().init(currentMainController, params, true); // Re-initialize the controller
         Parent parent = this.component.controllerManager().render(currentMainController, params); // Re-render the controller
         // NB: This hack avoids problems with mouse drag events.
-        // In particular, the scene's MouseHandler would keep a list of it's previous nodes,
+        // In particular, the scene's MouseHandler would keep a list of its previous nodes,
         // which do not have a reference back to the scene and subsequently cause an NPE.
         try {
             final Scene scene = stage.getScene();
-            final Field mouseHandlerField = Scene.class.getDeclaredField("mouseHandler");
-            mouseHandlerField.setAccessible(true);
-            final Constructor<?> mouseHandlerCtor = Class.forName(Scene.class.getName() + "$MouseHandler").getDeclaredConstructor(Scene.class);
-            mouseHandlerCtor.setAccessible(true);
             final Object mouseHandler = mouseHandlerCtor.newInstance(scene);
             mouseHandlerField.set(scene, mouseHandler);
         } catch (ReflectiveOperationException e) {
-            throw new RuntimeException(e);
+            LOGGER.warning("Could not reset mouse handler. This may cause problems with mouse drag events after refreshing the scene.");
         }
         display(parent);
     }
