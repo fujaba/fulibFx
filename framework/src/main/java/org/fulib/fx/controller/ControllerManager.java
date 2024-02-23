@@ -648,10 +648,10 @@ public class ControllerManager {
             if ((annotation.code() == KeyCode.UNDEFINED || event.getCode() == annotation.code()) &&
                     (annotation.character().isEmpty() || event.getCharacter().equals(annotation.character())) &&
                     (annotation.text().isEmpty() || event.getText().equals(annotation.text())) &&
-                    (event.isShiftDown() || !annotation.shiftDown()) &&
-                    (event.isControlDown() || !annotation.controlDown()) &&
-                    (event.isAltDown() || !annotation.altDown()) &&
-                    (event.isMetaDown() || !annotation.metaDown())
+                    (event.isShiftDown() || !annotation.shift()) &&
+                    (event.isControlDown() || !annotation.control()) &&
+                    (event.isAltDown() || !annotation.alt()) &&
+                    (event.isMetaDown() || !annotation.meta())
             ) {
                 try {
                     if (hasEventParameter) {

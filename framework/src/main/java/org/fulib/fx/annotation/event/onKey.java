@@ -43,21 +43,21 @@ public @interface onKey {
      *
      * @return Whether the shift key has to be pressed
      */
-    boolean shiftDown() default false;
+    boolean shift() default false;
 
     /**
      * Whether the control key has to be pressed.
      *
      * @return Whether the control key has to be pressed
      */
-    boolean controlDown() default false;
+    boolean control() default false;
 
     /**
      * Whether the alt key has to be pressed.
      *
      * @return Whether the alt key has to be pressed
      */
-    boolean altDown() default false;
+    boolean alt() default false;
 
     /**
      * Whether the meta key has to be pressed.
@@ -65,7 +65,7 @@ public @interface onKey {
      *
      * @return Whether the meta key has to be pressed
      */
-    boolean metaDown() default false;
+    boolean meta() default false;
 
     /**
      * The target at which the event should be handled.
