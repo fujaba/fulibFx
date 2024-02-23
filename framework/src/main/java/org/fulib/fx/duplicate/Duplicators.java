@@ -12,6 +12,8 @@ import org.fulib.fx.duplicate.duplicators.impl.*;
 
 import java.util.HashMap;
 
+import static org.fulib.fx.util.FrameworkUtil.error;
+
 /**
  * A registry for {@link Duplicator}s.
  * <p>
@@ -68,7 +70,7 @@ public class Duplicators {
         }
 
         if (!DUPLICATORS.containsKey(object.getClass())) {
-            throw new IllegalArgumentException("No duplicator registered for " + object.getClass());
+            throw new IllegalArgumentException(error(10001).formatted(object.getClass()));
         }
 
         @SuppressWarnings("unchecked")

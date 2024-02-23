@@ -40,6 +40,8 @@ import java.net.URL;
 import java.util.*;
 import java.util.stream.Stream;
 
+import static org.fulib.fx.util.FrameworkUtil.error;
+
 /**
  * Manages the initialization, rendering and destroying of controllers.
  * <p>
@@ -113,7 +115,7 @@ public class ControllerManager {
 
         // Check if the instance is a controller
         if (!ControllerUtil.isController(instance))
-            throw new IllegalControllerException("Class '%s' is not a controller or component.".formatted(instance.getClass().getName()));
+            throw new IllegalControllerException(error(1001).formatted(instance.getClass().getName()));
 
         // Inject parameters into the controller fields
         fillParametersIntoFields(instance, parameters);
@@ -158,7 +160,7 @@ public class ControllerManager {
         boolean component = instance.getClass().isAnnotationPresent(Component.class) && ControllerUtil.isComponent(instance);
 
         if (!component && !instance.getClass().isAnnotationPresent(Controller.class))
-            throw new IllegalArgumentException("Class '%s' is not a controller or component.".formatted(instance.getClass().getName()));
+            throw new IllegalArgumentException(error(1001).formatted(instance.getClass().getName()));
 
         // Render all sub-controllers
         Reflection.callMethodsForFieldInstances(instance, getSubComponentFields(instance), (subController) -> render(subController, parameters));
@@ -188,13 +190,13 @@ public class ControllerManager {
             try {
                 Method method = instance.getClass().getDeclaredMethod(methodName);
                 if (!Parent.class.isAssignableFrom(method.getReturnType()))
-                    throw new RuntimeException("Method '" + methodName + "()' in class '" + instance.getClass().getName() + "' does not return a Parent.");
+                    throw new RuntimeException(error(1002).formatted(methodName, instance.getClass().getName()));
                 method.setAccessible(true);
                 parent = (Parent) method.invoke(instance);
             } catch (NoSuchMethodException e) {
-                throw new RuntimeException("Method '" + methodName + "()' in class '" + instance.getClass().getName() + "' does not exist.");
+                throw new RuntimeException(error(1003).formatted(methodName, instance.getClass().getName()), e);
             } catch (InvocationTargetException | IllegalAccessException e) {
-                throw new RuntimeException("Method '" + methodName + "()' in class '" + instance.getClass().getName() + "' could not be called.", e);
+                throw new RuntimeException(error(1004).formatted(methodName, instance.getClass().getName()), e);
             }
         }
 
@@ -223,7 +225,7 @@ public class ControllerManager {
      */
     public void destroy(@NotNull Object instance) {
         if (!ControllerUtil.isController(instance))
-            throw new IllegalArgumentException("Class '%s' is not a controller or component.".formatted(instance.getClass().getName()));
+            throw new IllegalArgumentException(error(1001).formatted(instance.getClass().getName()));
 
         // Destroying should be done in exactly the reverse order of initialization
         List<Field> subComponentFields = new ArrayList<>(getSubComponentFields(instance));
@@ -279,7 +281,7 @@ public class ControllerManager {
         URL url = instance.getClass().getResource(fileName);
         if (url == null) {
             String urlPath = instance.getClass().getPackageName().replace(".", "/") + "/" + fileName;
-            throw new RuntimeException("Could not find resource '" + urlPath + "'");
+            throw new RuntimeException(error(2000).formatted(urlPath));
         }
 
         File file = FileUtil.getResourceAsLocalFile(FulibFxApp.resourcesPath(), instance.getClass(), fileName);
@@ -289,7 +291,7 @@ public class ControllerManager {
             try {
                 url = file.toURI().toURL();
             } catch (MalformedURLException e) {
-                throw new RuntimeException("File '" + file.getAbsolutePath() + "' exists, but could not be converted to URL.", e);
+                throw new RuntimeException(error(2001).formatted(file.getAbsolutePath()), e);
             }
         }
 
@@ -314,7 +316,7 @@ public class ControllerManager {
         try {
             return loader.load();
         } catch (IOException exception) {
-            throw new RuntimeException("Couldn't load the FXML file for controller/component '%s'".formatted(instance.getClass()), exception);
+            throw new RuntimeException(error(2002).formatted(instance.getClass()), exception);
         }
     }
 
@@ -335,21 +337,21 @@ public class ControllerManager {
             return defaultResourceBundle;
 
         if (fields.size() > 1)
-            throw new RuntimeException("Class '%s' has more than one field annotated with @Resource.".formatted(instance.getClass().getName()));
+            throw new RuntimeException(error(2003).formatted(instance.getClass().getName()));
 
         return fields
                 .stream()
                 .filter(field -> {
                     if (field.getType().isAssignableFrom(ResourceBundle.class))
                         return true;
-                    throw new RuntimeException("Field '%s' in class '%s' annotated with @Resource is not of type ResourceBundle.".formatted(field.getName(), instance.getClass().getName()));
+                    throw new RuntimeException(error(2004).formatted(field.getName(), instance.getClass().getName()));
                 })
                 .map(field -> {
                     try {
                         field.setAccessible(true);
                         return (ResourceBundle) field.get(instance);
                     } catch (IllegalAccessException e) {
-                        throw new RuntimeException("Couldn't access the resource bundle field '%s' in class '%s'.".formatted(field.getName(), instance.getClass().getName()), e);
+                        throw new RuntimeException(error(2005).formatted(field.getName(), instance.getClass().getName()), e);
                     }
                 })
                 .filter(Objects::nonNull)
@@ -368,7 +370,7 @@ public class ControllerManager {
         return Reflection.getFieldsWithAnnotation(instance.getClass(), SubComponent.class)
                 .filter(field -> {
                     if (!field.getType().isAnnotationPresent(Component.class)) {
-                        FulibFxApp.LOGGER.warning("Field '%s' in class '%s' is annotated with @SubComponent but is not a subcomponent.".formatted(field.getName(), instance.getClass().getName()));
+                        FulibFxApp.LOGGER.warning(error(6005).formatted(field.getName(), instance.getClass().getName()));
                         return false;
                     }
                     return true;
@@ -387,7 +389,7 @@ public class ControllerManager {
                 method.setAccessible(true);
                 method.invoke(instance, getApplicableParameters(method, parameters));
             } catch (IllegalAccessException | InvocationTargetException e) {
-                throw new RuntimeException("Couldn't run method '" + method.getName() + "' annotated with '" + annotation.getName() + "' in '" + instance.getClass().getName() + "'", e);
+                throw new RuntimeException(error(1005).formatted(method.getName(), annotation.getName(), instance.getClass().getName()), e);
             }
         }
     }
@@ -416,15 +418,15 @@ public class ControllerManager {
                     } else if (Reflection.canBeAssigned(field.getType(), value)) {
                         field.set(instance, value);
                     } else {
-                        throw new RuntimeException("Parameter named '" + field.getAnnotation(Param.class).value() + "' in field '" + field.getName() + "' is of type " + field.getType().getName() + " but the provided value is of type " + value.getClass().getName());
+                        throw new RuntimeException(error(4007).formatted(field.getAnnotation(Param.class).value(), field.getName(), instance.getClass().getName(), field.getType().getName(), value.getClass().getName()));
                     }
                 }
 
                 field.setAccessible(accessible);
             } catch (IllegalAccessException e) {
-                throw new RuntimeException("Couldn't fill parameter '" + field.getAnnotation(Param.class).value() + "' into field '" + field.getName() + "' in '" + instance.getClass().getName() + "'", e);
+                throw new RuntimeException(error(4000).formatted(field.getAnnotation(Param.class).value(), field.getName(), instance.getClass().getName()), e);
             } catch (InvocationTargetException | NoSuchMethodException e) {
-                throw new RuntimeException("Couldn't execute setter method with parameter '" + field.getAnnotation(Param.class).value() + "' for field '" + field.getName() + "' in '" + instance.getClass().getName() + "'", e);
+                throw new RuntimeException(error(4001).formatted(field.getAnnotation(Param.class).value(), field.getName(), instance.getClass().getName()), e);
             }
         }
 
@@ -432,7 +434,7 @@ public class ControllerManager {
         for (Field field : Reflection.getFieldsWithAnnotation(instance.getClass(), ParamsMap.class).toList()) {
 
             if (!MapUtil.isMapWithTypes(field, String.class, Object.class)) {
-                throw new RuntimeException("Field annotated with @ParamsMap in class '" + instance.getClass().getName() + "' is not of type " + Map.class.getName() + "<String, Object>");
+                throw new RuntimeException(error(4002).formatted(field.getName(), instance.getClass().getName()));
             }
 
             try {
@@ -450,7 +452,7 @@ public class ControllerManager {
                 }
                 field.setAccessible(accessible);
             } catch (IllegalAccessException e) {
-                throw new RuntimeException("Couldn't fill parameters into field '" + field.getName() + "' in '" + instance.getClass().getName() + "'", e);
+                throw new RuntimeException(error(4010).formatted(field.getName(), instance.getClass().getName()), e);
             }
         }
     }
@@ -476,10 +478,10 @@ public class ControllerManager {
                 if (Reflection.canBeAssigned(method.getParameterTypes()[0], value)) {
                     method.invoke(instance, value);
                 } else {
-                    throw new RuntimeException("Parameter named '" + method.getAnnotation(Param.class).value() + "' in method '" + method.getName() + "' is of type " + method.getParameterTypes()[0].getName() + " but the provided value is of type " + value.getClass().getName());
+                    throw new RuntimeException(error(4008).formatted(method.getAnnotation(Param.class).value(), method.getName(), instance.getClass().getName(), method.getParameterTypes()[0].getName(), value.getClass().getName()));
                 }
             } catch (IllegalAccessException | InvocationTargetException e) {
-                throw new RuntimeException("Couldn't fill parameter '" + method.getAnnotation(Param.class).value() + "' into method '" + method.getName() + "' in '" + instance.getClass().getName() + "'", e);
+                throw new RuntimeException(error(4005).formatted(method.getAnnotation(Param.class).value(), method.getName(), instance.getClass().getName()), e);
             }
         });
     }
@@ -498,7 +500,7 @@ public class ControllerManager {
 
                 String[] paramNames = method.getAnnotation(Params.class).value();
                 if (method.getParameters().length != paramNames.length)
-                    throw new RuntimeException("Method '" + method.getName() + "' in class '" + instance.getClass().getName() + "' has a different amount of parameters than the provided parameters map (%d != %d)".formatted(method.getParameters().length, paramNames.length));
+                    throw new RuntimeException(error(4006).formatted(method.getName(), instance.getClass().getName()));
 
                 Object[] methodParams = new Object[paramNames.length];
 
@@ -508,13 +510,13 @@ public class ControllerManager {
                     if (Reflection.canBeAssigned(method.getParameterTypes()[i], value)) {
                         methodParams[i] = value;
                     } else {
-                        throw new RuntimeException("Parameter named '" + paramNames[i] + "' in method '" + method.getName() + "' is of type " + method.getParameterTypes()[i].getName() + " but the provided value is of type " + value.getClass().getName());
+                        throw new RuntimeException(error(4008).formatted(paramNames[i], method.getName(), instance.getClass().getName(), method.getParameterTypes()[i].getName(), value.getClass().getName()));
                     }
                 }
 
                 method.invoke(instance, methodParams);
             } catch (IllegalAccessException | InvocationTargetException e) {
-                throw new RuntimeException("Couldn't fill parameters into method '" + method.getName() + "' in '" + instance.getClass().getName() + "'", e);
+                throw new RuntimeException(error(4011).formatted(method.getName(), instance.getClass().getName()), e);
             }
         });
     }
@@ -530,14 +532,14 @@ public class ControllerManager {
         Reflection.getMethodsWithAnnotation(instance.getClass(), ParamsMap.class).forEach(method -> {
 
             if (method.getParameterCount() != 1 || !MapUtil.isMapWithTypes(method.getParameters()[0], String.class, Object.class)) {
-                throw new RuntimeException("Method '" + method.getName() + "' in class '" + instance.getClass().getName() + "' annotated with @ParamsMap has to have exactly one parameter of type " + Map.class.getName() + "<String, Object>");
+                throw new RuntimeException(error(4003).formatted(method.getName(), instance.getClass().getName()));
             }
 
             try {
                 method.setAccessible(true);
                 method.invoke(instance, parameters);
             } catch (IllegalAccessException | InvocationTargetException e) {
-                throw new RuntimeException("Couldn't fill parameters into method '" + method.getName() + "' in '" + instance.getClass().getName() + "'", e);
+                throw new RuntimeException(error(4010).formatted(method.getName(), instance.getClass().getName()), e);
             }
         });
     }
@@ -559,12 +561,12 @@ public class ControllerManager {
             ParamsMap paramsMap = parameter.getAnnotation(ParamsMap.class);
 
             if (param != null && paramsMap != null)
-                throw new RuntimeException("Parameter '" + parameter.getName() + "' in method '" + method.getDeclaringClass().getName() + "#" + method.getName() + "' is annotated with both @Param and @Params");
+                throw new RuntimeException(error(4009).formatted(parameter.getName(), method.getName(), method.getDeclaringClass().getName()));
 
             // Check if the parameter is annotated with @Param and if the parameter is of the correct type
             if (param != null) {
                 if (parameters.containsKey(param.value()) && !Reflection.canBeAssigned(parameter.getType(), parameters.get(param.value()))) {
-                    throw new RuntimeException("Parameter named '" + param.value() + "' in method '" + method.getDeclaringClass().getName() + "#" + method.getName() + "' is of type " + parameter.getType().getName() + " but the provided value is of type " + parameters.get(param.value()).getClass().getName());
+                    throw new RuntimeException(error(4008).formatted(param.value(), method.getName(), method.getDeclaringClass().getName(), parameter.getType().getName(), parameters.get(param.value()).getClass().getName()));
                 }
                 return parameters.get(param.value());
             }
@@ -572,7 +574,7 @@ public class ControllerManager {
             // Check if the parameter is annotated with @Params and if the parameter is of the type Map<String, Object>
             if (paramsMap != null) {
                 if (!MapUtil.isMapWithTypes(parameter, String.class, Object.class)) {
-                    throw new RuntimeException("Parameter annotated with @Params in method '" + method.getClass().getName() + "#" + method.getName() + "' is not of type " + Map.class.getName() + "<String, Object>");
+                    throw new RuntimeException(error(4004).formatted(parameter.getName(), method.getName(), method.getDeclaringClass().getName()));
                 }
                 return parameters;
             }

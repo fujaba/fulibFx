@@ -16,6 +16,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
+import static org.fulib.fx.util.FrameworkUtil.error;
+
 /**
  * A For loop for use in Code. Creates a node for each item in a list and adds them to the children of a container.
  * This allows you to easily display a list of items in a container like a friend list or a list of products.
@@ -156,7 +158,7 @@ public class For<Node extends javafx.scene.Node, Item> {
         }
 
         if (this.itemsToNodes != null)
-            throw new IllegalStateException("For loop is already initialized!");
+            throw new IllegalStateException(error(7000));
 
         this.itemsToNodes = new HashMap<>();
 
@@ -194,7 +196,7 @@ public class For<Node extends javafx.scene.Node, Item> {
      */
     private void add(Item item, int index) {
         if (this.itemsToNodes.containsKey(item)) {
-            throw new IllegalArgumentException("Item '%s' is already in the list".formatted(item));
+            throw new IllegalArgumentException(error(7001).formatted(item));
         }
 
         // Create the node

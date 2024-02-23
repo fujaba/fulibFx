@@ -1,6 +1,10 @@
 package org.fulib.fx.data;
 
+import org.fulib.fx.FulibFxApp;
+
 import java.util.*;
+
+import static org.fulib.fx.util.FrameworkUtil.error;
 
 public class EvictingQueue<T> implements TraversableQueue<T> {
 
@@ -44,7 +48,7 @@ public class EvictingQueue<T> implements TraversableQueue<T> {
         if (currentIndex > 0) {
             return list.get(--currentIndex);
         }
-        throw new IndexOutOfBoundsException("No previous element saved");
+        throw new IndexOutOfBoundsException();
     }
 
     @Override
@@ -52,13 +56,13 @@ public class EvictingQueue<T> implements TraversableQueue<T> {
         if (currentIndex < list.size() - 1) {
             return list.get(++currentIndex);
         }
-        throw new IndexOutOfBoundsException("No next element saved");
+        throw new IndexOutOfBoundsException(error(5000));
     }
 
     @Override
     public T current() {
         if (list.isEmpty()) {
-            throw new IndexOutOfBoundsException("Queue is empty");
+            throw new IndexOutOfBoundsException(error(5001));
         }
         return list.get(currentIndex);
     }

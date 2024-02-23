@@ -14,6 +14,7 @@ import java.nio.file.*;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
+import static org.fulib.fx.util.FrameworkUtil.error;
 
 @Singleton
 public class AutoRefresher {
@@ -74,7 +75,7 @@ public class AutoRefresher {
             });
 
         } catch (IOException e) {
-            throw new RuntimeException("Couldn't start file service!", e);
+            throw new RuntimeException(error(8000), e);
         }
     }
 
@@ -84,7 +85,7 @@ public class AutoRefresher {
             if (watchService != null) this.watchService.close();
             if (disposable != null) this.disposable.dispose();
         } catch (IOException e) {
-            throw new RuntimeException("Couldn't close watcher!", e);
+            throw new RuntimeException(error(8001), e);
         }
     }
 

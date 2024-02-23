@@ -16,6 +16,7 @@ import org.fulib.fx.controller.AutoRefresher;
 import org.fulib.fx.dagger.DaggerFrameworkComponent;
 import org.fulib.fx.dagger.FrameworkComponent;
 import org.fulib.fx.util.ControllerUtil;
+import org.fulib.fx.util.FrameworkUtil;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.NotNull;
@@ -28,6 +29,8 @@ import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
 public abstract class FulibFxApp extends Application {
+
+    public static final ResourceBundle ERROR_BUNDLE = ResourceBundle.getBundle("org.fulib.fx.lang.error");
 
     public static final Scheduler FX_SCHEDULER = Schedulers.from(Platform::runLater);
     public static final Logger LOGGER = Logger.getLogger(FulibFxApp.class.getName());
@@ -122,7 +125,7 @@ public abstract class FulibFxApp extends Application {
      */
     public @NotNull <T extends Parent> T initAndRender(@NotNull T component, Map<String, Object> params, DisposableContainer onDestroy) {
         if (!ControllerUtil.isComponent(component))
-            throw new IllegalArgumentException("Class '%s' is not a component.".formatted(component.getClass().getName()));
+            throw new IllegalArgumentException(FrameworkUtil.error(1001).formatted(component.getClass().getName()));
 
         Disposable disposable = this.component.controllerManager().init(component, params, false);
         if (onDestroy != null) {

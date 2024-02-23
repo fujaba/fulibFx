@@ -1,5 +1,7 @@
 package org.fulib.fx.util;
 
+import org.fulib.fx.FulibFxApp;
+
 public class FrameworkUtil {
 
     private FrameworkUtil() {
@@ -18,5 +20,9 @@ public class FrameworkUtil {
      */
     public static boolean runningInDev() {
         return System.getenv().getOrDefault(INDEV_ENVIRONMENT_VARIABLE, "false").equalsIgnoreCase("true");
+    }
+
+    public static String error(int id) {
+        return FulibFxApp.ERROR_BUNDLE.getString(String.valueOf(id));
     }
 }

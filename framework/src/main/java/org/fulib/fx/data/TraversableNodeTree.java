@@ -6,6 +6,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import static org.fulib.fx.util.FrameworkUtil.error;
+
 /**
  * A tree that can be traversed by a path in form of directory-like structure implemented using nodes.
  *
@@ -72,7 +74,7 @@ public class TraversableNodeTree<E> implements TraversableTree<E> {
 
             if (element.equals("..")) {
                 if (node.parent == null) {
-                    throw new IllegalArgumentException("Cannot traverse to parent of root node");
+                    throw new IllegalArgumentException(error(10000));
                 }
                 node = node.parent;
                 continue;

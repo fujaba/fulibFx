@@ -1,8 +1,10 @@
 package org.fulib.fx.controller.exception;
 
+import static org.fulib.fx.util.FrameworkUtil.error;
+
 public class ControllerDuplicatedRouteException extends RuntimeException {
 
     public ControllerDuplicatedRouteException(String route, Class<?> oldController, Class<?> newController) {
-        super("Route '%s' already leads to '%s' but was tried to be registered for '%s'.".formatted(route, oldController.getName(), newController.getName()));
+        super(error(3002).formatted(route, oldController.getName(), newController.getName()));
     }
 }
