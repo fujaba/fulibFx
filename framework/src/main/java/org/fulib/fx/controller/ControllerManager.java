@@ -1,9 +1,14 @@
 package org.fulib.fx.controller;
 
+import dagger.Lazy;
 import io.reactivex.rxjava3.disposables.Disposable;
 import javafx.beans.value.WritableValue;
+import javafx.event.EventHandler;
+import javafx.event.EventType;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.util.Pair;
 import org.fulib.fx.FulibFxApp;
 import org.fulib.fx.annotation.controller.Component;
@@ -12,6 +17,7 @@ import org.fulib.fx.annotation.controller.Resource;
 import org.fulib.fx.annotation.controller.SubComponent;
 import org.fulib.fx.annotation.event.onDestroy;
 import org.fulib.fx.annotation.event.onInit;
+import org.fulib.fx.annotation.event.onKey;
 import org.fulib.fx.annotation.event.onRender;
 import org.fulib.fx.annotation.param.Param;
 import org.fulib.fx.annotation.param.Params;
@@ -38,7 +44,6 @@ import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
-import java.util.stream.Stream;
 
 /**
  * Manages the initialization, rendering and destroying of controllers.
@@ -54,9 +59,15 @@ public class ControllerManager {
 
     private static ResourceBundle defaultResourceBundle;
 
+    private final Map<Object, Collection<Pair<onKey.Target, EventHandler<KeyEvent>>>> keyEventHandlers = new HashMap<>();
+
+    @Inject
+    Lazy<FulibFxApp> app;
+
     @Inject
     public ControllerManager() {
     }
+
 
     /**
      * Initializes and renders the given controller. Calls the onInit and onRender methods. See {@link #init(Object, Map)} and {@link #render(Object, Map)}.
@@ -207,7 +218,35 @@ public class ControllerManager {
         // Call the onRender method
         callMethodsWithAnnotation(instance, onRender.class, parameters);
 
+        // Register key events
+        registerKeyEvents(instance);
+
         return parent;
+    }
+
+    /**
+     * Registers all key events for the given controller instance.
+     *
+     * @param instance The controller instance
+     */
+    private void registerKeyEvents(Object instance) {
+        Reflection.getMethodsWithAnnotation(instance.getClass(), onKey.class).forEach(method -> {
+            onKey annotation = method.getAnnotation(onKey.class);
+            EventType<KeyEvent> type = annotation.type().asEventType();
+
+            switch (annotation.target()) {
+                case SCENE -> {
+                    EventHandler<KeyEvent> handler = createKeyEventHandler(method, instance, annotation);
+                    keyEventHandlers.computeIfAbsent(instance, k -> new HashSet<>()).add(new Pair<>(onKey.Target.SCENE, handler));
+                    app.get().stage().getScene().addEventFilter(type, handler);
+                }
+                case STAGE -> {
+                    EventHandler<KeyEvent> handler = createKeyEventHandler(method, instance, annotation);
+                    keyEventHandlers.computeIfAbsent(instance, k -> new HashSet<>()).add(new Pair<>(onKey.Target.STAGE, handler));
+                    app.get().stage().addEventFilter(type, handler);
+                }
+            }
+        });
     }
 
     /**
@@ -234,6 +273,9 @@ public class ControllerManager {
 
         // Call destroy methods
         callMethodsWithAnnotation(instance, onDestroy.class, Map.of());
+
+        // Unregister key events
+        cleanUpListeners(instance);
 
         // In development mode, check for undestroyed subscribers
         if (FrameworkUtil.runningInDev()) {
@@ -588,4 +630,58 @@ public class ControllerManager {
     public void setDefaultResourceBundle(ResourceBundle resourceBundle) {
         defaultResourceBundle = resourceBundle;
     }
+
+    /**
+     * Creates an event handler for the given method and instance that will be called when the specified key event occurs.
+     *
+     * @param method     The method to call
+     * @param instance   The instance to call the method on
+     * @param annotation The annotation with the key event information
+     * @return An event handler for the given method and instance
+     */
+    private EventHandler<KeyEvent> createKeyEventHandler(Method method, Object instance, onKey annotation) {
+        boolean hasEventParameter = method.getParameterCount() == 1 && method.getParameterTypes()[0].isAssignableFrom(KeyEvent.class);
+        method.setAccessible(true);
+
+        return event -> {
+            // TODO: Utility method
+            if ((annotation.code() == KeyCode.UNDEFINED || event.getCode() == annotation.code()) &&
+                    (annotation.character().isEmpty() || event.getCharacter().equals(annotation.character())) &&
+                    (annotation.text().isEmpty() || event.getText().equals(annotation.text())) &&
+                    (event.isShiftDown() || !annotation.shiftDown()) &&
+                    (event.isControlDown() || !annotation.controlDown()) &&
+                    (event.isAltDown() || !annotation.altDown()) &&
+                    (event.isMetaDown() || !annotation.metaDown())
+            ) {
+                try {
+                    if (hasEventParameter) {
+                        method.invoke(instance, event);
+                    } else {
+                        method.invoke(instance);
+                    }
+                } catch (IllegalAccessException | InvocationTargetException e) {
+                    throw new RuntimeException("Couldn't call method '" + method.getName() + "' in class '" + instance.getClass().getName() + "' on key event.", e);
+                }
+            }
+        };
+    }
+
+    /**
+     * Clears all key handlers registered for the given instance.
+     *
+     * @param instance The instance to clear the key handlers for
+     */
+    private void cleanUpListeners(Object instance) {
+        Collection<Pair<onKey.Target, EventHandler<KeyEvent>>> handlers = keyEventHandlers.get(instance);
+        if (handlers != null) {
+            for (Pair<onKey.Target, EventHandler<KeyEvent>> handler : handlers) {
+                switch (handler.getKey()) {
+                    case SCENE -> app.get().stage().getScene().removeEventFilter(KeyEvent.ANY, handler.getValue());
+                    case STAGE -> app.get().stage().removeEventFilter(KeyEvent.ANY, handler.getValue());
+                }
+            }
+            keyEventHandlers.remove(instance);
+        }
+    }
+
 }
