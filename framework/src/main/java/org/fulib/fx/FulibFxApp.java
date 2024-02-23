@@ -17,6 +17,7 @@ import org.fulib.fx.dagger.DaggerFrameworkComponent;
 import org.fulib.fx.dagger.FrameworkComponent;
 import org.fulib.fx.util.ControllerUtil;
 import org.fulib.fx.util.FrameworkUtil;
+import org.fulib.fx.util.ReflectionUtil;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.NotNull;
@@ -327,7 +328,8 @@ public abstract class FulibFxApp extends Application {
         Map<String, Object> params = this.component.router().current().getValue(); // Use the same parameters as before
         this.component.controllerManager().init(currentMainController, params, true); // Re-initialize the controller
         Parent parent = this.component.controllerManager().render(currentMainController, params); // Re-render the controller
-        display(parent); // Display the controller
+        ReflectionUtil.resetMouseHandler(stage());
+        display(parent);
     }
 
     /**
