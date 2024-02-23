@@ -16,13 +16,12 @@ import org.fulib.fx.controller.AutoRefresher;
 import org.fulib.fx.dagger.DaggerFrameworkComponent;
 import org.fulib.fx.dagger.FrameworkComponent;
 import org.fulib.fx.util.ControllerUtil;
+import org.fulib.fx.util.ReflectionUtil;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
@@ -32,21 +31,6 @@ public abstract class FulibFxApp extends Application {
 
     public static final Scheduler FX_SCHEDULER = Schedulers.from(Platform::runLater);
     public static final Logger LOGGER = Logger.getLogger(FulibFxApp.class.getName());
-
-    // Reflection for mouse handler
-    private static Field mouseHandlerField;
-    private static Constructor<?> mouseHandlerCtor;
-
-    static {
-        try {
-            mouseHandlerField = Scene.class.getDeclaredField("mouseHandler");
-            mouseHandlerCtor = Class.forName(Scene.class.getName() + "$MouseHandler").getDeclaredConstructor(Scene.class);
-            mouseHandlerField.setAccessible(true);
-            mouseHandlerCtor.setAccessible(true);
-        } catch (ReflectiveOperationException e) {
-            LOGGER.severe("Could not initialize mouse handler reflection. This may cause problems with mouse drag events.");
-        }
-    }
 
     private static Path resourcesPath = Path.of("src/main/resources");
 
@@ -333,16 +317,7 @@ public abstract class FulibFxApp extends Application {
         Map<String, Object> params = this.component.router().current().getValue(); // Use the same parameters as before
         this.component.controllerManager().init(currentMainController, params, true); // Re-initialize the controller
         Parent parent = this.component.controllerManager().render(currentMainController, params); // Re-render the controller
-        // NB: This hack avoids problems with mouse drag events.
-        // In particular, the scene's MouseHandler would keep a list of its previous nodes,
-        // which do not have a reference back to the scene and subsequently cause an NPE.
-        try {
-            final Scene scene = stage.getScene();
-            final Object mouseHandler = mouseHandlerCtor.newInstance(scene);
-            mouseHandlerField.set(scene, mouseHandler);
-        } catch (ReflectiveOperationException e) {
-            LOGGER.warning("Could not reset mouse handler. This may cause problems with mouse drag events after refreshing the scene.");
-        }
+        ReflectionUtil.resetMouseHandler(stage());
         display(parent);
     }
 
