@@ -6,10 +6,16 @@ public class Field
    public static final String PROPERTY_PIECE = "piece";
    public static final String PROPERTY_NEXT = "next";
    public static final String PROPERTY_PREV = "prev";
+   public static final String PROPERTY_BOARD = "board";
+   public static final String PROPERTY_X = "x";
+   public static final String PROPERTY_Y = "y";
    private Piece piece;
    private Field next;
    private Field prev;
    protected PropertyChangeSupport listeners;
+   private Board board;
+   private int x;
+   private int y;
 
    public Piece getPiece()
    {
@@ -92,6 +98,69 @@ public class Field
       return this;
    }
 
+   public Board getBoard()
+   {
+      return this.board;
+   }
+
+   public Field setBoard(Board value)
+   {
+      if (this.board == value)
+      {
+         return this;
+      }
+
+      final Board oldValue = this.board;
+      if (this.board != null)
+      {
+         this.board = null;
+         oldValue.withoutFields(this);
+      }
+      this.board = value;
+      if (value != null)
+      {
+         value.withFields(this);
+      }
+      this.firePropertyChange(PROPERTY_BOARD, oldValue, value);
+      return this;
+   }
+
+   public int getX()
+   {
+      return this.x;
+   }
+
+   public Field setX(int value)
+   {
+      if (value == this.x)
+      {
+         return this;
+      }
+
+      final int oldValue = this.x;
+      this.x = value;
+      this.firePropertyChange(PROPERTY_X, oldValue, value);
+      return this;
+   }
+
+   public int getY()
+   {
+      return this.y;
+   }
+
+   public Field setY(int value)
+   {
+      if (value == this.y)
+      {
+         return this;
+      }
+
+      final int oldValue = this.y;
+      this.y = value;
+      this.firePropertyChange(PROPERTY_Y, oldValue, value);
+      return this;
+   }
+
    public boolean firePropertyChange(String propertyName, Object oldValue, Object newValue)
    {
       if (this.listeners != null)
@@ -113,6 +182,7 @@ public class Field
 
    public void removeYou()
    {
+      this.setBoard(null);
       this.setPiece(null);
       this.setNext(null);
       this.setPrev(null);

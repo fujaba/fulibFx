@@ -4,12 +4,17 @@ import java.util.List;
 import java.util.Collections;
 import java.util.Collection;
 import java.beans.PropertyChangeSupport;
+import java.util.Objects;
 
 public class Game
 {
    public static final String PROPERTY_PLAYERS = "players";
+   public static final String PROPERTY_CURRENT_PLAYER = "currentPlayer";
+   public static final String PROPERTY_BOARD = "board";
    private List<Player> players;
    protected PropertyChangeSupport listeners;
+   private Player currentPlayer;
+   private Board board;
 
    public List<Player> getPlayers()
    {
@@ -77,6 +82,51 @@ public class Game
       return this;
    }
 
+   public Player getCurrentPlayer()
+   {
+      return this.currentPlayer;
+   }
+
+   public Game setCurrentPlayer(Player value)
+   {
+      if (Objects.equals(value, this.currentPlayer))
+      {
+         return this;
+      }
+
+      final Player oldValue = this.currentPlayer;
+      this.currentPlayer = value;
+      this.firePropertyChange(PROPERTY_CURRENT_PLAYER, oldValue, value);
+      return this;
+   }
+
+   public Board getBoard()
+   {
+      return this.board;
+   }
+
+   public Game setBoard(Board value)
+   {
+      if (this.board == value)
+      {
+         return this;
+      }
+
+      final Board oldValue = this.board;
+      if (this.board != null)
+      {
+         this.board = null;
+         oldValue.setGame(null);
+      }
+      this.board = value;
+      if (value != null)
+      {
+         value.setGame(this);
+      }
+      this.firePropertyChange(PROPERTY_BOARD, oldValue, value);
+      return this;
+   }
+
    public boolean firePropertyChange(String propertyName, Object oldValue, Object newValue)
    {
       if (this.listeners != null)
@@ -98,6 +148,7 @@ public class Game
 
    public void removeYou()
    {
+      this.setBoard(null);
       this.withoutPlayers(new ArrayList<>(this.getPlayers()));
    }
 }

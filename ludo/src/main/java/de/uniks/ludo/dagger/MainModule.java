@@ -13,7 +13,7 @@ public class MainModule {
     @Provides
     ResourceBundle bundle() {
         return ResourceBundle.getBundle(
-                "de/uniks/ludo/lang",
+                "de/uniks/ludo/lang/lang",
                 Locale.forLanguageTag(preferences().get("language", Locale.getDefault().getLanguage()))
         );
     }

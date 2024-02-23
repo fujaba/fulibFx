@@ -28,7 +28,7 @@ public class GenModel implements ClassModelDecorator {
         List<HomeField> homeFields;
 
         @Link("owner")
-        List<BaseField> baseFields;
+        List<GoalField> goalFields;
     }
 
     class Piece {
@@ -48,6 +48,13 @@ public class GenModel implements ClassModelDecorator {
 
         @Link("next")
         Field prev;
+
+        @Link("fields")
+        Board board;
+
+        int x;
+
+        int y;
     }
 
     class HomeField extends Field {
@@ -55,14 +62,27 @@ public class GenModel implements ClassModelDecorator {
         Player owner;
     }
 
-    class BaseField extends Field {
-        @Link("baseFields")
+    class GoalField extends Field {
+        @Link("goalFields")
         Player owner;
     }
 
     class Game {
         @Link("game")
         List<Player> players;
+
+        Player currentPlayer;
+
+        @Link("game")
+        Board board;
+    }
+
+    class Board {
+        @Link("board")
+        List<Field> fields;
+
+        @Link("board")
+        Game game;
     }
 
 }

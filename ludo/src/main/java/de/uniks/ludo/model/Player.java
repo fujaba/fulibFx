@@ -11,13 +11,13 @@ public class Player
    public static final String PROPERTY_ID = "id";
    public static final String PROPERTY_START_FIELD = "startField";
    public static final String PROPERTY_GAME = "game";
-   public static final String PROPERTY_BASE_FIELDS = "baseFields";
+   public static final String PROPERTY_GOAL_FIELDS = "goalFields";
    public static final String PROPERTY_HOME_FIELDS = "homeFields";
    public static final String PROPERTY_PIECES = "pieces";
    private int id;
    private Field startField;
    private Game game;
-   private List<BaseField> baseFields;
+   private List<GoalField> goalFields;
    private List<HomeField> homeFields;
    private List<Piece> pieces;
    protected PropertyChangeSupport listeners;
@@ -85,68 +85,68 @@ public class Player
       return this;
    }
 
-   public List<BaseField> getBaseFields()
+   public List<GoalField> getGoalFields()
    {
-      return this.baseFields != null ? Collections.unmodifiableList(this.baseFields) : Collections.emptyList();
+      return this.goalFields != null ? Collections.unmodifiableList(this.goalFields) : Collections.emptyList();
    }
 
-   public Player withBaseFields(BaseField value)
+   public Player withGoalFields(GoalField value)
    {
-      if (this.baseFields == null)
+      if (this.goalFields == null)
       {
-         this.baseFields = new ArrayList<>();
+         this.goalFields = new ArrayList<>();
       }
-      if (!this.baseFields.contains(value))
+      if (!this.goalFields.contains(value))
       {
-         this.baseFields.add(value);
+         this.goalFields.add(value);
          value.setOwner(this);
-         this.firePropertyChange(PROPERTY_BASE_FIELDS, null, value);
+         this.firePropertyChange(PROPERTY_GOAL_FIELDS, null, value);
       }
       return this;
    }
 
-   public Player withBaseFields(BaseField... value)
+   public Player withGoalFields(GoalField... value)
    {
-      for (final BaseField item : value)
+      for (final GoalField item : value)
       {
-         this.withBaseFields(item);
+         this.withGoalFields(item);
       }
       return this;
    }
 
-   public Player withBaseFields(Collection<? extends BaseField> value)
+   public Player withGoalFields(Collection<? extends GoalField> value)
    {
-      for (final BaseField item : value)
+      for (final GoalField item : value)
       {
-         this.withBaseFields(item);
+         this.withGoalFields(item);
       }
       return this;
    }
 
-   public Player withoutBaseFields(BaseField value)
+   public Player withoutGoalFields(GoalField value)
    {
-      if (this.baseFields != null && this.baseFields.remove(value))
+      if (this.goalFields != null && this.goalFields.remove(value))
       {
          value.setOwner(null);
-         this.firePropertyChange(PROPERTY_BASE_FIELDS, value, null);
+         this.firePropertyChange(PROPERTY_GOAL_FIELDS, value, null);
       }
       return this;
    }
 
-   public Player withoutBaseFields(BaseField... value)
+   public Player withoutGoalFields(GoalField... value)
    {
-      for (final BaseField item : value)
+      for (final GoalField item : value)
       {
-         this.withoutBaseFields(item);
+         this.withoutGoalFields(item);
       }
       return this;
    }
 
-   public Player withoutBaseFields(Collection<? extends BaseField> value)
+   public Player withoutGoalFields(Collection<? extends GoalField> value)
    {
-      for (final BaseField item : value)
+      for (final GoalField item : value)
       {
-         this.withoutBaseFields(item);
+         this.withoutGoalFields(item);
       }
       return this;
    }
@@ -305,7 +305,7 @@ public class Player
    public void removeYou()
    {
       this.setGame(null);
-      this.withoutBaseFields(new ArrayList<>(this.getBaseFields()));
+      this.withoutGoalFields(new ArrayList<>(this.getGoalFields()));
       this.withoutHomeFields(new ArrayList<>(this.getHomeFields()));
       this.withoutPieces(new ArrayList<>(this.getPieces()));
    }

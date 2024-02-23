@@ -50,6 +50,9 @@ public class App extends FulibFxApp {
             // Setting the path which the auto refresher should watch (required for auto-reloading in dev)
             autoRefresher().setup(Path.of("ludo/src/main/resources/de/uniks/ludo"));
 
+            // Setting the default resource bundle of the application to the resource bundle provided by the component
+            setDefaultResourceBundle(component.bundle());
+
             // Starting the application by showing the main view without any parameters
             show("");
 

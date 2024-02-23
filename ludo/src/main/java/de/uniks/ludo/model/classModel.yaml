@@ -1,5 +1,5 @@
 - c: 	org.fulib.classmodel.ClassModel
-  classes: 	game 	player 	baseField 	field 	homeField 	piece
+  classes: 	board 	field 	game 	player 	goalField 	homeField 	piece
   defaultCollectionType: 	c1
   defaultPropertyStyle: 	Bean
   defaultRoleType: 	"java.util.ArrayList<%s>"
@@ -7,12 +7,29 @@
   packageName: 	de.uniks.ludo.model
   packageSrcFolder: 	"src/main/java/de/uniks/ludo/model"
 
+- board: 	org.fulib.classmodel.Clazz
+  model: 	c
+  modified: 	false
+  name: 	Board
+  propertyStyle: 	Bean
+  roles: 	board_fields 	board_game
+
+- field: 	org.fulib.classmodel.Clazz
+  attributes: 	field_x 	field_y
+  model: 	c
+  modified: 	false
+  name: 	Field
+  propertyStyle: 	Bean
+  roles: 	field_board 	field_piece 	field_next 	field_prev
+  subClasses: 	goalField 	homeField
+
 - game: 	org.fulib.classmodel.Clazz
+  attributes: 	game_currentPlayer
   model: 	c
   modified: 	false
   name: 	Game
   propertyStyle: 	Bean
-  roles: 	game_players
+  roles: 	game_board 	game_players
 
 - player: 	org.fulib.classmodel.Clazz
   attributes: 	player_id 	player_startField
@@ -20,23 +37,15 @@
   modified: 	false
   name: 	Player
   propertyStyle: 	Bean
-  roles: 	player_game 	player_baseFields 	player_homeFields 	player_pieces
+  roles: 	player_game 	player_goalFields 	player_homeFields 	player_pieces
 
-- baseField: 	org.fulib.classmodel.Clazz
+- goalField: 	org.fulib.classmodel.Clazz
   model: 	c
   modified: 	false
-  name: 	BaseField
+  name: 	GoalField
   propertyStyle: 	Bean
-  roles: 	baseField_owner
+  roles: 	goalField_owner
   superClass: 	field
-
-- field: 	org.fulib.classmodel.Clazz
-  model: 	c
-  modified: 	false
-  name: 	Field
-  propertyStyle: 	Bean
-  roles: 	field_piece 	field_next 	field_prev
-  subClasses: 	baseField 	homeField
 
 - homeField: 	org.fulib.classmodel.Clazz
   model: 	c
@@ -59,6 +68,105 @@
   itf: 	org.fulib.classmodel.CollectionInterface.List
   qualifiedImplName: 	java.util.ArrayList
   simpleImplName: 	ArrayList
+
+- board_fields: 	org.fulib.classmodel.AssocRole
+  aggregation: 	false
+  cardinality: 	42
+  clazz: 	board
+  collectionType: 	c1
+  id: 	Board_fields
+  modified: 	false
+  name: 	fields
+  other: 	field_board
+  propertyStyle: 	Bean
+  roleType: 	"java.util.ArrayList<%s>"
+
+- board_game: 	org.fulib.classmodel.AssocRole
+  aggregation: 	false
+  cardinality: 	1
+  clazz: 	board
+  id: 	Board_game
+  modified: 	false
+  name: 	game
+  other: 	game_board
+  propertyStyle: 	Bean
+
+- field_x: 	org.fulib.classmodel.Attribute
+  clazz: 	field
+  id: 	Field_x
+  modified: 	false
+  name: 	x
+  propertyStyle: 	Bean
+  type: 	int
+  typeSignature: 	int
+
+- field_y: 	org.fulib.classmodel.Attribute
+  clazz: 	field
+  id: 	Field_y
+  modified: 	false
+  name: 	y
+  propertyStyle: 	Bean
+  type: 	int
+  typeSignature: 	int
+
+- field_board: 	org.fulib.classmodel.AssocRole
+  aggregation: 	false
+  cardinality: 	1
+  clazz: 	field
+  id: 	Field_board
+  modified: 	false
+  name: 	board
+  other: 	board_fields
+  propertyStyle: 	Bean
+
+- field_piece: 	org.fulib.classmodel.AssocRole
+  aggregation: 	false
+  cardinality: 	1
+  clazz: 	field
+  id: 	Field_piece
+  modified: 	false
+  name: 	piece
+  other: 	piece_on
+  propertyStyle: 	Bean
+
+- field_next: 	org.fulib.classmodel.AssocRole
+  aggregation: 	false
+  cardinality: 	1
+  clazz: 	field
+  id: 	Field_next
+  modified: 	false
+  name: 	next
+  other: 	field_prev
+  propertyStyle: 	Bean
+
+- field_prev: 	org.fulib.classmodel.AssocRole
+  aggregation: 	false
+  cardinality: 	1
+  clazz: 	field
+  id: 	Field_prev
+  modified: 	false
+  name: 	prev
+  other: 	field_next
+  propertyStyle: 	Bean
+
+- game_currentPlayer: 	org.fulib.classmodel.Attribute
+  clazz: 	game
+  id: 	Game_currentPlayer
+  modified: 	false
+  name: 	currentPlayer
+  propertyStyle: 	Bean
+  type: 	Player
+  typeSignature: 	Player
+
+- game_board: 	org.fulib.classmodel.AssocRole
+  aggregation: 	false
+  cardinality: 	1
+  clazz: 	game
+  id: 	Game_board
+  modified: 	false
+  name: 	board
+  other: 	board_game
+  propertyStyle: 	Bean
 
 - game_players: 	org.fulib.classmodel.AssocRole
   aggregation: 	false
@@ -100,15 +208,15 @@
   other: 	game_players
   propertyStyle: 	Bean
 
-- player_baseFields: 	org.fulib.classmodel.AssocRole
+- player_goalFields: 	org.fulib.classmodel.AssocRole
   aggregation: 	false
   cardinality: 	42
   clazz: 	player
   collectionType: 	c1
-  id: 	Player_baseFields
+  id: 	Player_goalFields
   modified: 	false
-  name: 	baseFields
-  other: 	baseField_owner
+  name: 	goalFields
+  other: 	goalField_owner
   propertyStyle: 	Bean
   roleType: 	"java.util.ArrayList<%s>"
 
@@ -136,44 +244,14 @@
   propertyStyle: 	Bean
   roleType: 	"java.util.ArrayList<%s>"
 
-- baseField_owner: 	org.fulib.classmodel.AssocRole
+- goalField_owner: 	org.fulib.classmodel.AssocRole
   aggregation: 	false
   cardinality: 	1
-  clazz: 	baseField
-  id: 	BaseField_owner
+  clazz: 	goalField
+  id: 	GoalField_owner
   modified: 	false
   name: 	owner
-  other: 	player_baseFields
-  propertyStyle: 	Bean
-
-- field_piece: 	org.fulib.classmodel.AssocRole
-  aggregation: 	false
-  cardinality: 	1
-  clazz: 	field
-  id: 	Field_piece
-  modified: 	false
-  name: 	piece
-  other: 	piece_on
-  propertyStyle: 	Bean
-
-- field_next: 	org.fulib.classmodel.AssocRole
-  aggregation: 	false
-  cardinality: 	1
-  clazz: 	field
-  id: 	Field_next
-  modified: 	false
-  name: 	next
-  other: 	field_prev
-  propertyStyle: 	Bean
-
-- field_prev: 	org.fulib.classmodel.AssocRole
-  aggregation: 	false
-  cardinality: 	1
-  clazz: 	field
-  id: 	Field_prev
-  modified: 	false
-  name: 	prev
-  other: 	field_next
+  other: 	player_goalFields
   propertyStyle: 	Bean
 
 - homeField_owner: 	org.fulib.classmodel.AssocRole

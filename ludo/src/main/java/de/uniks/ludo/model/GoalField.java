@@ -1,6 +1,6 @@
 package de.uniks.ludo.model;
 
-public class BaseField extends Field
+public class GoalField extends Field
 {
    public static final String PROPERTY_OWNER = "owner";
    private Player owner;
@@ -10,7 +10,7 @@ public class BaseField extends Field
       return this.owner;
    }
 
-   public BaseField setOwner(Player value)
+   public GoalField setOwner(Player value)
    {
       if (this.owner == value)
       {
@@ -21,12 +21,12 @@ public class BaseField extends Field
       if (this.owner != null)
       {
          this.owner = null;
-         oldValue.withoutBaseFields(this);
+         oldValue.withoutGoalFields(this);
       }
       this.owner = value;
       if (value != null)
       {
-         value.withBaseFields(this);
+         value.withGoalFields(this);
       }
       this.firePropertyChange(PROPERTY_OWNER, oldValue, value);
       return this;
