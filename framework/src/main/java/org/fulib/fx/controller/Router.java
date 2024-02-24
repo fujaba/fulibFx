@@ -96,7 +96,7 @@ public class Router {
         // Check if the route exists and has a valid controller
         if (!this.routes.containsPath(route)) {
             if (FrameworkUtil.runningInDev() && this.routes.containsPath("/" + route))
-                FulibFxApp.LOGGER.warning("This route doesn't exist. Did you mean '/%s' instead of '%s'?".formatted(route, route));
+                FulibFxApp.LOGGER.warning("This route doesn't exist. Did you mean '/%s'?".formatted(route));
             throw new ControllerInvalidRouteException(route);
         }
 
