@@ -179,6 +179,28 @@ framework. This can be done by creating a field containing your instance (e.g. w
 When the corresponding controller is rendered, the framework will automatically set the resource bundle as the resource
 bundle of the FXML file.
 
+### 📏 Title
+
+The title of a controller or component can be set by annotating The class with `@Title`.
+The annotation takes an argument specifying the title of the controller or component.
+If no title is specified, the transformed name of the class will be used as the title.
+
+```java
+@Controller
+@Title("My Todo List")
+public class TodoController {
+    // ...
+}
+```
+
+When displaying this controller, the framework will automatically set the title of the window to "My Todo List".
+In order to eliminate redundancy, you can use the `setTitlePattern` method of the `FulibFxApp` class to set a pattern
+which will be used to format the title of the window. The pattern can either be provided as a string containing a placeholder
+for the title or as a function taking the title as an argument and returning the formatted title.
+
+If the controller or component specifies a resource bundle, the title can be a key in the resource bundle (e.g. `@Title("%title.key")`).
+The framework will then automatically set the title of the window to the value of the key in the resource bundle.
+
 ## 💭 Components
 
 Components are a special type of controller that can be used to create reusable components. Components have to extend 
