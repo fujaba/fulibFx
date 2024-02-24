@@ -231,8 +231,8 @@ that the entered path will always be relative to the path of your app class in t
 
 ```java
 
-// Leaving 'view' blank will use the default file name (e.g. TodoController --> todo.fxml)
-@Controller(view = "view/todo.fxml")
+// Leaving 'view' blank will use the default file name (e.g. TodoController --> Todo.fxml)
+@Controller(view = "view/Todo.fxml")
 public class TodoController {
 
     // Default constructor (for dependency injection etc.)
@@ -305,7 +305,7 @@ additional functionality. This will also be very helpful when using the componen
 
 ```java
 
-@Component(view = "view/todo.fxml")
+@Component(view = "view/Todo.fxml")
 public class TodoController extends VBox {
 
     // Default constructor (for dependency injection etc.)
@@ -725,7 +725,7 @@ for-Controller will be called and then the for-controller will be initialized an
 
 ```java
 
-@Controller("example.fxml")
+@Controller("Example.fxml")
 public class ExampleController {
 
     // Constructor, elements etc.
@@ -747,7 +747,7 @@ public class ExampleController {
 
 ```java
 
-@Component("sub.fxml")
+@Component("Sub.fxml")
 public class SubController extends VBox {
 
     // Constructor, elements etc.
