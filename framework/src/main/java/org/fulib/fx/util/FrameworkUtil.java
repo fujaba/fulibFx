@@ -2,7 +2,11 @@ package org.fulib.fx.util;
 
 import org.fulib.fx.FulibFxApp;
 
+import java.util.ResourceBundle;
+
 public class FrameworkUtil {
+
+    private static final ResourceBundle ERROR_BUNDLE = ResourceBundle.getBundle("org.fulib.fx.lang.error");
 
     private FrameworkUtil() {
         // Prevent instantiation
@@ -23,6 +27,6 @@ public class FrameworkUtil {
     }
 
     public static String error(int id) {
-        return FulibFxApp.ERROR_BUNDLE.getString(String.valueOf(id));
+        return ERROR_BUNDLE.getString(String.valueOf(id));
     }
 }

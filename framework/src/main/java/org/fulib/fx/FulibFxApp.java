@@ -31,8 +31,6 @@ import java.util.logging.Logger;
 
 public abstract class FulibFxApp extends Application {
 
-    public static final ResourceBundle ERROR_BUNDLE = ResourceBundle.getBundle("org.fulib.fx.lang.error");
-
     public static final Scheduler FX_SCHEDULER = Schedulers.from(Platform::runLater);
     public static final Logger LOGGER = Logger.getLogger(FulibFxApp.class.getName());
 
