@@ -376,13 +376,33 @@ public class ControllerManager {
     }
 
     /**
+     * Returns a comparator that compares methods based on the value of the given annotation.
+     * The method assumes that the annotation has a method called 'value' that returns an integer value.
+     *
+     * @param annotation The annotation to compare
+     * @return A comparator that compares methods based on the value of the given annotation
+     */
+    private static Comparator<Method> annotationComparator(@NotNull Class<? extends Annotation> annotation) {
+        return (m1, m2) -> {
+            Annotation event1 = m1.getAnnotation(annotation);
+            Annotation event2 = m2.getAnnotation(annotation);
+            try {
+                Method value = annotation.getDeclaredMethod("value");
+                return Integer.compare((int) value.invoke(event1), (int) value.invoke(event2));
+            } catch (ReflectiveOperationException e) {
+                return 0;
+            }
+        };
+    }
+
+    /**
      * Calls all methods annotated with a certain annotation in the provided controller. The method will be called with the given parameters if they're annotated with @Param or @Params.
      *
      * @param annotation The annotation to look for
      * @param parameters The parameters to pass to the methods
      */
     private void callMethodsWithAnnotation(@NotNull Object instance, @NotNull Class<? extends Annotation> annotation, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
-        for (Method method : Reflection.getMethodsWithAnnotation(instance.getClass(), annotation).toList()) {
+        for (Method method : Reflection.getMethodsWithAnnotation(instance.getClass(), annotation).sorted(annotationComparator(annotation)).toList()) {
             try {
                 method.setAccessible(true);
                 method.invoke(instance, getApplicableParameters(method, parameters));
