@@ -1,9 +1,11 @@
 package de.uniks.ludo;
 
+import javafx.scene.media.Media;
 import javafx.util.Pair;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class Constants {
 
@@ -95,5 +97,8 @@ public class Constants {
             3, "green",
             4, "orange"
     );
+
+    public static final Media SOUND_ROLL_DICES = new Media(Objects.requireNonNull(LudoMain.class.getResource("sounds/rolling_dices.mp3")).toString());
+    public static final Media SOUND_PLACE_PIECE = new Media(Objects.requireNonNull(LudoMain.class.getResource("sounds/place_piece.mp3")).toString());
 
 }

@@ -6,7 +6,6 @@ import javafx.util.Pair;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.List;
 import java.util.Optional;
 
 @Singleton
@@ -82,7 +81,6 @@ public class GameService {
                 goalField.setOwner(player);
                 board.withFields(goalField);
             }
-
         }
 
         return board;
@@ -93,18 +91,24 @@ public class GameService {
     }
 
     public Optional<Field> getTargetField(Field currentField, Player player, int eyes) {
+
+        if (eyes < 1 || eyes > 6) {
+            return Optional.empty();
+        }
+
         Field field = currentField;
 
+        // If the current field is a home field, the piece can only move if a 6 was rolled
         if (currentField instanceof HomeField) {
             if (eyes == 6) {
-                return Optional.of(player.getStartField());
+                return Optional.of(player.getStartField()); // The piece can move to the start field
             }
             return Optional.empty();
         }
 
         for (int i = 0; i < eyes; i++) {
             if (field instanceof GoalField) {
-                int goalField = (player.getGoalFields().indexOf(field));
+                int goalField = (player.getGoalFields().indexOf(field)) + 1;
                 if (eyes - i > player.getGoalFields().size() - goalField) {
                     return Optional.empty();
                 } else {
@@ -114,11 +118,22 @@ public class GameService {
 
             if (field.getNext() == player.getStartField()) {
                 field = player.getGoalFields().get(0);
+            } else {
+                field = field.getNext();
             }
-
-            field = field.getNext();
         }
+
+        if (field.getPiece() != null) {
+            if (field.getPiece().getOwner() == player) {
+                return Optional.empty();
+            }
+        }
+
         return Optional.of(field);
+    }
+
+    public void sendHome(Piece piece) {
+        piece.getOwner().getHomeFields().stream().filter(homeField -> homeField.getPiece() == null).findFirst().ifPresent(piece::setOn);
     }
 
     public boolean hasPieceOut(Player player) {
@@ -128,7 +143,6 @@ public class GameService {
     public boolean isDone(Player player) {
         return player.getPieces().stream().allMatch(piece -> piece.getOn() instanceof GoalField);
     }
-
 
     public void nextPlayer(Game game) {
         int currentPlayerIndex = game.getPlayers().indexOf(game.getCurrentPlayer());
@@ -140,6 +154,9 @@ public class GameService {
     }
 
     public void movePiece(Piece piece, Field targetField) {
+        if (targetField.getPiece() != null) {
+            sendHome(targetField.getPiece());
+        }
         piece.setOn(targetField);
     }
 }

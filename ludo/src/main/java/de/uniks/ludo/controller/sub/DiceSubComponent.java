@@ -13,13 +13,12 @@ import org.fulib.fx.annotation.event.onRender;
 
 import javax.inject.Inject;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
 
 @Component(view = "Dice.fxml")
 public class DiceSubComponent extends VBox {
 
     @FXML
-    private Label eyes;
+    public Label eyesLabel;
 
     private final BooleanProperty enabled = new SimpleBooleanProperty(true);
 
@@ -35,16 +34,12 @@ public class DiceSubComponent extends VBox {
     @onRender
     public void onRender() {
         this.rollAnimation = new Timeline();
-
         this.rollAnimation.setCycleCount(10);
         rollAnimation.getKeyFrames().add(new javafx.animation.KeyFrame(javafx.util.Duration.millis(100), event -> {
             int random = (int) (Math.random() * 6 + 1);
-            eyes.setText(String.valueOf(random));
+            eyesLabel.setText(String.valueOf(random));
         }));
-        this.rollAnimation.setOnFinished(event -> {
-            this.enabled.set(true);
-            this.rollFuture.complete(Integer.parseInt(eyes.getText()));
-        });
+        this.rollAnimation.setOnFinished(event -> this.rollFuture.complete(Integer.parseInt(eyesLabel.getText())));
     }
 
     @onDestroy
@@ -68,5 +63,14 @@ public class DiceSubComponent extends VBox {
             return Observable.fromFuture(this.rollFuture);
         }
         return Observable.empty();
+    }
+
+    public void reset() {
+        this.eyesLabel.setText("🎲");
+        this.enabled.set(true);
+    }
+
+    public void setLabel(int i) {
+        this.eyesLabel.setText(String.valueOf(i));
     }
 }
