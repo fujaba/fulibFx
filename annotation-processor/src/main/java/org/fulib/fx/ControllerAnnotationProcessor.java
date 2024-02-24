@@ -5,6 +5,7 @@ import org.fulib.fx.annotation.Route;
 import org.fulib.fx.annotation.controller.Component;
 import org.fulib.fx.annotation.controller.Controller;
 import org.fulib.fx.annotation.controller.SubComponent;
+import org.fulib.fx.annotation.controller.Title;
 import org.fulib.fx.annotation.param.Params;
 import org.fulib.fx.annotation.param.ParamsMap;
 import org.fulib.fx.util.ControllerUtil;
@@ -63,7 +64,17 @@ public class ControllerAnnotationProcessor extends AbstractProcessor {
             checkParams(element);
         }
 
+        for (Element element : roundEnv.getElementsAnnotatedWith(Title.class)) {
+            checkTitle(element);
+        }
+
         return true;
+    }
+
+    private void checkTitle(Element element) {
+        if (!isComponent(element.asType()) && !isController(element.asType())) {
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "The @Title annotation can only be used on classes annotated with @Component or @Controller.", element);
+        }
     }
 
     private void checkParams(Element element) {
