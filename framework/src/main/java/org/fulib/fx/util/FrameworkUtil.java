@@ -1,7 +1,5 @@
 package org.fulib.fx.util;
 
-import org.fulib.fx.FulibFxApp;
-
 import java.util.ResourceBundle;
 
 public class FrameworkUtil {
@@ -27,6 +25,6 @@ public class FrameworkUtil {
     }
 
     public static String error(int id) {
-        return ERROR_BUNDLE.getString(String.valueOf(id));
+        return ERROR_BUNDLE.getString(String.valueOf(id)) + " [FFX" + id + "]";
     }
 }
