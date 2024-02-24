@@ -124,7 +124,7 @@ public abstract class FulibFxApp extends Application {
      */
     public @NotNull <T extends Parent> T initAndRender(@NotNull T component, Map<String, Object> params, DisposableContainer onDestroy) {
         if (!ControllerUtil.isComponent(component))
-            throw new IllegalArgumentException(FrameworkUtil.error(1001).formatted(component.getClass().getName()));
+            throw new IllegalArgumentException(FrameworkUtil.error(1000).formatted(component.getClass().getName()));
 
         Disposable disposable = this.component.controllerManager().init(component, params, false);
         if (onDestroy != null) {

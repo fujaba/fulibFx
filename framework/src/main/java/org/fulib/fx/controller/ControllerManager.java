@@ -189,6 +189,9 @@ public class ControllerManager {
             String methodName = view.substring(1);
             try {
                 Method method = instance.getClass().getDeclaredMethod(methodName);
+                if (method.getParameterCount() != 0) {
+                    throw new RuntimeException(error(1008).formatted(methodName, instance.getClass().getName()));
+                }
                 if (!Parent.class.isAssignableFrom(method.getReturnType()))
                     throw new RuntimeException(error(1002).formatted(methodName, instance.getClass().getName()));
                 method.setAccessible(true);

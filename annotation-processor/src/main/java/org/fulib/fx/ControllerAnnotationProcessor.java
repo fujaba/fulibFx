@@ -160,7 +160,7 @@ public class ControllerAnnotationProcessor extends AbstractProcessor {
                 .ifPresentOrElse(
                         method -> {
                             if (!method.getParameters().isEmpty()) {
-                                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error(1008), method);
+                                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error(1008).formatted(method.getSimpleName(), method.getEnclosingElement().asType().toString()), method);
                             }
 
                             TypeMirror parent = processingEnv.getElementUtils().getTypeElement("javafx.scene.Parent").asType();
