@@ -1,14 +1,12 @@
 package io.github.sekassel.uno;
 
-import org.fulib.fx.FulibFxApp;
 import io.github.sekassel.uno.dagger.DaggerMainComponent;
 import io.github.sekassel.uno.dagger.MainComponent;
-import javafx.scene.Parent;
 import javafx.stage.Stage;
+import org.fulib.fx.FulibFxApp;
 
 import java.nio.file.Path;
 import java.util.Map;
-import java.util.Optional;
 import java.util.logging.Level;
 
 import static javafx.scene.input.KeyEvent.KEY_PRESSED;

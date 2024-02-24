@@ -19,8 +19,6 @@ import javax.inject.Inject;
 @Component(view = "sub/Bot.fxml")
 public class BotController extends VBox {
 
-    public static final String BOT_TITLE = "Uno - Bot";
-
     @FXML
     public VBox botBox;
     @FXML
