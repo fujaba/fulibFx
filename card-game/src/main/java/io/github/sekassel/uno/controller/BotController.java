@@ -16,8 +16,8 @@ import javafx.scene.text.Font;
 
 import javax.inject.Inject;
 
-@Component(view = "view/sub/bot.fxml")
-public class BotController extends VBox implements Titleable {
+@Component(view = "sub/Bot.fxml")
+public class BotController extends VBox {
 
     public static final String BOT_TITLE = "Uno - Bot";
 
@@ -40,11 +40,6 @@ public class BotController extends VBox implements Titleable {
 
     @Param("parent")
     private IngameController parent;
-
-    @Override
-    public String getTitle() {
-        return BOT_TITLE;
-    }
 
     @onInit
     public void initSout() {

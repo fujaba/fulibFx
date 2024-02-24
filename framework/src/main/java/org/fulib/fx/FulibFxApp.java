@@ -26,6 +26,8 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.logging.Logger;
 
 public abstract class FulibFxApp extends Application {
@@ -43,6 +45,8 @@ public abstract class FulibFxApp extends Application {
 
     // The instance of the current main controller (last controller displayed with show())
     private Object currentMainController;
+
+    private Function<String, String> titlePattern = s -> s;
 
     /**
      * Returns the path to the 'resources' directory.
@@ -197,11 +201,14 @@ public abstract class FulibFxApp extends Application {
      * @return The rendered parent of the controller
      */
     public @NotNull Parent show(@NotNull Object controller, @NotNull Map<String, Object> params) {
+        if (!ControllerUtil.isController(controller))
+            throw new IllegalArgumentException("Class '%s' is not a controller.".formatted(controller.getClass().getName()));
         cleanup();
         Parent renderedParent = this.frameworkComponent().controllerManager().initAndRender(controller, params);
         this.currentMainController = controller;
         onShow(Optional.empty(), controller, renderedParent, params);
         display(renderedParent);
+        this.component.controllerManager().getTitle(controller).ifPresent(title -> stage.setTitle(title(title)));
         return renderedParent;
     }
 
@@ -217,6 +224,7 @@ public abstract class FulibFxApp extends Application {
         Pair<Object, Parent> rendered = this.component.router().renderRoute(route, params);
         this.currentMainController = rendered.getKey();
         display(rendered.getValue());
+        this.component.controllerManager().getTitle(currentMainController).ifPresent(title -> stage.setTitle(title(title)));
         onShow(Optional.of(route), rendered.getKey(), rendered.getValue(), params);
         return rendered.getValue();
     }
@@ -337,6 +345,30 @@ public abstract class FulibFxApp extends Application {
      */
     public Object currentMainController() {
         return currentMainController;
+    }
+
+    /**
+     * Sets the title pattern for the application.
+     * This title pattern expects a function that will be called with the title of the controller and should return the final title.
+     *
+     * @param titlePattern The title pattern
+     */
+    public void setTitlePattern(Function<String, String> titlePattern) {
+        this.titlePattern = titlePattern;
+    }
+
+    /**
+     * Sets the title pattern for the application.
+     * This title pattern expects a '%s' placeholder which will be replaced with the title of the controller.
+     *
+     * @param titlePattern The title pattern
+     */
+    public void setTitlePattern(String titlePattern) {
+        this.titlePattern = titlePattern::formatted;
+    }
+
+    private String title(String title) {
+        return this.titlePattern.apply(title);
     }
 
 }

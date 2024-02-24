@@ -10,7 +10,7 @@ import javafx.scene.layout.HBox;
 
 import javax.inject.Inject;
 
-@Component(view = "view/sub/buttons.fxml")
+@Component(view = "sub/Buttons.fxml")
 public class ButtonController extends HBox {
 
     public void setParentController(IngameController parentController) {

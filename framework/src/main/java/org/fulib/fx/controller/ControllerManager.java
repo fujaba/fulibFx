@@ -6,10 +6,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.util.Pair;
 import org.fulib.fx.FulibFxApp;
-import org.fulib.fx.annotation.controller.Component;
-import org.fulib.fx.annotation.controller.Controller;
-import org.fulib.fx.annotation.controller.Resource;
-import org.fulib.fx.annotation.controller.SubComponent;
+import org.fulib.fx.annotation.controller.*;
 import org.fulib.fx.annotation.event.onDestroy;
 import org.fulib.fx.annotation.event.onInit;
 import org.fulib.fx.annotation.event.onRender;
@@ -587,5 +584,34 @@ public class ControllerManager {
      */
     public void setDefaultResourceBundle(ResourceBundle resourceBundle) {
         defaultResourceBundle = resourceBundle;
+    }
+
+    /**
+     * Returns the title of the given controller instance if it has one.
+     * If the title is a key, the title will be looked up in the resource bundle of the controller.
+     *
+     * @param instance The controller instance
+     * @return The title of the controller
+     */
+    public Optional<String> getTitle(@NotNull Object instance) {
+        if (!ControllerUtil.isController(instance)) {
+            throw new IllegalArgumentException("Class '%s' is not a controller or component.".formatted(instance.getClass().getName()));
+        }
+        if (!instance.getClass().isAnnotationPresent(Title.class))
+            return Optional.empty();
+
+        String title = instance.getClass().getAnnotation(Title.class).value();
+
+        if (title.startsWith("%")) {
+            title = title.substring(1);
+            ResourceBundle resourceBundle = getResourceBundle(instance);
+            if (resourceBundle != null) {
+                return Optional.of(resourceBundle.getString(title));
+            }
+        } else if (title.equals("$name")) {
+            return Optional.of(ControllerUtil.transform(instance.getClass().getSimpleName()));
+        }
+
+        return Optional.of(title);
     }
 }
