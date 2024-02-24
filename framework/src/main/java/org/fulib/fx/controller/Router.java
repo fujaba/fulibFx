@@ -3,6 +3,7 @@ package org.fulib.fx.controller;
 import dagger.Lazy;
 import javafx.scene.Parent;
 import javafx.util.Pair;
+import org.fulib.fx.FulibFxApp;
 import org.fulib.fx.annotation.Route;
 import org.fulib.fx.annotation.controller.Component;
 import org.fulib.fx.annotation.controller.Controller;
@@ -13,6 +14,7 @@ import org.fulib.fx.data.TraversableNodeTree;
 import org.fulib.fx.data.TraversableQueue;
 import org.fulib.fx.data.TraversableTree;
 import org.fulib.fx.util.ControllerUtil;
+import org.fulib.fx.util.FrameworkUtil;
 import org.fulib.fx.util.ReflectionUtil;
 import org.fulib.fx.util.reflection.Reflection;
 import org.jetbrains.annotations.NotNull;
@@ -92,7 +94,11 @@ public class Router {
      */
     public @NotNull Pair<Object, Parent> renderRoute(@NotNull String route, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
         // Check if the route exists and has a valid controller
-        if (!this.routes.containsPath(route)) throw new ControllerInvalidRouteException(route);
+        if (!this.routes.containsPath(route)) {
+            if (FrameworkUtil.runningInDev() && this.routes.containsPath("/" + route))
+                FulibFxApp.LOGGER.warning("This route doesn't exist. Did you mean '/%s'?".formatted(route));
+            throw new ControllerInvalidRouteException(route);
+        }
 
         // Get the provider and the controller class
         Field provider = this.routes.traverse(route);
