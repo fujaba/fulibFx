@@ -22,15 +22,13 @@ import javafx.scene.shape.StrokeType;
 import org.fulib.fx.annotation.controller.Controller;
 import org.fulib.fx.annotation.controller.SubComponent;
 import org.fulib.fx.annotation.event.onDestroy;
+import org.fulib.fx.annotation.event.onInit;
 import org.fulib.fx.annotation.event.onRender;
 import org.fulib.fx.annotation.param.Param;
 import org.fulib.fx.controller.Subscriber;
 
 import javax.inject.Inject;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.ResourceBundle;
+import java.util.*;
 
 @Controller
 public class IngameController {
@@ -68,9 +66,9 @@ public class IngameController {
         this.eyes = new SimpleIntegerProperty();
     }
 
-    @Param("playerAmount")
-    public void setup(int playerAmount) {
-        this.game = this.gameService.createGame(playerAmount);
+    @onInit
+    public void setup(@Param("playerAmount") int playerAmount) {
+        if (this.game == null) this.game = this.gameService.createGame(playerAmount);
         this.currentPlayer.set(this.game.getCurrentPlayer());
     }
 
@@ -176,7 +174,7 @@ public class IngameController {
                             }
                             fieldToCircle.get(field).setEffect(null);
                             if (this.eyes.get() != 6) {
-                                gameService.nextPlayer(game);
+                                this.gameService.nextPlayer(game);
                             }
                             this.eyes.set(0);
                             this.diceSubComponent.reset();
@@ -235,6 +233,7 @@ public class IngameController {
         this.fieldToCircle.clear();
         this.pieceToCircle.clear();
         this.subscriber.dispose();
+        this.diceSubComponent.eyesLabel.textFillProperty().unbind();
     }
 
 }
