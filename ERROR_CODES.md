@@ -160,7 +160,7 @@ public class MyController {
 
 ### 2004: `Field '*' in class '*' annotated with @Resource is not of type ResourceBundle.`
 - Runtime: ✅
-- Annotation Processor: ❌
+- Annotation Processor: ✅
 
 This error is thrown if there is a field annotated with `@Resource` that is not a `ResourceBundle`.
 
