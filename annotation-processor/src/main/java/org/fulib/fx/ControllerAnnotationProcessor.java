@@ -4,6 +4,7 @@ import com.google.auto.service.AutoService;
 import org.fulib.fx.annotation.Route;
 import org.fulib.fx.annotation.controller.Component;
 import org.fulib.fx.annotation.controller.Controller;
+import org.fulib.fx.annotation.controller.Resource;
 import org.fulib.fx.annotation.controller.SubComponent;
 import org.fulib.fx.annotation.param.Params;
 import org.fulib.fx.annotation.param.ParamsMap;
@@ -65,7 +66,18 @@ public class ControllerAnnotationProcessor extends AbstractProcessor {
             checkParams(element);
         }
 
+        for (Element element : roundEnv.getElementsAnnotatedWith(Resource.class)) {
+            checkResources(element);
+        }
+
         return true;
+    }
+
+    private void checkResources(Element element) {
+        final String elementType = element.asType().toString();
+        if (!"java.util.ResourceBundle".equals(elementType)) {
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error(2004).formatted(element.getSimpleName(), element.getEnclosingElement().getSimpleName()), element);
+        }
     }
 
     private void checkParams(Element element) {
