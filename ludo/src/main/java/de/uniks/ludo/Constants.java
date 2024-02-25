@@ -79,15 +79,15 @@ public class Constants {
             new Pair<>(5, 3),
             new Pair<>(5, 4),
 
-            new Pair<>(6, 5),
-            new Pair<>(7, 5),
-            new Pair<>(8, 5),
             new Pair<>(9, 5),
+            new Pair<>(8, 5),
+            new Pair<>(7, 5),
+            new Pair<>(6, 5),
 
-            new Pair<>(5, 6),
-            new Pair<>(5, 7),
+            new Pair<>(5, 9),
             new Pair<>(5, 8),
-            new Pair<>(5, 9)
+            new Pair<>(5, 7),
+            new Pair<>(5, 6)
     );
 
 

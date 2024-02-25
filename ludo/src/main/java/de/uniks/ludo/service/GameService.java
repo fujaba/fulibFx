@@ -15,6 +15,12 @@ public class GameService {
     public GameService() {
     }
 
+    /**
+     * Initializes the game by creating a board and adding the players to the game.
+     *
+     * @param playerAmount the amount of players
+     * @return the created game
+     */
     public Game createGame(int playerAmount) {
 
         Game game = new Game();
@@ -63,7 +69,7 @@ public class GameService {
             // Set the home fields for each player
             for (int i = 0; i < 4; i++) {
                 HomeField homeField = (HomeField) new HomeField()
-                        .setX((player.getId() % 2 == 0 ? 9 : 0) + (i % 2))
+                        .setX((player.getId() == 1 || player.getId() == 4 ? 0 : 9) + (i % 2))
                         .setY((player.getId() < 3 ? 0 : 9) + (i / 2));
                 homeField.setOwner(player);
                 board.withFields(homeField);
@@ -86,8 +92,9 @@ public class GameService {
         return board;
     }
 
-    public boolean isGameFinished(Game game) {
-        return game.getPlayers().stream().anyMatch(player -> player.getPieces().stream().allMatch(piece -> piece.getOn() instanceof HomeField));
+
+    public boolean stuck(Player player, int eyes) {
+        return player.getPieces().stream().noneMatch(piece -> getTargetField(piece.getOn(), player, eyes).isPresent());
     }
 
     public Optional<Field> getTargetField(Field currentField, Player player, int eyes) {
@@ -108,11 +115,12 @@ public class GameService {
 
         for (int i = 0; i < eyes; i++) {
             if (field instanceof GoalField) {
-                int goalField = (player.getGoalFields().indexOf(field)) + 1;
-                if (eyes - i > player.getGoalFields().size() - goalField) {
+                int goalField = (player.getGoalFields().indexOf(field));
+                if (eyes - i > player.getGoalFields().size() - (goalField + 1)) {
                     return Optional.empty();
                 } else {
-                    return Optional.of(player.getGoalFields().get(goalField + eyes - i));
+                    Field goal = player.getGoalFields().get(goalField + eyes - i);
+                    return goal.getPiece() == null ? Optional.of(goal) : Optional.empty();
                 }
             }
 
@@ -147,16 +155,14 @@ public class GameService {
     public void nextPlayer(Game game) {
         int currentPlayerIndex = game.getPlayers().indexOf(game.getCurrentPlayer());
         Player nextPlayer = game.getPlayers().get((currentPlayerIndex + 1) % game.getPlayers().size());
-        while (isDone(nextPlayer)) {
-            nextPlayer = game.getPlayers().get((game.getPlayers().indexOf(nextPlayer) + 1) % game.getPlayers().size());
-        }
         game.setCurrentPlayer(nextPlayer);
     }
 
-    public void movePiece(Piece piece, Field targetField) {
+    public boolean movePiece(Piece piece, Field targetField) {
         if (targetField.getPiece() != null) {
             sendHome(targetField.getPiece());
         }
         piece.setOn(targetField);
+        return isDone(piece.getOwner());
     }
 }

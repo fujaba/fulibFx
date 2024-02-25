@@ -1,5 +1,6 @@
 package de.uniks.ludo.controller;
 
+import de.uniks.ludo.App;
 import de.uniks.ludo.Constants;
 import de.uniks.ludo.LudoUtil;
 import de.uniks.ludo.controller.sub.DiceSubComponent;
@@ -45,6 +46,8 @@ public class IngameController {
     Subscriber subscriber;
     @Inject
     ResourceBundle bundle;
+    @Inject
+    App app;
 
     @FXML
     @Inject
@@ -105,12 +108,10 @@ public class IngameController {
             this.subscriber.subscribe(this.diceSubComponent.roll(), Schedulers.computation(),
                     eyes -> {
                         this.eyes.set(eyes);
-                        if (eyes != 6) {
-                            if (!gameService.hasPieceOut(this.currentPlayer.get())) {
-                                gameService.nextPlayer(game);
-                                this.eyes.set(0);
-                                this.diceSubComponent.reset();
-                            }
+                        if (this.gameService.stuck(this.currentPlayer.get(), eyes)) {
+                            this.gameService.nextPlayer(game);
+                            this.eyes.set(0);
+                            this.diceSubComponent.reset();
                         }
                     },
                     Throwable::printStackTrace
@@ -154,17 +155,25 @@ public class IngameController {
         );
     }
 
+    // Sets up the listener for a piece
     private void setupListenerForPiece(Circle circle, Piece piece, String color) {
         Player player = piece.getOwner();
         circle.setOnMouseEntered(event -> {
             if (player == this.currentPlayer.get() && this.eyes.get() != 0) {
                 Optional<Field> target = gameService.getTargetField(piece.getOn(), player, this.eyes.get());
                 target.ifPresent(field -> {
+                    // When the mouse enters the circle, the field the piece can move to is highlighted
                     fieldToCircle.get(field).setEffect(new Shadow(BlurType.ONE_PASS_BOX, Color.web(color), 10));
+                    // When the circle is clicked, the piece is moved to the field
                     circle.setOnMouseClicked(click -> {
                         if (player == this.currentPlayer.get() && this.eyes.get() != 0) {
-                            this.gameService.movePiece(piece, field);
+                            boolean won = this.gameService.movePiece(piece, field);
                             LudoUtil.playSound(Constants.SOUND_PLACE_PIECE);
+                            // If the player won, the game over screen is shown
+                            if (won) {
+                                app.show("/ingame/gameover", Map.of("winner", player.getId()));
+                                return;
+                            }
                             fieldToCircle.get(field).setEffect(null);
                             if (this.eyes.get() != 6) {
                                 gameService.nextPlayer(game);
@@ -186,7 +195,7 @@ public class IngameController {
         });
     }
 
-
+    // Creates a circle for a piece and sets the position to the piece's current field
     private Circle createPieceCircle(Piece piece) {
         Circle circle = new Circle(16);
         Player player = piece.getOwner();
@@ -196,6 +205,7 @@ public class IngameController {
         return style(circle, Constants.COLORS.get(player.getId()), "black");
     }
 
+    // Creates a circle for a field and sets the position to the field's coordinates
     private Circle createFieldCircle(Field field) {
         Circle circle = new Circle(20);
         AnchorPane.setTopAnchor(circle, (double) field.getY() * 50);
@@ -205,6 +215,7 @@ public class IngameController {
         return style(circle, color, borderColor);
     }
 
+    // Styles a circle with a color and a border color
     private Circle style(Circle circle, String color, String borderColor) {
         circle.setFill(Color.web(color));
         circle.setStrokeType(StrokeType.OUTSIDE);
@@ -215,6 +226,11 @@ public class IngameController {
 
     @onDestroy
     public void onDestroy() {
+        this.boardPane.getChildren().forEach(node -> {
+            node.setOnMouseClicked(null);
+            node.setOnMouseEntered(null);
+            node.setOnMouseExited(null);
+        });
         this.boardPane.getChildren().clear();
         this.fieldToCircle.clear();
         this.pieceToCircle.clear();
