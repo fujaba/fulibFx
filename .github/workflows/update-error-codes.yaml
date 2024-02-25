@@ -3,6 +3,7 @@ name: Update ERROR_CODES.md
 on:
   push:
     paths:
+      - '.github/workflows/update-error-codes.yaml' # This file
       - 'ERROR_CODES.md'
       - 'framework/**/*.java'
       - 'annotation-processor/**/*.java'
@@ -18,16 +19,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: pnpm
           cache-dependency-path: scripts/pnpm-lock.yaml
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v3
-        with:
-          version: 8
       - name: Install Dependencies
         run: pnpm install
       - name: Run error-codes.js
