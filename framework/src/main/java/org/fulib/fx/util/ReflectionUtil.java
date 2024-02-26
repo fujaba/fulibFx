@@ -12,6 +12,8 @@ import org.jetbrains.annotations.Nullable;
 import javax.inject.Provider;
 import java.lang.reflect.*;
 
+import static org.fulib.fx.util.FrameworkUtil.error;
+
 /**
  * Utility class containing different helper methods for the framework or the user.
  * Parts of this class are hacky and should be used with caution.
@@ -76,7 +78,7 @@ public class ReflectionUtil {
             return (ObservableList<Node>) childrenList;
         } catch (Exception e) {
             if (clazz.getSuperclass() == Object.class)
-                throw new RuntimeException("Couldn't access getChildren() method in class or superclass", e);
+                throw new RuntimeException(error(9003).formatted(parent.getClass().getName()), e);
             return getChildrenList(clazz.getSuperclass(), parent);
         }
     }
@@ -93,12 +95,12 @@ public class ReflectionUtil {
             provider.setAccessible(true);
             Provider<?> providerInstance = (Provider<?>) provider.get(instance);
             if (providerInstance == null)
-                throw new RuntimeException("Field '" + provider.getName() + "' in '" + provider.getDeclaringClass().getName() + "' is not initialized.");
+                throw new RuntimeException(error(9002).formatted(provider.getName(), provider.getDeclaringClass().getName()));
             return providerInstance.get();
         } catch (NullPointerException e) {
-            throw new RuntimeException("Field '" + provider.getName() + "' in '" + provider.getDeclaringClass().getName() + "' is not initialized.");
+            throw new RuntimeException(error(9002).formatted(provider.getName(), provider.getDeclaringClass().getName()), e);
         } catch (IllegalAccessException e) {
-            throw new RuntimeException("Cannot access field '" + provider.getName() + "' in '" + provider.getDeclaringClass().getName() + "'.", e);
+            throw new RuntimeException(error(9001).formatted(provider.getName(), instance.getClass().getName()), e);
         }
     }
 

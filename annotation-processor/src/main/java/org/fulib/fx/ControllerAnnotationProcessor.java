@@ -4,6 +4,7 @@ import com.google.auto.service.AutoService;
 import org.fulib.fx.annotation.Route;
 import org.fulib.fx.annotation.controller.Component;
 import org.fulib.fx.annotation.controller.Controller;
+import org.fulib.fx.annotation.controller.Resource;
 import org.fulib.fx.annotation.controller.SubComponent;
 import org.fulib.fx.annotation.param.Params;
 import org.fulib.fx.annotation.param.ParamsMap;
@@ -22,6 +23,9 @@ import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 import java.io.IOException;
 import java.util.Set;
+
+import static org.fulib.fx.util.FrameworkUtil.error;
+import static org.fulib.fx.util.FrameworkUtil.note;
 
 @SupportedAnnotationTypes({
         "org.fulib.fx.annotation.controller.*",
@@ -63,14 +67,25 @@ public class ControllerAnnotationProcessor extends AbstractProcessor {
             checkParams(element);
         }
 
+        for (Element element : roundEnv.getElementsAnnotatedWith(Resource.class)) {
+            checkResources(element);
+        }
+
         return true;
+    }
+
+    private void checkResources(Element element) {
+        final String elementType = element.asType().toString();
+        if (!"java.util.ResourceBundle".equals(elementType)) {
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error(2004).formatted(element.getSimpleName(), element.getEnclosingElement().getSimpleName()), element);
+        }
     }
 
     private void checkParams(Element element) {
         if (element instanceof ExecutableElement method) {
             Params annotation = method.getAnnotation(Params.class);
             if (method.getParameters().size() != annotation.value().length) {
-                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "The number of parameters in the method does not match the number of parameters in the @Params annotation.", method);
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error(4006).formatted(method.getSimpleName(), method.getEnclosingElement().asType().toString()), method);
             }
         }
     }
@@ -78,7 +93,7 @@ public class ControllerAnnotationProcessor extends AbstractProcessor {
     private void checkParamsMap(Element element) {
         if (element instanceof ExecutableElement method) {
             if (method.getParameters().size() != 1) {
-                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Methods annotated with @ParamsMap must have exactly one parameter.", method);
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error(4003).formatted(method.getSimpleName(), method.getEnclosingElement().asType().toString()), method);
             }
         }
     }
@@ -87,14 +102,14 @@ public class ControllerAnnotationProcessor extends AbstractProcessor {
 
         // Check if the field is of a provider type
         if (!element.asType().toString().startsWith("javax.inject.Provider")) {
-            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Fields annotated with @Route must be of a Provider type.", element);
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error(3004).formatted(element.getSimpleName(), element.asType().toString()), element);
             return;
         }
 
         // Check if the provided class is of a controller or component type
         for (TypeMirror generic : ((DeclaredType) element.asType()).getTypeArguments()) {
             if (!isController(generic) && !isComponent(generic)) {
-                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Fields annotated with @Route must provide a controller or component.", element);
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error(3003).formatted(element.getSimpleName(), element.asType().toString()), element);
             }
         }
 
@@ -126,13 +141,13 @@ public class ControllerAnnotationProcessor extends AbstractProcessor {
 
         // Check if the element is a subclass of javafx.scene.Parent
         if (!processingEnv.getTypeUtils().isAssignable(element.asType(), processingEnv.getElementUtils().getTypeElement("javafx.scene.Parent").asType())) {
-            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Components must extend (a subtype of) javafx.scene.Parent.", element);
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error(1006), element);
         }
     }
 
     private void checkDoubleAnnotation(Element element) {
         if (element.getAnnotation(Controller.class) != null && element.getAnnotation(Component.class) != null) {
-            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "A class cannot be annotated with both @Controller and @Component.", element);
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error(1007), element);
         }
     }
 
@@ -143,8 +158,8 @@ public class ControllerAnnotationProcessor extends AbstractProcessor {
                     processingEnv.getElementUtils().getPackageOf(element).getQualifiedName().toString(), view);
         } catch (IOException e) {
             String viewPath = processingEnv.getElementUtils().getPackageOf(element).getQualifiedName().toString().replace('.', '/') + "/" + view;
-            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "The view file '%s' couldn't be found.".formatted(viewPath), element);
-            processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "(or the source path has not been set, see https://stackoverflow.com/a/74159042)");
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error(2000).formatted(viewPath), element);
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, note(2000));
         }
     }
 
@@ -158,16 +173,16 @@ public class ControllerAnnotationProcessor extends AbstractProcessor {
                 .ifPresentOrElse(
                         method -> {
                             if (!method.getParameters().isEmpty()) {
-                                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Methods providing a controller view must not have any arguments: " + methodName + "().", method);
+                                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error(1008).formatted(method.getSimpleName(), method.getEnclosingElement().asType().toString()), method);
                             }
 
                             TypeMirror parent = processingEnv.getElementUtils().getTypeElement("javafx.scene.Parent").asType();
 
                             if (!processingEnv.getTypeUtils().isAssignable(method.getReturnType(), parent)) {
-                                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Methods providing a controller view must return a (subtype of) Parent: " + methodName + "().", method);
+                                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error(1002), method);
                             }
                         },
-                        () -> processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Method not found: " + methodName + "()", element)
+                        () -> processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error(1003).formatted(methodName), element)
                 );
     }
 
@@ -187,7 +202,7 @@ public class ControllerAnnotationProcessor extends AbstractProcessor {
                 }
             }
         }
-        processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Fields annotated with @SubComponent must be of a component type or a provider thereof.", element);
+        processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error(6005).formatted(element.getSimpleName(), element.getEnclosingElement().asType().toString()), element);
     }
 
     // The method expects the typeMirror to be a declared type

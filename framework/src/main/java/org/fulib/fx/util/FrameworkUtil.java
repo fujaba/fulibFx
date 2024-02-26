@@ -1,6 +1,10 @@
 package org.fulib.fx.util;
 
+import java.util.ResourceBundle;
+
 public class FrameworkUtil {
+
+    private static final ResourceBundle ERROR_BUNDLE = ResourceBundle.getBundle("org.fulib.fx.lang.error");
 
     private FrameworkUtil() {
         // Prevent instantiation
@@ -18,5 +22,13 @@ public class FrameworkUtil {
      */
     public static boolean runningInDev() {
         return System.getenv().getOrDefault(INDEV_ENVIRONMENT_VARIABLE, "false").equalsIgnoreCase("true");
+    }
+
+    public static String error(int id) {
+        return ERROR_BUNDLE.getString(String.valueOf(id)) + " [FFX" + id + "]";
+    }
+
+    public static String note(int id) {
+        return ERROR_BUNDLE.getString(id + ".note");
     }
 }
