@@ -842,24 +842,29 @@ This will add the resources directory to the source path, allowing the processor
 
 ## 🛑 Common issues
 
-### 1. My route is not found even though it is registered
+### 1. The framework throws an exception when doing something
+All exceptions thrown by the framework are listed in the [error code documentation](ERROR_CODES.md). 
+When the frameworks throws an exception, it will print the error code and a short description of the error to the console.
+If you encounter an error, you should check the error code documentation to find out what the error means and how to fix it.
+
+### 2. My route is not found even though it is registered
 When using `show("route/to/controller")` without a leading "`/`", the route is relative to the currently displayed controller. 
 Meaning if you are currently displaying the controller `"/foo/bar"` and you call `show("baz")`, the route will be `"/foo/bar/baz"`.
 If you want to display a controller from the root, you have to start the route with a "`/`".
 
-### 2. Weird things happen during refresh
+### 3. Weird things happen during refresh
 When refreshing a controller, the controller is destroyed and then reloaded with the same parameters as before. 
 If an object has been passed as a parameter and the object has been modified during the lifetime of the controller,
 the already modified object will be passed after the refresh, just to be modified again. This can lead to unexpected 
 behaviour. To avoid this, you should try to not modify objects passed as parameters. Instead, you should create a copy 
 of the object and modify the copy or modify the object before passing it to the controller.
 
-### 3. The framework doesn't compile even though the view file exists
+### 4. The framework doesn't compile even though the view file exists
 The framework uses an annotation processor to check if the view file exists. If the view file is not found, the processor
 will throw an error. Please make sure that the view file is in the correct location and that `options.sourcepath` is set
 correctly in your `compileJava` task (see [Annotation Processor](#-annotation-processor)).
 
-### 4. The SceneBuilder doesn't recognize my controller
+### 5. The SceneBuilder doesn't recognize my controller
 When using the SceneBuilder, it might not recognize your controller's FXML file. This can happen when the FXML file contains
 elements which are not present in the basic JavaFX library. To fix this, you can add a jar file containing the missing
 elements to the SceneBuilder. The simplest way is to build your project and then add the jar file by clicking on the small
