@@ -15,7 +15,7 @@ This error is thrown when `initAndRender` is called on an element that is not a 
 This error is thrown when the framework tries to render something that is not a component or controller.
 This error should never be thrown if the framework is used correctly.
 
-### 1002: `Method '*()' in class '*' does not return a (subtype of) 'javafx.scene.Parent'.`
+### 1002: `Method '*()' providing the view for class '*' must return a (subtype of) 'javafx.scene.Parent'.`
 - Runtime: ✅
 - Annotation Processor: ✅
 
@@ -96,7 +96,7 @@ public class MyComponent extends VBox {
 }
 ```
 
-### 1008: `Method '*' in class '*' must not have any arguments.`
+### 1008: `Method '*' providing the view for class '*' must not have any parameters.`
 - Runtime: ✅
 - Annotation Processor: ✅
 
@@ -223,7 +223,7 @@ public class Routes {
 }
 ```
 
-### 3003: `Field '*' in '*' is annotated with @Route but is not a Provider<T> providing a controller/component.`
+### 3003: `Field '*' in class '*' is annotated with @Route but is not a Provider<T> providing a controller/component.`
 - Runtime: ✅
 - Annotation Processor: ✅
 
@@ -278,7 +278,7 @@ This error is thrown when the framework fails to put a parameter value into a fi
 
 This error is thrown when the framework fails to call the set method of a property field with the parameter value.
 
-### 4002: `Field '* 'annotated with @ParamsMap in class '*' is not of type Map<String, Object>.`
+### 4002: `Field '*' annotated with @ParamsMap in class '*' is not of type Map<String, Object>.`
 - Runtime: ✅
 - Annotation Processor: ❌
 
@@ -440,14 +440,14 @@ public class MyController {
 }
 ```
 
-### 6001: `Couldn't access the provider '*' in '*'.`
+### 6001: `Couldn't access the provider '*' in class '*'.`
 - Runtime: ✅
 - Annotation Processor: ❌
 
 This error is thrown if the framework fails to access a provider to create a subcomponent instance for the FXML file.
 This can happen if the provider is not initialized.
 
-### 6002: `Couldn't access field '*' annotated as a subcomponent in '*'.`
+### 6002: `Couldn't access field '*' annotated as a subcomponent in class '*'.`
 - Runtime: ✅
 - Annotation Processor: ❌
 
@@ -484,7 +484,7 @@ public class MyController {
 }
 ```
 
-### 6006: `Couldn't determine the type of the provider '*' in '*'.`
+### 6006: `Couldn't determine the type of the provider '*' in class '*'.`
 - Runtime: ✅
 - Annotation Processor: ❌
 
@@ -527,19 +527,19 @@ This error is thrown if closing the file watcher fails.
 This error is thrown if the framework fails to run a method for a certain field.
 This error is internal and doesn't have a specific cause.
 
-### 9001: `Couldn't access field '*' in '*'.`
+### 9001: `Couldn't access field '*' in class '*'.`
 - Runtime: ✅
 - Annotation Processor: ❌
 
 This error is thrown if the framework fails to access a field.
 
-### 9002: `Field '*' in '*' is not initialized.`
+### 9002: `Field '*' in class '*' is not initialized.`
 - Runtime: ✅
 - Annotation Processor: ❌
 
 This error is thrown if the framework tries to get a value from an uninitialized field.
 
-### 9003: `Couldn't access getChildren() method in '*' or super classes.`
+### 9003: `Couldn't access method 'getChildren()' in class '*' or super classes.`
 - Runtime: ✅
 - Annotation Processor: ❌
 
