@@ -3,14 +3,12 @@
 ## Controller/Component
 
 ### 1000: `Class '*' is not a component.`
-
 - Runtime: ✅
 - Annotation Processor: ❌
 
 This error is thrown when `initAndRender` is called on an element that is not a component.
 
 ### 1001: `Class '*' is not a controller or component.`
-
 - Runtime: ✅
 - Annotation Processor: ❌
 
@@ -18,7 +16,6 @@ This error is thrown when the framework tries to render something that is not a 
 This error should never be thrown if the framework is used correctly.
 
 ### 1002: `Method '*()' providing the view for class '*' must return a (subtype of) 'javafx.scene.Parent'.`
-
 - Runtime: ✅
 - Annotation Processor: ✅
 
@@ -38,7 +35,6 @@ public class MyController {
 ```
 
 ### 1003: `Method '*()' in class '*' does not exist.`
-
 - Runtime: ✅
 - Annotation Processor: ✅
 
@@ -57,7 +53,6 @@ public class MyController {
 ```
 
 ### 1004: `Could not call method '*' in class '*'.`
-
 - Runtime: ✅
 - Annotation Processor: ❌
 
@@ -65,7 +60,6 @@ This error is thrown when the method specified in the `@Controller` annotation c
 This can happen if the method throws an exception.
 
 ### 1005: `Could not call method '*' annotated with '*' in class '*'.`
-
 - Runtime: ✅
 - Annotation Processor: ❌
 
@@ -74,7 +68,6 @@ successfully.
 This can happen if the method throws an exception.
 
 ### 1006: `Components must extend (a subtype of) 'javafx.scene.Parent'.`
-
 - Runtime: ❌
 - Annotation Processor: ✅
 
@@ -89,7 +82,6 @@ public class MyController { // Wrong, should extend Parent (or a subclass of it)
 ```
 
 ### 1007: `Class '*' is annotated with both @Controller and @Component.`
-
 - Runtime: ❌
 - Annotation Processor: ✅
 
@@ -105,7 +97,6 @@ public class MyComponent extends VBox {
 ```
 
 ### 1008: `Method '*' providing the view for class '*' must not have any parameters.`
-
 - Runtime: ✅
 - Annotation Processor: ✅
 
@@ -126,7 +117,6 @@ public class MyController {
 ## Resources
 
 ### 2000: `Could not find resource '*'.`
-
 - Runtime: ✅
 - Annotation Processor: ✅
 
@@ -136,7 +126,6 @@ If the source path isn't set in the build.gradle, the annotation processor will 
 see https://stackoverflow.com/a/74159042.
 
 ### 2001: `File '*' exists, but could not be converted to URL.`
-
 - Runtime: ✅
 - Annotation Processor: ❌
 
@@ -146,7 +135,6 @@ The only situation where this error should be thrown is when the framework uses 
 development mode.
 
 ### 2002: `Couldn't load the FXML file for controller/component '*'`
-
 - Runtime: ✅
 - Annotation Processor: ❌
 
@@ -154,7 +142,6 @@ This error occurs when there is a problem in the FXML file for a component or co
 This can happen if the FXML file is not valid or if there is a problem with the file.
 
 ### 2003: `Class '*' has more than one field annotated with @Resource.`
-
 - Runtime: ✅
 - Annotation Processor: ❌
 
@@ -174,7 +161,6 @@ public class MyController {
 ```
 
 ### 2004: `Field '*' in class '*' annotated with @Resource is not of type ResourceBundle.`
-
 - Runtime: ✅
 - Annotation Processor: ✅
 
@@ -191,7 +177,6 @@ public class MyController {
 ```
 
 ### 2005: `Couldn't access the resource bundle field '*' in class '*'.`
-
 - Runtime: ✅
 - Annotation Processor: ❌
 
@@ -199,7 +184,6 @@ This error is thrown when the framework fails to access a field as the resource 
 This can happen if the field isn't initialized.
 
 ### 2006: `Title '*' in class '*' specifies a language key, but no resource bundle was provided using @Resource.`
-
 - Runtime: ✅
 - Annotation Processor: ❌
 
@@ -209,7 +193,6 @@ in the controller or component class.
 ## Routes
 
 ### 3000: `Class '*' has already been registered as the router class.`
-
 - Runtime: ✅
 - Annotation Processor: ❌
 
@@ -217,7 +200,6 @@ The error is thrown when a router class is used to register routes even though a
 the router.
 
 ### 3001: `Field '*' is not annotated with @Route`
-
 - Runtime: ✅
 - Annotation Processor: ❌
 
@@ -226,7 +208,6 @@ with `@Route`.
 This should never happen if the framework is used correctly.
 
 ### 3002: `Route '*' already leads to '*' but was tried to be registered for '*'.`
-
 - Runtime: ✅
 - Annotation Processor: ❌
 
@@ -244,7 +225,6 @@ public class Routes {
 ```
 
 ### 3003: `Field '*' in class '*' is annotated with @Route but is not a Provider<T> providing a controller/component.`
-
 - Runtime: ✅
 - Annotation Processor: ✅
 
@@ -259,7 +239,6 @@ public class Routes {
 ```
 
 ### 3004: `Field '*' in class '*' is not a valid provider field.`
-
 - Runtime: ✅
 - Annotation Processor: ✅
 
@@ -274,14 +253,12 @@ public class Routes {
 ```
 
 ### 3005: `Route '*' could not be found.`
-
 - Runtime: ✅
 - Annotation Processor: ❌
 
 This error is thrown when the framework tries to access a route that does not exist.
 
 ### 3006: `Cannot traverse to parent of root node.`
-
 - Runtime: ✅
 - Annotation Processor: ❌
 
@@ -291,21 +268,18 @@ This can happen if one uses `show("../")` whilst already being at the empty rout
 ## Parameters
 
 ### 4000: `Couldn't fill parameter '*' into field '*' in class '*'.`
-
 - Runtime: ✅
 - Annotation Processor: ❌
 
 This error is thrown when the framework fails to put a parameter value into a field.
 
 ### 4001: `Couldn't call setter method with parameter '*' for field '*' in class '*'.`
-
 - Runtime: ✅
 - Annotation Processor: ❌
 
 This error is thrown when the framework fails to call the set method of a property field with the parameter value.
 
 ### 4002: `Field '*' annotated with @ParamsMap in class '*' is not of type Map<String, Object>.`
-
 - Runtime: ✅
 - Annotation Processor: ❌
 
@@ -322,7 +296,6 @@ public class MyController {
 ```
 
 ### 4003: `Method '*' annotated with @ParamsMap in class '*' must have exactly one parameter of type Map<String, Object>.`
-
 - Runtime: ✅
 - Annotation Processor: ✅
 
@@ -341,7 +314,6 @@ public class MyController {
 ```
 
 ### 4004: `Parameter '*' annotated with @ParamsMap in method '*' in class '*' is not of type Map<String, Object>.`
-
 - Runtime: ✅
 - Annotation Processor: ❌
 
@@ -361,7 +333,6 @@ public class MyController {
 ```
 
 ### 4005: `Couldn't fill parameter '*' into method '*' in class '*'.`
-
 - Runtime: ✅
 - Annotation Processor: ❌
 
@@ -369,7 +340,6 @@ This error is thrown when the framework fails to call a method with a parameter 
 This can happen if the method throws an exception.
 
 ### 4006: `Method '*' in class '*' has a different amount of parameters than the annotation provides.`
-
 - Runtime: ✅
 - Annotation Processor: ✅
 
@@ -389,21 +359,18 @@ public class MyController {
 ```
 
 ### 4007: `Parameter '*' in field '*' in class '*' is of type '*' but the provided value is of type '*'.`
-
 - Runtime: ✅
 - Annotation Processor: ❌
 
 This error is thrown if the type of the parameter value does not match the type of the field.
 
 ### 4008: `Parameter '*' in method '*' in class '*' is of type '*' but the provided value is of type '*'.`
-
 - Runtime: ✅
 - Annotation Processor: ❌
 
 This error is thrown if the type of the parameter value does not match the type of the method argument.
 
 ### 4009: `Parameter '*' in method '*' in class '*' is annotated with both @Param and @Params.`
-
 - Runtime: ✅
 - Annotation Processor: ❌
 
@@ -422,14 +389,12 @@ public class MyController {
 ```
 
 ### 4010: `Couldn't fill parameter map into field '*' in class '*'.`
-
 - Runtime: ✅
 - Annotation Processor: ❌
 
 This error is thrown when the framework fails to put the parameter map into a field.
 
 ### 4011: `Couldn't fill parameters into method '*' in class '*'.`
-
 - Runtime: ✅
 - Annotation Processor: ❌
 
@@ -439,7 +404,6 @@ This can happen if the method throws an exception.
 ## Queue
 
 ### 5000: `No previous element saved.`
-
 - Runtime: ✅
 - Annotation Processor: ❌
 
@@ -447,7 +411,6 @@ This error is thrown if there is no previous element in the queue.
 This can happen if one tries to go back in the history, whilst already being at the first element.
 
 ### 5001: `No next element saved.`
-
 - Runtime: ✅
 - Annotation Processor: ❌
 
@@ -457,7 +420,6 @@ This can happen if one tries to go forward in the history, whilst already being 
 ## Subcomponents
 
 ### 6000: `Multiple subcomponent providers annotated with @SubComponent with the same type '*' found in class '*'.`
-
 - Runtime: ✅
 - Annotation Processor: ❌
 
@@ -480,7 +442,6 @@ public class MyController {
 ```
 
 ### 6001: `Couldn't access the provider '*' in class '*'.`
-
 - Runtime: ✅
 - Annotation Processor: ❌
 
@@ -488,7 +449,6 @@ This error is thrown if the framework fails to access a provider to create a sub
 This can happen if the provider is not initialized.
 
 ### 6002: `Couldn't access field '*' annotated as a subcomponent in class '*'.`
-
 - Runtime: ✅
 - Annotation Processor: ❌
 
@@ -496,7 +456,6 @@ This error is thrown if the framework fails to access a field to use as a subcom
 This can happen if the field is not initialized.
 
 ### 6003: `No usable instance of the subcomponent with type '*' in class '*' found.`
-
 - Runtime: ✅
 - Annotation Processor: ❌
 
@@ -506,14 +465,12 @@ If the FXML uses a subcomponent multiple times, the controller or component must
 subcomponent or a provider thereof.
 
 ### 6004: `No instance of the subcomponent with type '*' in class '*' found.`
-
 - Runtime: ✅
 - Annotation Processor: ❌
 
 This error is thrown if an FXML file requests a subcomponent that is not provided by the controller or component.
 
 ### 6005: `Field '*' in class '*' is annotated with @SubComponent but is not a subcomponent or provider thereof."`
-
 - Runtime: ✅
 - Annotation Processor: ✅
 
@@ -529,7 +486,6 @@ public class MyController {
 ```
 
 ### 6006: `Couldn't determine the type of the provider '*' in class '*'.`
-
 - Runtime: ✅
 - Annotation Processor: ❌
 
@@ -538,14 +494,12 @@ This error is thrown if the framework fails to determine the type a provider pro
 ## Loops
 
 ### 7000: `For loop is already initialized.`
-
 - Runtime: ✅
 - Annotation Processor: ❌
 
 This error is thrown if a `For` loop is initialized twice.
 
 ### 7001: `Item '*' is already in the list.`
-
 - Runtime: ✅
 - Annotation Processor: ❌
 
@@ -556,7 +510,6 @@ Adding the same object twice causes an error to prevent linking issues.
 ## Other
 
 ### 9000: `Couldn't run method for field '*' in class '*'.`
-
 - Runtime: ✅
 - Annotation Processor: ❌
 
@@ -564,21 +517,18 @@ This error is thrown if the framework fails to run a method for a certain field.
 This error is internal and doesn't have a specific cause.
 
 ### 9001: `Couldn't access field '*' in class '*'.`
-
 - Runtime: ✅
 - Annotation Processor: ❌
 
 This error is thrown if the framework fails to access a field.
 
 ### 9002: `Field '*' in class '*' is not initialized.`
-
 - Runtime: ✅
 - Annotation Processor: ❌
 
 This error is thrown if the framework tries to get a value from an uninitialized field.
 
 ### 9003: `Couldn't access method 'getChildren()' in class '*' or super classes.`
-
 - Runtime: ✅
 - Annotation Processor: ❌
 
@@ -587,21 +537,18 @@ This can happen if the object is not a subclass of `Parent`.
 This should never happen if the framework is used correctly.
 
 ### 9004: `Couldn't start file service.`
-
 - Runtime: ✅
 - Annotation Processor: ❌
 
 This error is thrown if the file watcher fails to watch a directory.
 
 ### 9005: `Couldn't close watcher.`
-
 - Runtime: ✅
 - Annotation Processor: ❌
 
 This error is thrown if closing the file watcher fails.
 
 ### 9006: `No duplicator registered for '*'.`
-
 - Runtime: ✅
 - Annotation Processor: ❌
 
