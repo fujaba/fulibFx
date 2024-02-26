@@ -598,9 +598,6 @@ public class ControllerManager {
      * @return The title of the controller
      */
     public Optional<String> getTitle(@NotNull Object instance) {
-        if (!ControllerUtil.isController(instance)) {
-            throw new IllegalArgumentException("Class '%s' is not a controller or component.".formatted(instance.getClass().getName()));
-        }
         if (!instance.getClass().isAnnotationPresent(Title.class))
             return Optional.empty();
 
