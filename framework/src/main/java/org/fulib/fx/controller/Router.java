@@ -26,6 +26,8 @@ import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.Objects;
 
+import static org.fulib.fx.util.FrameworkUtil.error;
+
 @Singleton
 public class Router {
 
@@ -50,7 +52,7 @@ public class Router {
      */
     public void registerRoutes(@NotNull Object routes) {
         if (this.routerObject != null)
-            throw new IllegalStateException("%s has already been registered as the router class.".formatted(this.routerObject.getClass().getName()));
+            throw new IllegalStateException(error(3000).formatted(this.routerObject.getClass().getName()));
 
         this.routerObject = routes;
 
@@ -67,7 +69,7 @@ public class Router {
      */
     private void registerRoute(@NotNull Field field) {
         if (!field.isAnnotationPresent(Route.class))
-            throw new RuntimeException("Field " + field.getName() + " is not annotated with @Route");
+            throw new RuntimeException(error(3001).formatted(field.getName()));
 
         // Check if the field is of type Provider<T> where T is annotated with @Controller
         ControllerUtil.requireControllerProvider(field);
@@ -110,10 +112,10 @@ public class Router {
 
         // Check if the provider is providing a valid controller/component
         if (controllerClass == null)
-            throw new RuntimeException("Field '" + provider.getName() + "' in '" + provider.getDeclaringClass().getName() + "' is not a valid provider field.");
+            throw new RuntimeException(error(3004).formatted(provider.getName(), routerObject.getClass().getName()));
 
         if (!controllerClass.isAnnotationPresent(Controller.class) && !controllerClass.isAnnotationPresent(Component.class))
-            throw new RuntimeException("Class " + controllerClass.getName() + " is not annotated with @Controller or @Component");
+            throw new RuntimeException(error(1001).formatted(controllerClass.getName()));
 
         // Get the instance of the controller
         Object controllerInstance = ReflectionUtil.getInstanceOfProviderField(provider, this.routerObject);

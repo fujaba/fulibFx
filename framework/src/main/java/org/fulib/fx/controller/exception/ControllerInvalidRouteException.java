@@ -1,9 +1,11 @@
 package org.fulib.fx.controller.exception;
 
+import static org.fulib.fx.util.FrameworkUtil.error;
+
 public class ControllerInvalidRouteException extends RuntimeException {
 
     public ControllerInvalidRouteException(String route) {
-        super("Controller with route '%s' couldn't be found".formatted(route.isEmpty() ? "(empty)" : route));
+        super(error(3005).formatted(route.isEmpty() ? "(empty)" : route));
     }
 
 }

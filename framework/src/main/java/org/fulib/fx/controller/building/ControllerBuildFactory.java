@@ -12,6 +12,8 @@ import org.jetbrains.annotations.NotNull;
 import javax.inject.Provider;
 import java.util.*;
 
+import static org.fulib.fx.util.FrameworkUtil.error;
+
 /**
  * A custom building-factory for instantiating controllers. If an element in an FXML file is of a class annotated with @Controller and a field providing an instance of the same class exists, the provided instance will be used as the controller for the element.
  */
@@ -44,14 +46,14 @@ public class ControllerBuildFactory implements BuilderFactory {
                 try {
                     Class<?> type = ReflectionUtil.getProvidedClass(field);
                     if (type == null) {
-                        throw new RuntimeException("Couldn't determine the type of the provider '%s' in '%s'.".formatted(field.getName(), field.getClass().getName()));
+                        throw new RuntimeException(error(6006).formatted(field.getName(), field.getClass().getName()));
                     }
                     if (subControllerProviders.containsKey(type)) {
-                        throw new RuntimeException("Multiple sub-controller annotations with the same type '" + type.getName() + "' found in class '" + instance.getClass().getName() + "'.");
+                        throw new RuntimeException(error(6000).formatted(type.getName(), instance.getClass()));
                     }
                     subControllerProviders.put(type, (Provider<?>) field.get(instance));
                 } catch (IllegalAccessException e) {
-                    throw new RuntimeException("Couldn't access the provider '%s' in '%s'.".formatted(field.getName(), field.getClass().getName()), e);
+                    throw new RuntimeException(error(6001).formatted(field.getName(), field.getClass().getName()), e);
                 }
                 return;
             }
@@ -66,7 +68,7 @@ public class ControllerBuildFactory implements BuilderFactory {
                 field.setAccessible(true);
                 subControllerInstances.get(field.getType()).add(field.get(instance));
             } catch (IllegalAccessException e) {
-                throw new RuntimeException("Couldn't access field '%s' annotated as a sub-controller in '%s'.".formatted(field.getName(), field.getClass().getName()), e);
+                throw new RuntimeException(error(6002).formatted(field.getName(), field.getClass().getName()), e);
             }
         });
     }
@@ -96,11 +98,11 @@ public class ControllerBuildFactory implements BuilderFactory {
                 subControllerInstances.get(type).remove(0);
                 return instance;
             } else
-                throw new RuntimeException("No usable instance of the sub-controller with type '" + type.getName() + "' found.");
+                throw new RuntimeException(error(6003).formatted(type.getName(), instance.getClass()));
         } else if (subControllerProviders.containsKey(type)) {
             return subControllerProviders.get(type).get();
         } else {
-            throw new RuntimeException("No instance of the sub-controller with type '" + type.getName() + "' found.");
+            throw new RuntimeException(error(6004).formatted(type.getName(), instance.getClass()));
         }
     }
 }
