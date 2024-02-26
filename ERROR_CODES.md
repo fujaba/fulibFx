@@ -503,6 +503,8 @@ This error is thrown if a `For` loop is initialized twice.
 - Annotation Processor: ❌
 
 This error is thrown if an item is added to a `For` loop twice.
+The `For` loop is meant to display nodes for a list of unique items. 
+Adding the same object twice causes an error to prevent linking issues.
 
 ## Other
 
