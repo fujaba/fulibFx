@@ -6,6 +6,7 @@ import org.fulib.fx.annotation.controller.Component;
 import org.fulib.fx.annotation.controller.Controller;
 import org.fulib.fx.annotation.controller.Resource;
 import org.fulib.fx.annotation.controller.SubComponent;
+import org.fulib.fx.annotation.controller.Title;
 import org.fulib.fx.annotation.param.Params;
 import org.fulib.fx.annotation.param.ParamsMap;
 import org.fulib.fx.util.ControllerUtil;
@@ -71,6 +72,10 @@ public class ControllerAnnotationProcessor extends AbstractProcessor {
             checkResources(element);
         }
 
+        for (Element element : roundEnv.getElementsAnnotatedWith(Title.class)) {
+            checkTitle(element);
+        }
+
         return true;
     }
 
@@ -78,6 +83,12 @@ public class ControllerAnnotationProcessor extends AbstractProcessor {
         final String elementType = element.asType().toString();
         if (!"java.util.ResourceBundle".equals(elementType)) {
             processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error(2004).formatted(element.getSimpleName(), element.getEnclosingElement().getSimpleName()), element);
+        }
+    }
+
+    private void checkTitle(Element element) {
+        if (!isComponent(element.asType()) && !isController(element.asType())) {
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "The @Title annotation can only be used on classes annotated with @Component or @Controller.", element);
         }
     }
 

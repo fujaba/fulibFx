@@ -18,10 +18,8 @@ import javafx.scene.text.FontWeight;
 
 import javax.inject.Inject;
 
-@Component(view = "view/sub/card.fxml")
-public class CardController extends VBox implements Titleable {
-
-    public static final String CARD_TITLE = "Uno - Card";
+@Component(view = "sub/Card.fxml")
+public class CardController extends VBox {
 
     @FXML
     public VBox cardScreen;
@@ -39,11 +37,6 @@ public class CardController extends VBox implements Titleable {
     @Inject
     public CardController() {
         System.out.println(this + " created.");
-    }
-
-    @Override
-    public String getTitle() {
-        return CARD_TITLE;
     }
 
     @onRender

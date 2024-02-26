@@ -4,7 +4,7 @@ import org.fulib.fx.annotation.controller.Controller;
 
 import javax.inject.Inject;
 
-@Controller // No view specified, so the view is the same as the controller name (basic.fxml)
+@Controller // No view specified, so the view is the same as the controller name (Basic.fxml)
 public class BasicController {
 
     @Inject

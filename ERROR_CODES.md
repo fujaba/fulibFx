@@ -122,6 +122,8 @@ public class MyController {
 
 This error is thrown when the framework tries to load a resource that does not exist.
 This can happen if the resource is not in the correct location or if the name is misspelled.
+If the source path isn't set in the build.gradle, the annotation processor will not be able to find the FXML files,
+see https://stackoverflow.com/a/74159042.
 
 ### 2001: `File '*' exists, but could not be converted to URL.`
 - Runtime: ✅
@@ -181,13 +183,12 @@ public class MyController {
 This error is thrown when the framework fails to access a field as the resource bundle.
 This can happen if the field isn't initialized.
 
-### 2006: `Maybe the source path has not been set, see https://stackoverflow.com/a/74159042.`
-- Runtime: ❌
-- Annotation Processor: ✅
+### 2006: `Title '*' in class '*' specifies a language key, but no resource bundle was provided using @Resource.`
+- Runtime: ✅
+- Annotation Processor: ❌
 
-This error is a note for FFX2000 giving more information about the problem.
-If the source path isn't set in the build.gradle, the framework will not be able to find the FXML files,
-see https://stackoverflow.com/a/74159042.
+This error is thrown when a title is specified using a language key, but no resource bundle is provided using `@Resource`
+in the controller or component class.
 
 ## Routes
 
@@ -503,7 +504,7 @@ This error is thrown if a `For` loop is initialized twice.
 - Annotation Processor: ❌
 
 This error is thrown if an item is added to a `For` loop twice.
-The `For` loop is meant to display nodes for a list of unique items. 
+The `For` loop is meant to display nodes for a list of unique items.
 Adding the same object twice causes an error to prevent linking issues.
 
 ## Other

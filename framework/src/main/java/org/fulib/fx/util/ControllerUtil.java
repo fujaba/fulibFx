@@ -74,7 +74,7 @@ public class ControllerUtil {
      */
     public static @NotNull String transform(@NotNull String className) {
         String[] classes = className.split("\\.");
-        return classes[classes.length - 1].replace("Controller", "").toLowerCase();
+        return classes[classes.length - 1].replace("Controller", "").replace("Component", "");
     }
 
     /**

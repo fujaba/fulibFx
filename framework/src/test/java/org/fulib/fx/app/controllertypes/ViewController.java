@@ -4,7 +4,7 @@ import org.fulib.fx.annotation.controller.Controller;
 
 import javax.inject.Inject;
 
-@Controller(view = "../view/view.fxml")
+@Controller(view = "../view/View.fxml")
 public class ViewController {
 
     @Inject

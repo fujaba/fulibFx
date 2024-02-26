@@ -179,6 +179,52 @@ framework. This can be done by creating a field containing your instance (e.g. w
 When the corresponding controller is rendered, the framework will automatically set the resource bundle as the resource
 bundle of the FXML file.
 
+To set a default resource bundle once, you can use the `setDefaultResourceBundle` method of the `FulibFxApp` class. 
+The resource bundle will be used if no resource bundle has been specified for the controller.
+
+### 📏 Title
+
+The title of a controller or component can be set by annotating The class with `@Title`.
+The annotation takes an argument specifying the title of the controller or component.
+If no title is specified, the transformed name of the class will be used as the title.
+
+```java
+@Controller
+@Title("My Todo List")
+public class TodoController {
+    // ...
+}
+```
+
+If the controller or component specifies a resource bundle, the title can be a key in the resource bundle (e.g. `@Title("%title.key")`).
+The framework will then automatically set the title of the controller/component to the value of the key in the resource bundle.
+See the section about [internationalization](#-internationalization) for more information.
+
+```java
+@Controller
+@Title("%title.todo")
+public class TodoController {
+    
+    @Resource
+    ResourceBundle resourceBundle;
+}
+```
+
+When displaying this controller/component, the framework will automatically set the title of the window to "My Todo List".
+In order to eliminate redundancy, you can use the `setTitlePattern` method of the `FulibFxApp` class to set a pattern
+which will be used to format the title of the window. The pattern can either be provided as a string containing a placeholder
+for the title or as a function taking the title as an argument and returning the formatted title.
+
+```java
+   
+@Override
+public void start(Stage primaryStage) {
+    super.start(primaryStage);
+    setTitlePattern("TODO - %s"); // Results in "TODO - My Todo List"
+    setTitlePattern(title -> "TODO - " + title + " v1.0"); // Results in "TODO - My Todo List v1.0"
+}
+```
+
 ## 💭 Components
 
 Components are a special type of controller that can be used to create reusable components. Components have to extend 
@@ -209,8 +255,8 @@ that the entered path will always be relative to the path of your app class in t
 
 ```java
 
-// Leaving 'view' blank will use the default file name (e.g. TodoController --> todo.fxml)
-@Controller(view = "view/todo.fxml")
+// Leaving 'view' blank will use the default file name (e.g. TodoController --> Todo.fxml)
+@Controller(view = "view/Todo.fxml")
 public class TodoController {
 
     // Default constructor (for dependency injection etc.)
@@ -283,7 +329,7 @@ additional functionality. This will also be very helpful when using the componen
 
 ```java
 
-@Component(view = "view/todo.fxml")
+@Component(view = "view/Todo.fxml")
 public class TodoController extends VBox {
 
     // Default constructor (for dependency injection etc.)
@@ -703,7 +749,7 @@ for-Controller will be called and then the for-controller will be initialized an
 
 ```java
 
-@Controller("example.fxml")
+@Controller("Example.fxml")
 public class ExampleController {
 
     // Constructor, elements etc.
@@ -725,7 +771,7 @@ public class ExampleController {
 
 ```java
 
-@Component("sub.fxml")
+@Component("Sub.fxml")
 public class SubController extends VBox {
 
     // Constructor, elements etc.
