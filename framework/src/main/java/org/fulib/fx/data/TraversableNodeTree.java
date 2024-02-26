@@ -74,7 +74,7 @@ public class TraversableNodeTree<E> implements TraversableTree<E> {
 
             if (element.equals("..")) {
                 if (node.parent == null) {
-                    throw new IllegalArgumentException(error(10000));
+                    throw new IllegalArgumentException(error(3006));
                 }
                 node = node.parent;
                 continue;

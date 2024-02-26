@@ -70,7 +70,7 @@ public class Duplicators {
         }
 
         if (!DUPLICATORS.containsKey(object.getClass())) {
-            throw new IllegalArgumentException(error(10001).formatted(object.getClass()));
+            throw new IllegalArgumentException(error(9006).formatted(object.getClass()));
         }
 
         @SuppressWarnings("unchecked")

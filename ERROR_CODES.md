@@ -257,6 +257,13 @@ public class Routes {
 
 This error is thrown when the framework tries to access a route that does not exist.
 
+### 3006: `Cannot traverse to parent of root node.`
+- Runtime: ✅
+- Annotation Processor: ❌
+
+This error is thrown if one tries to go to the parent of a node without a parent in a tree structure.
+This can happen if one uses `show("../")` whilst already being at the empty route.
+
 ## Parameters
 
 ### 4000: `Couldn't fill parameter '*' into field '*' in class '*'.`
@@ -400,12 +407,14 @@ This can happen if the method throws an exception.
 - Annotation Processor: ❌
 
 This error is thrown if there is no previous element in the queue.
+This can happen if one tries to go back in the history, whilst already being at the first element.
 
 ### 5001: `No next element saved.`
 - Runtime: ✅
 - Annotation Processor: ❌
 
 This error is thrown if there is no next element in the queue.
+This can happen if one tries to go forward in the history, whilst already being at the last element.
 
 ## Subcomponents
 
@@ -497,13 +506,13 @@ This error is thrown if an item is added to a `For` loop twice.
 
 # File Watcher
 
-### 8000: `Couldn't start file service.`
+### 9004: `Couldn't start file service.`
 - Runtime: ✅
 - Annotation Processor: ❌
 
 This error is thrown if the file watcher fails to watch a directory.
 
-### 8001: `Couldn't close watcher.`
+### 9005: `Couldn't close watcher.`
 - Runtime: ✅
 - Annotation Processor: ❌
 
@@ -540,14 +549,7 @@ This should never happen if the framework is used correctly.
 
 ## Other
 
-### 10000: `Cannot traverse to parent of root node.`
-- Runtime: ✅
-- Annotation Processor: ❌
-
-This error is thrown if one tries to go to the parent of a node without a parent in a tree structure.
-This can happen if one uses `show("../")` whilst already being at the empty route.
-
-### 10001: `No duplicator registered for '*'.`
+### 9006: `No duplicator registered for '*'.`
 - Runtime: ✅
 - Annotation Processor: ❌
 

@@ -75,7 +75,7 @@ public class AutoRefresher {
             });
 
         } catch (IOException e) {
-            throw new RuntimeException(error(8000), e);
+            throw new RuntimeException(error(9004), e);
         }
     }
 
@@ -85,7 +85,7 @@ public class AutoRefresher {
             if (watchService != null) this.watchService.close();
             if (disposable != null) this.disposable.dispose();
         } catch (IOException e) {
-            throw new RuntimeException(error(8001), e);
+            throw new RuntimeException(error(9005), e);
         }
     }
 
