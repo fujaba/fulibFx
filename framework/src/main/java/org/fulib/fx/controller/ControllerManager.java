@@ -612,6 +612,7 @@ public class ControllerManager {
             if (resourceBundle != null) {
                 return Optional.of(resourceBundle.getString(title));
             }
+            throw new RuntimeException(error(2006).formatted(title, instance.getClass().getName()));
         } else if (title.equals("$name")) {
             return Optional.of(ControllerUtil.transform(instance.getClass().getSimpleName()));
         }
