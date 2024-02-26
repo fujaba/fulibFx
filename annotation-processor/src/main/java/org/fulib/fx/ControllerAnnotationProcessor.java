@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.Set;
 
 import static org.fulib.fx.util.FrameworkUtil.error;
+import static org.fulib.fx.util.FrameworkUtil.note;
 
 @SupportedAnnotationTypes({
         "org.fulib.fx.annotation.controller.*",
@@ -158,7 +159,7 @@ public class ControllerAnnotationProcessor extends AbstractProcessor {
         } catch (IOException e) {
             String viewPath = processingEnv.getElementUtils().getPackageOf(element).getQualifiedName().toString().replace('.', '/') + "/" + view;
             processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error(2000).formatted(viewPath), element);
-            processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, error(2006));
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, note(2000));
         }
     }
 
