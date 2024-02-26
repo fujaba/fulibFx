@@ -27,6 +27,7 @@ const newErrorCodesMd = errorCodesMd.replace(/^### (\d+).*(?:\r?\n)+- Runtime: .
     if (error) {
         error.matched = true;
         return `### ${code}: \`${error.message}\`
+
 - Runtime: ${error.runtime ? '✅' : '❌'}
 - Annotation Processor: ${error.annotationProcessor ? '✅' : '❌'}`;
     }
