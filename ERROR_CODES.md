@@ -504,21 +504,7 @@ This error is thrown if a `For` loop is initialized twice.
 
 This error is thrown if an item is added to a `For` loop twice.
 
-# File Watcher
-
-### 9004: `Couldn't start file service.`
-- Runtime: ✅
-- Annotation Processor: ❌
-
-This error is thrown if the file watcher fails to watch a directory.
-
-### 9005: `Couldn't close watcher.`
-- Runtime: ✅
-- Annotation Processor: ❌
-
-This error is thrown if closing the file watcher fails.
-
-## Reflection
+## Other
 
 ### 9000: `Couldn't run method for field '*' in class '*'.`
 - Runtime: ✅
@@ -547,7 +533,17 @@ This error is thrown if the framework fails to get the `getChildren()` method of
 This can happen if the object is not a subclass of `Parent`.
 This should never happen if the framework is used correctly.
 
-## Other
+### 9004: `Couldn't start file service.`
+- Runtime: ✅
+- Annotation Processor: ❌
+
+This error is thrown if the file watcher fails to watch a directory.
+
+### 9005: `Couldn't close watcher.`
+- Runtime: ✅
+- Annotation Processor: ❌
+
+This error is thrown if closing the file watcher fails.
 
 ### 9006: `No duplicator registered for '*'.`
 - Runtime: ✅
