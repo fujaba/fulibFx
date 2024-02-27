@@ -10,6 +10,8 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import static org.fulib.fx.util.FrameworkUtil.error;
+
 /**
  * Utility class containing different helper methods for reflection.
  */
@@ -46,7 +48,7 @@ public class Reflection {
                 field.setAccessible(accessible);
                 method.accept(component);
             } catch (IllegalAccessException e) {
-                throw new RuntimeException("Couldn't run method for field '%s' in class '%s'.".formatted(field.getName(), instance.getClass().getName()), e);
+                throw new RuntimeException(error(9000).formatted(field.getName(), instance.getClass().getName()), e);
             }
         }
     }

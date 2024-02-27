@@ -1,0 +1,13 @@
+{
+	"type": "module",
+	"scripts": {
+		"error-codes": "node error-codes.js"
+	},
+	"dependencies": {
+		"glob": "^10.3.10",
+		"java-properties": "^1.0.2"
+	},
+	"devDependencies": {
+		"@types/node": "^20.11.20"
+	}
+}

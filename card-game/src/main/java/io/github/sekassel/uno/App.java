@@ -1,15 +1,12 @@
 package io.github.sekassel.uno;
 
-import org.fulib.fx.FulibFxApp;
-import io.github.sekassel.uno.controller.Titleable;
 import io.github.sekassel.uno.dagger.DaggerMainComponent;
 import io.github.sekassel.uno.dagger.MainComponent;
-import javafx.scene.Parent;
 import javafx.stage.Stage;
+import org.fulib.fx.FulibFxApp;
 
 import java.nio.file.Path;
 import java.util.Map;
-import java.util.Optional;
 import java.util.logging.Level;
 
 import static javafx.scene.input.KeyEvent.KEY_PRESSED;
@@ -60,6 +57,8 @@ public class App extends FulibFxApp {
                 }
             });
 
+            this.setTitlePattern("Uno - %s");
+
             // Setting the resource path to the resources folder of the project (required for reloading in dev)
             // If the resource path is not set, the framework will use the default resource path (src/main/resources)
             setResourcesPath(Path.of("card-game/src/main/resources/"));
@@ -71,16 +70,6 @@ public class App extends FulibFxApp {
         } catch (Exception e) {
             // If an error occurs while starting the application, we want to log it and exit the application
             LOGGER.log(Level.SEVERE, "An error occurred while starting the application: " + e.getMessage(), e);
-        }
-    }
-
-    @Override
-    protected void onShow(Optional<String> route, Object controller, Parent rendered, Map<String, Object> params) {
-        // This method is called whenever a new controller is shown.
-        // We use this method to set the title of the window to the title of the controller, if the controller implements
-        // the Titleable interface. This is a good example of how you can use the onShow method to do some additional operations.
-        if (controller instanceof Titleable titleable) {
-            this.stage().setTitle(titleable.getTitle());
         }
     }
 

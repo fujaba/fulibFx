@@ -16,7 +16,7 @@ public @interface Component {
      * The view that should be rendered when displaying the component.
      * <p>
      * If a view is specified, the fxml file will be loaded and the component will be used as the root of the view.
-     * Example: 'path/to/myView.fxml' will load the FXML file myView.fxml.
+     * Example: 'path/to/MyView.fxml' will load the FXML file MyView.fxml.
      *
      * @return The String specifying the view.
      */

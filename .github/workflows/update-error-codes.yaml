@@ -1,0 +1,40 @@
+name: Update ERROR_CODES.md
+
+on:
+  push:
+    paths:
+      - '.github/workflows/update-error-codes.yaml' # This file
+      - 'ERROR_CODES.md'
+      - 'framework/**/*.java'
+      - 'annotation-processor/**/*.java'
+      - 'scripts/'
+
+jobs:
+  update:
+    name: Update ERROR_CODES.md
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: scripts
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: pnpm
+          cache-dependency-path: scripts/pnpm-lock.yaml
+      - name: Install Dependencies
+        run: pnpm install
+      - name: Run error-codes.js
+        run: node error-codes.js
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          file_pattern: 'ERROR_CODES.md'
+          commit_message: 'docs: Update ERROR_CODES.md'

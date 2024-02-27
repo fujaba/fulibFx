@@ -1,6 +1,7 @@
 package io.github.sekassel.uno.controller;
 
 import org.fulib.fx.annotation.controller.Controller;
+import org.fulib.fx.annotation.controller.Title;
 import org.fulib.fx.annotation.event.onDestroy;
 import org.fulib.fx.annotation.event.onInit;
 import org.fulib.fx.annotation.event.onRender;
@@ -22,9 +23,8 @@ import java.util.Map;
 
 @Controller
 @Singleton
-public class SetupController implements Titleable {
-
-    public static final String SETUP_SCREEN_TITLE = "Uno - Setup";
+@Title("Setup")
+public class SetupController {
 
     @FXML
     public Slider botAmountSlider;
@@ -49,10 +49,6 @@ public class SetupController implements Titleable {
     public SetupController() {
     }
 
-    @Override
-    public String getTitle() {
-        return SETUP_SCREEN_TITLE;
-    }
 
     @onRender
     public void render() {

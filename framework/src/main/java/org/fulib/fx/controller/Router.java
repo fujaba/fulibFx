@@ -3,6 +3,7 @@ package org.fulib.fx.controller;
 import dagger.Lazy;
 import javafx.scene.Parent;
 import javafx.util.Pair;
+import org.fulib.fx.FulibFxApp;
 import org.fulib.fx.annotation.Route;
 import org.fulib.fx.annotation.controller.Component;
 import org.fulib.fx.annotation.controller.Controller;
@@ -13,6 +14,7 @@ import org.fulib.fx.data.TraversableNodeTree;
 import org.fulib.fx.data.TraversableQueue;
 import org.fulib.fx.data.TraversableTree;
 import org.fulib.fx.util.ControllerUtil;
+import org.fulib.fx.util.FrameworkUtil;
 import org.fulib.fx.util.ReflectionUtil;
 import org.fulib.fx.util.reflection.Reflection;
 import org.jetbrains.annotations.NotNull;
@@ -23,6 +25,8 @@ import javax.inject.Singleton;
 import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.Objects;
+
+import static org.fulib.fx.util.FrameworkUtil.error;
 
 @Singleton
 public class Router {
@@ -48,7 +52,7 @@ public class Router {
      */
     public void registerRoutes(@NotNull Object routes) {
         if (this.routerObject != null)
-            throw new IllegalStateException("%s has already been registered as the router class.".formatted(this.routerObject.getClass().getName()));
+            throw new IllegalStateException(error(3000).formatted(this.routerObject.getClass().getName()));
 
         this.routerObject = routes;
 
@@ -65,7 +69,7 @@ public class Router {
      */
     private void registerRoute(@NotNull Field field) {
         if (!field.isAnnotationPresent(Route.class))
-            throw new RuntimeException("Field " + field.getName() + " is not annotated with @Route");
+            throw new RuntimeException(error(3001).formatted(field.getName()));
 
         // Check if the field is of type Provider<T> where T is annotated with @Controller
         ControllerUtil.requireControllerProvider(field);
@@ -92,7 +96,11 @@ public class Router {
      */
     public @NotNull Pair<Object, Parent> renderRoute(@NotNull String route, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
         // Check if the route exists and has a valid controller
-        if (!this.routes.containsPath(route)) throw new ControllerInvalidRouteException(route);
+        if (!this.routes.containsPath(route)) {
+            if (FrameworkUtil.runningInDev() && this.routes.containsPath("/" + route))
+                FulibFxApp.LOGGER.warning("This route doesn't exist. Did you mean '/%s'?".formatted(route));
+            throw new ControllerInvalidRouteException(route);
+        }
 
         // Get the provider and the controller class
         Field provider = this.routes.traverse(route);
@@ -104,10 +112,10 @@ public class Router {
 
         // Check if the provider is providing a valid controller/component
         if (controllerClass == null)
-            throw new RuntimeException("Field '" + provider.getName() + "' in '" + provider.getDeclaringClass().getName() + "' is not a valid provider field.");
+            throw new RuntimeException(error(3004).formatted(provider.getName(), routerObject.getClass().getName()));
 
         if (!controllerClass.isAnnotationPresent(Controller.class) && !controllerClass.isAnnotationPresent(Component.class))
-            throw new RuntimeException("Class " + controllerClass.getName() + " is not annotated with @Controller or @Component");
+            throw new RuntimeException(error(1001).formatted(controllerClass.getName()));
 
         // Get the instance of the controller
         Object controllerInstance = ReflectionUtil.getInstanceOfProviderField(provider, this.routerObject);
