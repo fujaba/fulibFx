@@ -119,7 +119,7 @@ public class IngameController {
                     Throwable::printStackTrace
             );
         });
-        this.diceSubComponent.eyesLabel.textFillProperty().bind(this.currentPlayer.map(player -> Color.web(Constants.COLORS.get(player.getId()))));
+        this.subscriber.bind(this.diceSubComponent.eyesLabel.textFillProperty(), this.currentPlayer.map(player -> Color.web(Constants.COLORS.get(player.getId()))));
     }
 
     @onRender
@@ -239,7 +239,6 @@ public class IngameController {
         this.fieldToCircle.clear();
         this.pieceToCircle.clear();
         this.subscriber.dispose();
-        this.diceSubComponent.eyesLabel.textFillProperty().unbind();
     }
 
 }
