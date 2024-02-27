@@ -123,6 +123,21 @@ public class MyController {
 }
 ```
 
+### 1009: `Class '*' annotated with @Title must be a controller or component.`
+
+- Runtime: ❌
+- Annotation Processor: ✅
+
+This error is thrown when a class annotated with `@Title` is not a controller or component.
+
+```java
+
+@Title("Example!")
+public class NotAController { // Wrong, should be a controller or component
+
+}
+```
+
 ## Resources
 
 ### 2000: `Could not find resource '*'.`
