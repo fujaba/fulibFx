@@ -28,6 +28,7 @@ import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.function.Function;
 import java.util.logging.Logger;
+
 import static org.fulib.fx.util.FrameworkUtil.error;
 
 public abstract class FulibFxApp extends Application {
@@ -208,7 +209,7 @@ public abstract class FulibFxApp extends Application {
         this.currentMainController = controller;
         onShow(Optional.empty(), controller, renderedParent, params);
         display(renderedParent);
-        this.component.controllerManager().getTitle(controller).ifPresent(title -> stage.setTitle(title(title)));
+        getTitle(controller).ifPresent(title -> stage.setTitle(formatTitle(title)));
         return renderedParent;
     }
 
@@ -224,7 +225,7 @@ public abstract class FulibFxApp extends Application {
         Pair<Object, Parent> rendered = this.component.router().renderRoute(route, params);
         this.currentMainController = rendered.getKey();
         display(rendered.getValue());
-        this.component.controllerManager().getTitle(currentMainController).ifPresent(title -> stage.setTitle(title(title)));
+        getTitle(currentMainController).ifPresent(title -> stage.setTitle(formatTitle(title)));
         onShow(Optional.of(route), rendered.getKey(), rendered.getValue(), params);
         return rendered.getValue();
     }
@@ -367,8 +368,24 @@ public abstract class FulibFxApp extends Application {
         this.titlePattern = titlePattern::formatted;
     }
 
-    private String title(String title) {
+    /**
+     * Formats the title of a controller using the title pattern.
+     *
+     * @param title The title of the controller
+     * @return The formatted title
+     */
+    public String formatTitle(String title) {
         return this.titlePattern.apply(title);
+    }
+
+    /**
+     * Returns the title of the given controller.
+     *
+     * @param controller The controller instance
+     * @return The title of the controller
+     */
+    public Optional<String> getTitle(Object controller) {
+        return this.component.controllerManager().getTitle(controller);
     }
 
 }
