@@ -81,14 +81,14 @@ public class ControllerAnnotationProcessor extends AbstractProcessor {
 
     private void checkResources(Element element) {
         final String elementType = element.asType().toString();
-        if (!"java.util.ResourceBundle".equals(elementType)) {
+        if (!processingEnv.getTypeUtils().isSubtype(element.asType(), processingEnv.getElementUtils().getTypeElement("java.util.ResourceBundle").asType())) {
             processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error(2004).formatted(element.getSimpleName(), element.getEnclosingElement().getSimpleName()), element);
         }
     }
 
     private void checkTitle(Element element) {
         if (!isComponent(element.asType()) && !isController(element.asType())) {
-            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "The @Title annotation can only be used on classes annotated with @Component or @Controller.", element);
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error(1009), element);
         }
     }
 

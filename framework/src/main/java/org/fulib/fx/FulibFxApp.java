@@ -211,7 +211,7 @@ public abstract class FulibFxApp extends Application {
         this.frameworkComponent.router().addToHistory(new Pair<>(Either.right(controller), params));
         onShow(Optional.empty(), controller, renderedParent, params);
         display(renderedParent);
-        this.frameworkComponent.controllerManager().getTitle(controller).ifPresent(title -> stage.setTitle(title(title)));
+        getTitle(controller).ifPresent(title -> stage.setTitle(formatTitle(title)));
         return renderedParent;
     }
 
@@ -228,7 +228,7 @@ public abstract class FulibFxApp extends Application {
         Object controller = rendered.getKey();
         this.currentMainController = controller;
         display(rendered.getValue());
-        this.frameworkComponent.controllerManager().getTitle(controller).ifPresent(title -> stage.setTitle(title(title)));
+        getTitle(currentMainController).ifPresent(title -> stage.setTitle(formatTitle(title)));
         onShow(Optional.of(route), rendered.getKey(), rendered.getValue(), params);
         return rendered.getValue();
     }
@@ -366,8 +366,24 @@ public abstract class FulibFxApp extends Application {
         this.titlePattern = titlePattern::formatted;
     }
 
-    private String title(String title) {
+    /**
+     * Formats the title of a controller using the title pattern.
+     *
+     * @param title The title of the controller
+     * @return The formatted title
+     */
+    public String formatTitle(String title) {
         return this.titlePattern.apply(title);
+    }
+
+    /**
+     * Returns the title of the given controller.
+     *
+     * @param controller The controller instance
+     * @return The title of the controller
+     */
+    public Optional<String> getTitle(Object controller) {
+        return this.frameworkComponent.controllerManager().getTitle(controller);
     }
 
     /**
