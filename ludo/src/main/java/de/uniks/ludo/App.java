@@ -43,6 +43,9 @@ public class App extends FulibFxApp {
                 }
             });
 
+            // Setting the title pattern of the application. The %s will be replaced with the title of the view
+            setTitlePattern("Ludo - %s");
+
             // Setting the resource path to the resources folder of the project (required for reloading in dev)
             // If the resource path is not set, the framework will use the default resource path (src/main/resources)
             setResourcesPath(Path.of("ludo/src/main/resources/"));

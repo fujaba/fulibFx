@@ -20,7 +20,9 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.StrokeType;
 import org.fulib.fx.annotation.controller.Controller;
+import org.fulib.fx.annotation.controller.Resource;
 import org.fulib.fx.annotation.controller.SubComponent;
+import org.fulib.fx.annotation.controller.Title;
 import org.fulib.fx.annotation.event.onDestroy;
 import org.fulib.fx.annotation.event.onInit;
 import org.fulib.fx.annotation.event.onRender;
@@ -30,6 +32,7 @@ import org.fulib.fx.controller.Subscriber;
 import javax.inject.Inject;
 import java.util.*;
 
+@Title("%ingame.title")
 @Controller
 public class IngameController {
 
@@ -42,6 +45,7 @@ public class IngameController {
     GameService gameService;
     @Inject
     Subscriber subscriber;
+    @Resource
     @Inject
     ResourceBundle bundle;
     @Inject
