@@ -160,7 +160,7 @@ public class Router {
 
         Object controller = either.isLeft() ?
                 ReflectionUtil.getInstanceOfProviderField(either.getLeft().orElseThrow().value(), this.routerObject) :
-                either.getRight();
+                either.getRight().orElseThrow();
 
         return new Pair<>(controller, this.manager.get().initAndRender(
                 controller,
