@@ -11,6 +11,7 @@ import java.nio.file.Path;
 import java.util.logging.Level;
 
 import static javafx.scene.input.KeyEvent.KEY_PRESSED;
+import static javafx.scene.input.KeyEvent.KEY_RELEASED;
 
 @Singleton
 public class App extends FulibFxApp {
@@ -39,7 +40,7 @@ public class App extends FulibFxApp {
             setDefaultResourceBundle(component.bundle());
 
             // Adding a key event handler to the stage, which listens for the F5 key to refresh the application
-            stage().addEventHandler(KEY_PRESSED, event -> {
+            stage().addEventHandler(KEY_RELEASED, event -> {
                 if (event.getCode() == KeyCode.F5) {
                     refresh();
                 }

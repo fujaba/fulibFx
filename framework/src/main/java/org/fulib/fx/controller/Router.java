@@ -9,10 +9,7 @@ import org.fulib.fx.annotation.controller.Component;
 import org.fulib.fx.annotation.controller.Controller;
 import org.fulib.fx.controller.exception.ControllerDuplicatedRouteException;
 import org.fulib.fx.controller.exception.ControllerInvalidRouteException;
-import org.fulib.fx.data.EvictingQueue;
-import org.fulib.fx.data.TraversableNodeTree;
-import org.fulib.fx.data.TraversableQueue;
-import org.fulib.fx.data.TraversableTree;
+import org.fulib.fx.data.*;
 import org.fulib.fx.util.ControllerUtil;
 import org.fulib.fx.util.FrameworkUtil;
 import org.fulib.fx.util.ReflectionUtil;
@@ -21,6 +18,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 import javax.inject.Singleton;
 import java.lang.reflect.Field;
 import java.util.Map;
@@ -32,7 +30,7 @@ import static org.fulib.fx.util.FrameworkUtil.error;
 public class Router {
 
     private final TraversableTree<Field> routes;
-    private final TraversableQueue<Pair<TraversableNodeTree.Node<Field>, Map<String, Object>>> history;
+    private final SizeableTraversableQueue<Pair<Either<TraversableNodeTree.Node<Field>, Object>, Map<String, Object>>> history;
 
     @Inject
     Lazy<ControllerManager> manager;
@@ -42,7 +40,7 @@ public class Router {
     @Inject
     public Router() {
         this.routes = new TraversableNodeTree<>();
-        this.history = new EvictingQueue<>(10);
+        this.history = new EvictingQueue<>(5);
     }
 
     /**
@@ -107,7 +105,7 @@ public class Router {
         TraversableNodeTree.Node<Field> node = ((TraversableNodeTree<Field>) this.routes).currentNode();
 
         // Since we visited this route with the given parameters, we can add it to the history
-        this.history.insert(new Pair<>(node, parameters));
+        this.addToHistory(new Pair<>(Either.left(node), parameters));
         Class<?> controllerClass = ReflectionUtil.getProvidedClass(Objects.requireNonNull(provider));
 
         // Check if the provider is providing a valid controller/component
@@ -124,17 +122,19 @@ public class Router {
         return new Pair<>(controllerInstance, renderedParent);
     }
 
+    public void addToHistory(Pair<Either<TraversableNodeTree.Node<Field>, Object>, Map<String, Object>> pair) {
+        this.history.insert(pair);
+    }
+
     /**
      * Goes back to the previous controller in the history.
      *
      * @return The rendered controller
      */
-    public Parent back() {
+    public Pair<Object, Parent> back() {
         try {
-            Pair<TraversableNodeTree.Node<Field>, Map<String, Object>> pair = this.history.back();
-            ((TraversableNodeTree<Field>) routes).setCurrentNode(pair.getKey());
-            return this.manager.get().initAndRender(ReflectionUtil.getInstanceOfProviderField(pair.getKey().value(), this.routerObject), pair.getValue());
-
+            var pair = this.history.back();
+            return navigate(pair);
         } catch (Exception e) {
             return null;
         }
@@ -145,24 +145,59 @@ public class Router {
      *
      * @return The rendered controller
      */
-    public Parent forward() {
+    public Pair<Object, Parent> forward() {
         try {
-            Pair<TraversableNodeTree.Node<Field>, Map<String, Object>> pair = this.history.forward();
-            ((TraversableNodeTree<Field>) routes).setCurrentNode(pair.getKey());
-            return this.manager.get().initAndRender(ReflectionUtil.getInstanceOfProviderField(pair.getKey().value(), this.routerObject), pair.getValue());
+            var pair = this.history.forward();
+            return navigate(pair);
         } catch (Exception e) {
             return null;
         }
+    }
+
+    private Pair<Object, Parent> navigate(Pair<Either<TraversableNodeTree.Node<Field>, Object>, Map<String, Object>> pair) {
+        var either = pair.getKey();
+        either.getLeft().ifPresent(node -> ((TraversableNodeTree<Field>) routes).setCurrentNode(node));
+
+        Object controller = either.isLeft() ?
+                ReflectionUtil.getInstanceOfProviderField(either.getLeft().orElseThrow().value(), this.routerObject) :
+                either.getRight();
+
+        return new Pair<>(controller, this.manager.get().initAndRender(
+                controller,
+                pair.getValue()
+        ));
     }
 
     /**
      * Returns the current field and its parameters.
      * This is used internally for reloading the current controller.
      *
-     * @return The current field and its parameters
+     * @return The current controller object and its parameters
      */
-    public Pair<Field, Map<String, Object>> current() {
-        return new Pair<>(this.history.current().getKey().value(), this.history.current().getValue());
+    public Pair<Object, Map<String, Object>> current() {
+        Either<TraversableNodeTree.Node<Field>, Object> either = this.history.current().getKey();
+        return new Pair<>(
+                either.isLeft() ?
+                        either.getLeft().map(node -> {
+                            try {
+                                Objects.requireNonNull(node.value()).setAccessible(true);
+                                return ((Provider<?>) Objects.requireNonNull(node.value()).get(routerObject)).get();
+                            } catch (IllegalAccessException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }).orElseThrow() :
+                        either.getRight().orElseThrow(),
+                this.history.current().getValue()
+        );
     }
 
+    /**
+     * Updates the history size.
+     * Setting the size to 1 will disable the history except for the current controller which will be stored for reloading.
+     *
+     * @param size The size of the history
+     */
+    public void setHistorySize(int size) {
+        this.history.setSize(size);
+    }
 }
