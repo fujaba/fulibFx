@@ -7,12 +7,20 @@ import javafx.util.Pair;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.Optional;
+import java.util.Random;
 
 @Singleton
 public class GameService {
 
+    private final Random random;
+
     @Inject
     public GameService() {
+        this.random = new Random();
+    }
+
+    public GameService(Random random) {
+        this.random = random;
     }
 
     /**
@@ -164,5 +172,9 @@ public class GameService {
         }
         piece.setOn(targetField);
         return isDone(piece.getOwner());
+    }
+
+    public int rollRandom() {
+        return random.nextInt(6) + 1;
     }
 }

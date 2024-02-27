@@ -6,15 +6,17 @@ import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
 import org.fulib.fx.FulibFxApp;
 
+import javax.inject.Singleton;
 import java.nio.file.Path;
 import java.util.logging.Level;
 
 import static javafx.scene.input.KeyEvent.KEY_PRESSED;
 
+@Singleton
 public class App extends FulibFxApp {
 
 
-    private final MainComponent component;
+    private MainComponent component;
 
     public App() {
         super();
@@ -78,4 +80,16 @@ public class App extends FulibFxApp {
     public MainComponent component() {
         return component;
     }
+
+    /**
+     * Overrides the dagger component of the application.
+     *
+     * @param component The new dagger component
+     * @return The application itself
+     */
+    public App setComponent(MainComponent component) {
+        this.component = component;
+        return this;
+    }
+
 }

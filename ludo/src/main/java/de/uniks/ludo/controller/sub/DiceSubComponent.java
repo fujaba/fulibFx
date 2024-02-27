@@ -1,5 +1,6 @@
 package de.uniks.ludo.controller.sub;
 
+import de.uniks.ludo.service.GameService;
 import io.reactivex.rxjava3.core.Observable;
 import javafx.animation.Timeline;
 import javafx.beans.property.BooleanProperty;
@@ -20,6 +21,9 @@ public class DiceSubComponent extends VBox {
     @FXML
     public Label eyesLabel;
 
+    @Inject
+    GameService gameService;
+
     private final BooleanProperty enabled = new SimpleBooleanProperty(true);
 
     private CompletableFuture<Integer> rollFuture;
@@ -36,7 +40,7 @@ public class DiceSubComponent extends VBox {
         this.rollAnimation = new Timeline();
         this.rollAnimation.setCycleCount(10);
         rollAnimation.getKeyFrames().add(new javafx.animation.KeyFrame(javafx.util.Duration.millis(100), event -> {
-            int random = (int) (Math.random() * 6 + 1);
+            int random = gameService.rollRandom();
             eyesLabel.setText(String.valueOf(random));
         }));
         this.rollAnimation.setOnFinished(event -> this.rollFuture.complete(Integer.parseInt(eyesLabel.getText())));

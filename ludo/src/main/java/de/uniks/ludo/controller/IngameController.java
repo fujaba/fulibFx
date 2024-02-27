@@ -200,6 +200,7 @@ public class IngameController {
     // Creates a circle for a piece and sets the position to the piece's current field
     private Circle createPieceCircle(Piece piece) {
         Circle circle = new Circle(16);
+        circle.setId("piece-" + piece.getOwner().getId() + "-" + piece.getOwner().getPieces().indexOf(piece));
         Player player = piece.getOwner();
         AnchorPane.setTopAnchor(circle, (double) piece.getOn().getY() * 50 + 4);
         AnchorPane.setLeftAnchor(circle, (double) piece.getOn().getX() * 50 + 4);
@@ -210,6 +211,7 @@ public class IngameController {
     // Creates a circle for a field and sets the position to the field's coordinates
     private Circle createFieldCircle(Field field) {
         Circle circle = new Circle(20);
+        circle.setId("field-" + field.getX() + "-" + field.getY());
         AnchorPane.setTopAnchor(circle, (double) field.getY() * 50);
         AnchorPane.setLeftAnchor(circle, (double) field.getX() * 50);
         String color = field instanceof HomeField ? "gray" : "white";

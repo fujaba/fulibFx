@@ -243,9 +243,6 @@ public abstract class FulibFxApp extends Application {
 
     // Internal helper method
     protected void cleanup() {
-        System.out.println("cleanup");
-        System.out.println(this);
-        System.out.println(frameworkComponent);
         this.frameworkComponent.controllerManager().cleanup();
     }
 
