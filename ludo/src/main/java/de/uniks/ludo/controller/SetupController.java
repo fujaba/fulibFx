@@ -2,6 +2,7 @@ package de.uniks.ludo.controller;
 
 import de.uniks.ludo.App;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.Slider;
 import org.fulib.fx.annotation.controller.Controller;
 import org.fulib.fx.annotation.controller.Resource;
@@ -15,6 +16,8 @@ import java.util.ResourceBundle;
 @Controller
 public class SetupController {
 
+    @FXML
+    public Button startButton;
     @FXML
     private Slider playerAmountSlider;
 

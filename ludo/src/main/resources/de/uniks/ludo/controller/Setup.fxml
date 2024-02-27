@@ -23,5 +23,5 @@
             <Insets />
         </VBox.margin>
     </Slider>
-    <Button defaultButton="true" mnemonicParsing="false" onAction="#onPlayClick" text="%setup.start.game" />
+    <Button fx:id="startButton" defaultButton="true" mnemonicParsing="false" onAction="#onPlayClick" text="%setup.start.game" />
 </VBox>
