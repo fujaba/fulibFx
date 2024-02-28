@@ -266,7 +266,6 @@ public class SetupController {
 These parameters can be injected into the controller using the `@Param` annotation.
 
 ```java
-
 @Controller
 public class IngameController {
     // ...
