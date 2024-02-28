@@ -20,8 +20,10 @@ repositories {
     mavenCentral()
 }
 
-implementation 'org.fulib:fulibFx:VERSION'
-implementation 'org.fulib:fulibFx-processor:VERSION'
+dependencies {
+    implementation 'org.fulib:fulibFx:VERSION'
+    implementation 'org.fulib:fulibFx-processor:VERSION'
+}
 ```
 
 After adding the dependencies, refresh your project and you are ready to start.
@@ -468,6 +470,15 @@ public class IngameController {
     
     // ...
 }
+```
+
+```xml
+<VBox fx:controller="de.uniks.ludo.controller.IngameController">
+    <Label fx:id="playerLabel" text="%ingame.current.player" />
+    <AnchorPane fx:id="boardPane" />
+    <DiceSubComponent fx:id="diceSubComponent" />
+</VBox>
+
 ```
 
 ### Conclusion
