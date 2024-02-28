@@ -269,7 +269,6 @@ These parameters can be injected into the controller using the `@Param` annotati
 
 @Controller
 public class IngameController {
-
     // ...
 
     @onInit
