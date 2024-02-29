@@ -40,3 +40,6 @@ public void start(Stage primaryStage) {
     setTitlePattern(title -> "TODO - " + title + " v1.0"); // Results in "TODO - My Todo List v1.0"
 }
 ```
+
+The `FulibFxApp` class also provides methods for getting the title of a controller for other purposes.
+Using `getTitle` will return the title of the controller as a string. This can be formatted using the `formatTitle` method
