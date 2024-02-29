@@ -15,6 +15,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.effect.BlurType;
 import javafx.scene.effect.Shadow;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -25,6 +26,7 @@ import org.fulib.fx.annotation.controller.SubComponent;
 import org.fulib.fx.annotation.controller.Title;
 import org.fulib.fx.annotation.event.onDestroy;
 import org.fulib.fx.annotation.event.onInit;
+import org.fulib.fx.annotation.event.onKey;
 import org.fulib.fx.annotation.event.onRender;
 import org.fulib.fx.annotation.param.Param;
 import org.fulib.fx.controller.Subscriber;
@@ -105,21 +107,26 @@ public class IngameController {
     @onRender
     public void setupDice() {
         this.diceSubComponent.setOnMouseClicked(event -> {
-            if (!this.diceSubComponent.isEnabled()) return;
-            LudoUtil.playSound(Constants.SOUND_ROLL_DICES);
-            this.subscriber.subscribe(this.diceSubComponent.roll(), Schedulers.computation(),
-                    eyes -> {
-                        this.eyes.set(eyes);
-                        if (this.gameService.stuck(this.currentPlayer.get(), eyes)) {
-                            this.gameService.nextPlayer(game);
-                            this.eyes.set(0);
-                            this.diceSubComponent.reset();
-                        }
-                    },
-                    Throwable::printStackTrace
-            );
+            rollDice();
         });
         this.subscriber.bind(this.diceSubComponent.eyesLabel.textFillProperty(), this.currentPlayer.map(player -> Color.web(Constants.COLORS.get(player.getId()))));
+    }
+
+    @onKey(code = KeyCode.R)
+    private void rollDice() {
+        if (!this.diceSubComponent.isEnabled()) return;
+        LudoUtil.playSound(Constants.SOUND_ROLL_DICES);
+        this.subscriber.subscribe(this.diceSubComponent.roll(), Schedulers.computation(),
+                eyes -> {
+                    this.eyes.set(eyes);
+                    if (this.gameService.stuck(this.currentPlayer.get(), eyes)) {
+                        this.gameService.nextPlayer(game);
+                        this.eyes.set(0);
+                        this.diceSubComponent.reset();
+                    }
+                },
+                Throwable::printStackTrace
+        );
     }
 
     @onRender
