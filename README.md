@@ -83,6 +83,21 @@ public class TodoController {
 }
 ```
 
+When using Dagger, add the following snippet module to provide the `FulibFxApp` to internal components using your app class.
+
+```java
+@Module
+public class MainModule {
+    
+    // ...
+    
+    @Provides
+    FulibFxApp app(YourApp app) {
+        return app;
+    }
+}
+```
+
 ### 📜 Routes
 
 The framework provides a simple way to navigate between controllers using the `show` method. The method takes a route
