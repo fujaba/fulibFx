@@ -29,6 +29,7 @@ public interface FrameworkComponent {
 
     @Component.Builder
     interface Builder {
+
         @BindsInstance
         Builder framework(FulibFxApp framework);
 
