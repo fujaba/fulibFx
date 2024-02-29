@@ -167,7 +167,7 @@ of the object and modify the copy or modify the object before passing it to the 
 ### 4. The framework doesn't compile even though the view file exists
 The framework uses an annotation processor to check if the view file exists. If the view file is not found, the processor
 will throw an error. Please make sure that the view file is in the correct location and that `options.sourcepath` is set
-correctly in your `compileJava` task (see [Annotation Processor](#-annotation-processor)).
+correctly in your `compileJava` task (see [Annotation Processor](#-installation)).
 
 ### 5. The SceneBuilder doesn't recognize my controller
 When using the SceneBuilder, it might not recognize your controller's FXML file. This can happen when the FXML file contains
