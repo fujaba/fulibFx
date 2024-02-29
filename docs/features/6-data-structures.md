@@ -24,7 +24,7 @@ disposable.add("Hello");
 disposable.dispose(); // Will print "Hello", "World" and "!" to the console (LIFO order)
 ```
 
-## TraversableQueue
+### TraversableQueue
 A `TraversableQueue` is a queue that saves the latest n entries made to it. Like a normal queue, it can be used to store items in a FIFO order.
 When the queue is full, the oldest item will be removed. However, it also provides methods to traverse the queue,
 meaning you can go back and forth between items in the queue. When you go back in the queue and add a new item, all
