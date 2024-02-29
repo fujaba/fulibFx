@@ -65,6 +65,21 @@ public class App extends FulibFxApp {
 }
 ```
 
+When using Dagger, add the following snippet module to provide the `FulibFxApp` to internal components using your app class.
+
+```java
+@Module
+public class MainModule {
+
+    // ...
+
+    @Provides
+    FulibFxApp app(LudoApp app) {
+        return app;
+    }
+}
+```
+
 The app can now be started by creating a main method and calling the `launch` method of the `Application` class.
 
 ```java
