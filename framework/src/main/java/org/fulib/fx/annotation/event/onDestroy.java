@@ -11,4 +11,17 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface onDestroy {
+
+    /**
+     * The order in which the method should be called. Lower values are called first.
+     *
+     * @return the order in which the method should be called
+     */
+    int value() default 0;
+
+    int LOWEST = Integer.MIN_VALUE;
+    int LOW = -10;
+    int DEFAULT = 0;
+    int HIGH = 10;
+    int HIGHEST = Integer.MAX_VALUE;
 }

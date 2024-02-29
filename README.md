@@ -3,7 +3,7 @@
 fulibFx is a versatile framework for JavaFX applications that is specifically designed for MVC pattern projects.
 It provides a simple way to create and manage controllers, views, routes, subcomponents, modals, and more.
 
-The framework is built on top of JavaFx and uses Dagger for dependency injection and RxJava for reactive programming.
+The framework is built on top of JavaFX and uses Dagger for dependency injection and RxJava for reactive programming.
 It also provides a few utility classes and data structures to simplify the creation of JavaFX applications.
 
 ## 🔗 Installation

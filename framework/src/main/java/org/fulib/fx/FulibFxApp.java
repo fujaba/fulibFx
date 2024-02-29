@@ -15,6 +15,7 @@ import org.fulib.fx.annotation.controller.Component;
 import org.fulib.fx.controller.AutoRefresher;
 import org.fulib.fx.dagger.DaggerFrameworkComponent;
 import org.fulib.fx.dagger.FrameworkComponent;
+import org.fulib.fx.data.Either;
 import org.fulib.fx.util.ControllerUtil;
 import org.fulib.fx.util.ReflectionUtil;
 import org.jetbrains.annotations.ApiStatus;
@@ -39,15 +40,16 @@ public abstract class FulibFxApp extends Application {
     private static Path resourcesPath = Path.of("src/main/resources");
 
     // The component holding the required dependencies like router, controller manager, etc.
-    private FrameworkComponent component;
+    private FrameworkComponent frameworkComponent;
 
     // The stage of the application
     private Stage stage;
 
+    // The title pattern for the application
+    private Function<String, String> titlePattern = s -> s;
+
     // The instance of the current main controller (last controller displayed with show())
     private Object currentMainController;
-
-    private Function<String, String> titlePattern = s -> s;
 
     /**
      * Returns the path to the 'resources' directory.
@@ -130,7 +132,7 @@ public abstract class FulibFxApp extends Application {
         if (!ControllerUtil.isComponent(component))
             throw new IllegalArgumentException(error(1000).formatted(component.getClass().getName()));
 
-        Disposable disposable = this.component.controllerManager().init(component, params, false);
+        Disposable disposable = this.frameworkComponent.controllerManager().init(component, params, false);
         if (onDestroy != null) {
             onDestroy.add(disposable);
         }
@@ -158,7 +160,7 @@ public abstract class FulibFxApp extends Application {
     public void start(Stage primaryStage) {
         this.stage = primaryStage;
 
-        this.component = DaggerFrameworkComponent.builder().framework(this).build();
+        this.frameworkComponent = DaggerFrameworkComponent.builder().framework(this).build();
 
         Scene scene = new Scene(new Pane()); // Show default scene
 
@@ -168,7 +170,6 @@ public abstract class FulibFxApp extends Application {
 
     @Override
     public void stop() {
-        this.currentMainController = null;
         cleanup();
         autoRefresher().close();
         System.exit(0);
@@ -207,6 +208,7 @@ public abstract class FulibFxApp extends Application {
         cleanup();
         Parent renderedParent = this.frameworkComponent().controllerManager().initAndRender(controller, params);
         this.currentMainController = controller;
+        this.frameworkComponent.router().addToHistory(new Pair<>(Either.right(controller), params));
         onShow(Optional.empty(), controller, renderedParent, params);
         display(renderedParent);
         getTitle(controller).ifPresent(title -> stage.setTitle(formatTitle(title)));
@@ -222,8 +224,9 @@ public abstract class FulibFxApp extends Application {
      */
     public @NotNull Parent show(@NotNull String route, @NotNull Map<@NotNull String, @Nullable Object> params) {
         cleanup();
-        Pair<Object, Parent> rendered = this.component.router().renderRoute(route, params);
-        this.currentMainController = rendered.getKey();
+        Pair<Object, Parent> rendered = this.frameworkComponent.router().renderRoute(route, params);
+        Object controller = rendered.getKey();
+        this.currentMainController = controller;
         display(rendered.getValue());
         getTitle(currentMainController).ifPresent(title -> stage.setTitle(formatTitle(title)));
         onShow(Optional.of(route), rendered.getKey(), rendered.getValue(), params);
@@ -242,7 +245,7 @@ public abstract class FulibFxApp extends Application {
 
     // Internal helper method
     protected void cleanup() {
-        this.component.controllerManager().cleanup();
+        this.frameworkComponent.controllerManager().cleanup();
     }
 
     /**
@@ -277,7 +280,7 @@ public abstract class FulibFxApp extends Application {
      */
     @ApiStatus.Internal
     public FrameworkComponent frameworkComponent() {
-        return this.component;
+        return this.frameworkComponent;
     }
 
     /**
@@ -286,21 +289,21 @@ public abstract class FulibFxApp extends Application {
      * @param routes The class to register the routes from
      */
     public void registerRoutes(Object routes) {
-        this.component.router().registerRoutes(routes);
+        this.frameworkComponent.router().registerRoutes(routes);
     }
 
     /**
      * Sets the default resource bundle to use for FXML files if no resource bundle is provided in the controller/component.
      */
     public void setDefaultResourceBundle(ResourceBundle resourceBundle) {
-        this.component.controllerManager().setDefaultResourceBundle(resourceBundle);
+        this.frameworkComponent.controllerManager().setDefaultResourceBundle(resourceBundle);
     }
 
     /**
      * Returns auto refresher of the application.
      */
     public AutoRefresher autoRefresher() {
-        return this.component.autoRefresher();
+        return this.frameworkComponent.autoRefresher();
     }
 
     /**
@@ -308,9 +311,11 @@ public abstract class FulibFxApp extends Application {
      */
     public void back() {
         cleanup();
-        Parent parent = this.component.router().back();
-        if (parent != null)
-            display(parent);
+        Pair<Object, Parent> back = this.frameworkComponent.router().back();
+        if (back != null) {
+            this.currentMainController = back.getKey();
+            display(back.getValue());
+        }
     }
 
     /**
@@ -318,9 +323,11 @@ public abstract class FulibFxApp extends Application {
      */
     public void forward() {
         cleanup();
-        Parent parent = this.component.router().forward();
-        if (parent != null)
-            display(parent);
+        Pair<Object, Parent> forward = this.frameworkComponent.router().forward();
+        if (forward != null) {
+            this.currentMainController = forward.getKey();
+            display(forward.getValue());
+        }
     }
 
     /**
@@ -331,21 +338,12 @@ public abstract class FulibFxApp extends Application {
      */
     public void refresh() {
         cleanup();
-        Map<String, Object> params = this.component.router().current().getValue(); // Use the same parameters as before
-        this.component.controllerManager().init(currentMainController, params, true); // Re-initialize the controller
-        Parent parent = this.component.controllerManager().render(currentMainController, params); // Re-render the controller
+        Object controller = this.currentMainController; // Get the current controller
+        Map<String, Object> params = this.frameworkComponent.router().current().getValue(); // Use the same parameters as before
+        this.frameworkComponent.controllerManager().init(controller, params, true); // Re-initialize the controller
+        Parent parent = this.frameworkComponent.controllerManager().render(controller, params); // Re-render the controller
         ReflectionUtil.resetMouseHandler(stage());
         display(parent);
-    }
-
-    /**
-     * Returns the instance of the current main controller.
-     * This should not be used to change the current main controller.
-     *
-     * @return The instance of the currently displayed controller
-     */
-    public Object currentMainController() {
-        return currentMainController;
     }
 
     /**
@@ -385,7 +383,22 @@ public abstract class FulibFxApp extends Application {
      * @return The title of the controller
      */
     public Optional<String> getTitle(Object controller) {
-        return this.component.controllerManager().getTitle(controller);
+        return this.frameworkComponent.controllerManager().getTitle(controller);
+    }
+
+    /**
+     * Sets the history size of the application.
+     * <p>
+     * The smaller the history size, the less memory is used.
+     * <p>
+     * The larger the history size, the more controllers can be navigated back and forth.
+     * <p>
+     * The default history size is 10. It cannot be smaller than 1.
+     *
+     * @param size The history size
+     */
+    public void setHistorySize(int size) {
+        this.frameworkComponent.router().setHistorySize(size);
     }
 
 }
