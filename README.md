@@ -736,7 +736,8 @@ elements (for example nodes defined in an FXML file) in the init methods as the 
 rendering.
 
 When using sub-controllers or For-Loops, the order of operations is a bit more complex. At first the main controller
-will be initialized. After the controller has been initialized, all sub-controllers will be loaded and therefore
+will be initialized. After the controller has been initialized (first all parameters will be filled in, then `@onInit` 
+annotated methods will be called), all sub-controllers will be loaded and therefore
 initialized. This will happen recursively until a sub-controller doesn't have any sub-controllers. After that, the
 sub-controllers will be rendered, going back up to the main controller. The main controller will be rendered, after all
 the sub-controllers have been rendered.
