@@ -63,7 +63,7 @@ public class AutoRefresher {
                         // Check if the file is a fxml file (not 100% accurate, but good enough)
                         if (file.getFileName().toString().contains(".fxml")) {
                             // Check if the file contains the current main controller as fx:controller (only reload if the fxml file is actually used)
-                            if (FileUtil.getContent(file.toFile()).contains(String.format(FX_CONTROLLER_STRING, framework.get().currentMainController().getClass().getName()))) {
+                            if (FileUtil.getContent(file.toFile()).contains(String.format(FX_CONTROLLER_STRING, framework.get().frameworkComponent().router().current().getKey().getClass().getName()))) {
                                 FulibFxApp.FX_SCHEDULER.scheduleDirect(() -> {
                                     FulibFxApp.LOGGER.info("Reloading " + file.getFileName() + " because it was modified.");
                                     framework.get().refresh();

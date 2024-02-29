@@ -12,7 +12,7 @@ public class TraversableQueueTest {
 
     @Test
     public void insert() {
-        TraversableQueue<Integer> queue = new EvictingQueue<>(5);
+        EvictingQueue<Integer> queue = new EvictingQueue<>(5);
 
         assertTrue(queue.entries().isEmpty());
 
@@ -39,6 +39,21 @@ public class TraversableQueueTest {
 
         assertEquals(List.of(2, 3, 4, 5, 6), queue.entries());
 
+        queue.back();
+        queue.back();
+        queue.back();
+
+        assertEquals(3, queue.current());
+
+        assertThrows(IllegalArgumentException.class, () -> queue.setSize(3));
+
+        queue.forward();
+
+        assertEquals(4, queue.current());
+
+        queue.setSize(3);
+
+        assertEquals(List.of(4, 5, 6), queue.entries());
     }
 
     @Test

@@ -1,14 +1,15 @@
 package org.fulib.fx.data;
 
-import org.fulib.fx.FulibFxApp;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 
 import static org.fulib.fx.util.FrameworkUtil.error;
 
-public class EvictingQueue<T> implements TraversableQueue<T> {
+public class EvictingQueue<T> implements SizeableTraversableQueue<T> {
 
-    private final int size;
+    private int size;
 
     private final ArrayList<T> list;
 
@@ -86,7 +87,27 @@ public class EvictingQueue<T> implements TraversableQueue<T> {
     }
 
     @Override
-    public int size() {
+    public int length() {
         return list.size();
+    }
+
+    @Override
+    public int size() {
+        return size;
+    }
+
+    @Override
+    public void setSize(int size) {
+        if (size < 1) throw new IllegalArgumentException("Size must be at least 1");
+        if (size == this.size) return;
+        if (currentIndex < list.size() - size)
+            throw new IllegalArgumentException("Cannot update size while the current index is outside the new bounds");
+
+        this.size = size;
+        if (list.size() > size) {
+            list.subList(0, list.size() - size).clear();
+            // Update the current index to the correct position
+            currentIndex -= list.size() - size;
+        }
     }
 }
