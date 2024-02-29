@@ -125,7 +125,7 @@ When developing an application, it is often necessary to reload the application 
 a way to [refresh a controller](docs/features/3-history.md) without having to reload the whole application. 
 This can be done by calling the `refresh` method
 
-<img width="640" height="360" src=".github/assets/hot-reload.gif">
+<img width="640" height="360" src="docs/assets/hot-reload.gif">
 
 ### 🧷 Utilities
 

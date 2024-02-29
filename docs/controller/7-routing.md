@@ -43,7 +43,7 @@ public class Routing {
 
 This setup will result in the following routing tree:
 
-<img src="/.github/assets/route-diagram.png" height="300" alt="Routing tree showing main, login, todo and register routes in a tree like structure">
+<img src="/docs/assets/route-diagram.png" height="300" alt="Routing tree showing main, login, todo and register routes in a tree like structure">
 
 After setting up the router class, register it in the `FulibFxApp` class by calling the `registerRoutes(Object)` method.
 It is recommended to use dependency injection (module/component) to provide a router instance to the method.
