@@ -31,7 +31,7 @@ meaning you can go back and forth between items in the queue. When you go back i
 items after the current item will be removed. This can be compared to the history of a browser and is used for the
 history of routes.
 
-## Either
+### Either
 The `Either` class combines two optionals into a single object. It used to represent a value with two possible types.
 The framework uses it for the history, where the `Either` can be either a controller or a route. It has some methods
 for checking which type it is and for getting the value correct value.
