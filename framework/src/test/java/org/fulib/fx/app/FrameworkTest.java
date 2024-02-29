@@ -1,6 +1,9 @@
 package org.fulib.fx.app;
 
 import org.fulib.fx.FulibFxApp;
+import org.fulib.fx.app.history.AController;
+import org.fulib.fx.app.history.BController;
+import org.fulib.fx.app.history.CController;
 import org.fulib.fx.app.modal.ModalComponent;
 import org.fulib.fx.app.controllertypes.sub.ButtonSubComponent;
 import org.fulib.fx.controller.Modals;
@@ -181,6 +184,40 @@ public class FrameworkTest extends ApplicationTest {
 
         assertEquals('a', controller.getSetterMultiParams1());
         assertEquals(true, controller.getSetterMultiParams2());
+    }
+
+    @Test
+    public void history() {
+        app.show(new AController(), Map.of("string", "a"));
+        verifyThat("A:a", Node::isVisible);
+
+        app.show(new BController(), Map.of("string", "b"));
+        verifyThat("B:b", Node::isVisible);
+
+        app.show(new CController(), Map.of("string", "c"));
+        verifyThat("C:c", Node::isVisible);
+
+        app.back();
+        verifyThat("B:b", Node::isVisible);
+
+        app.back();
+        verifyThat("A:a", Node::isVisible);
+
+        app.forward();
+        verifyThat("B:b", Node::isVisible);
+
+        app.forward();
+        verifyThat("C:c", Node::isVisible);
+
+        app.forward();
+        verifyThat("C:c", Node::isVisible); // should not change
+
+        app.back();
+        verifyThat("B:b", Node::isVisible);
+
+        FulibFxApp.FX_SCHEDULER.scheduleDirect(app::refresh);
+        waitForFxEvents();
+        verifyThat("B:b", Node::isVisible);
     }
 
 }

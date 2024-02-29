@@ -16,6 +16,6 @@ public interface TraversableQueue<T> {
 
     List<T> entries();
 
-    int size();
+    int length();
 
 }

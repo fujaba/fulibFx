@@ -22,6 +22,7 @@ import javafx.scene.layout.VBox;
 import org.fulib.fx.annotation.controller.Controller;
 import org.fulib.fx.annotation.controller.Resource;
 import org.fulib.fx.annotation.controller.SubComponent;
+import org.fulib.fx.annotation.controller.Title;
 import org.fulib.fx.annotation.event.onDestroy;
 import org.fulib.fx.annotation.event.onInit;
 import org.fulib.fx.annotation.event.onKey;
@@ -43,12 +44,11 @@ import java.util.ResourceBundle;
  * <p>
  * The controller annotation is required for the framework to recognize this class as a controller.
  * As there is no view specified, the framework will use the default file name which is located in the 'resources' folder
- * and has a name based on the class name (IngameController.class --> ingame.fxml).
+ * and has a name based on the class name (IngameController.class --> Ingame.fxml).
  */
 @Controller
-public class IngameController implements Titleable {
-
-    public static final String INGAME_SCREEN_TITLE = "Uno - In Game";
+@Title
+public class IngameController {
 
     private final BooleanProperty wildCardSelectedProperty = new SimpleBooleanProperty();
     private final BooleanProperty playersTurn = new SimpleBooleanProperty();
@@ -109,11 +109,6 @@ public class IngameController implements Titleable {
     public IngameController() {
         System.out.println(this + " created.");
         // The annotation @Inject is required for dagger to recognize this constructor as an injectable constructor
-    }
-
-    @Override
-    public String getTitle() {
-        return INGAME_SCREEN_TITLE;
     }
 
     @onInit

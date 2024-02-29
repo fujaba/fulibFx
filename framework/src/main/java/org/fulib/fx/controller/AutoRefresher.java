@@ -14,6 +14,7 @@ import java.nio.file.*;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
+import static org.fulib.fx.util.FrameworkUtil.error;
 
 @Singleton
 public class AutoRefresher {
@@ -62,7 +63,7 @@ public class AutoRefresher {
                         // Check if the file is a fxml file (not 100% accurate, but good enough)
                         if (file.getFileName().toString().contains(".fxml")) {
                             // Check if the file contains the current main controller as fx:controller (only reload if the fxml file is actually used)
-                            if (FileUtil.getContent(file.toFile()).contains(String.format(FX_CONTROLLER_STRING, framework.get().currentMainController().getClass().getName()))) {
+                            if (FileUtil.getContent(file.toFile()).contains(String.format(FX_CONTROLLER_STRING, framework.get().frameworkComponent().router().current().getKey().getClass().getName()))) {
                                 FulibFxApp.FX_SCHEDULER.scheduleDirect(() -> {
                                     FulibFxApp.LOGGER.info("Reloading " + file.getFileName() + " because it was modified.");
                                     framework.get().refresh();
@@ -74,7 +75,7 @@ public class AutoRefresher {
             });
 
         } catch (IOException e) {
-            throw new RuntimeException("Couldn't start file service!", e);
+            throw new RuntimeException(error(9004), e);
         }
     }
 
@@ -84,7 +85,7 @@ public class AutoRefresher {
             if (watchService != null) this.watchService.close();
             if (disposable != null) this.disposable.dispose();
         } catch (IOException e) {
-            throw new RuntimeException("Couldn't close watcher!", e);
+            throw new RuntimeException(error(9005), e);
         }
     }
 
