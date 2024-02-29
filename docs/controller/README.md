@@ -15,3 +15,4 @@ They can be used inside other controllers and are responsible for handling a spe
 7. [Routing](7-routing)
 8. [Subcomponents](8-subcomponents)
 9. [Call order](9-call-order)
+10. [Key events](10-key-events)
