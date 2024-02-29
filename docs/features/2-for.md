@@ -1,6 +1,6 @@
 # For-Loops
 
-For-Loops can be used to easily display a node/sub-controller for all items in a list. Whenever an item is added to or
+For-Loops can be used to easily display a node/subcomponent for all items in a list. Whenever an item is added to or
 removed from the list, the list of nodes updates accordingly.
 
 In order to create a for loop, acquire an instance of the `FxFor` class (e.g. using Dagger) and call the `of` method.

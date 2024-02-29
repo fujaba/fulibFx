@@ -7,11 +7,11 @@ The framework has a general rule of **initialization before rendering**, meaning
 elements (for example nodes defined in an FXML file) in the init methods as the elements aren't loaded before the
 rendering.
 
-When using sub-controllers or [For-Loops](../features/2-for), the order of operations is a bit more complex. At first the main controller
-will be initialized. After the controller has been initialized, all sub-controllers will be loaded and therefore
-initialized. This will happen recursively until a sub-controller doesn't have any sub-controllers. After that, the
-sub-controllers will be rendered, going back up to the main controller. The main controller will be rendered, after all
-the sub-controllers have been rendered.
+When using subcomponents or [For-Loops](../features/2-for), the order of operations is a bit more complex. At first the main controller
+will be initialized. After the controller has been initialized, all subcomponents will be loaded and therefore
+initialized. This will happen recursively until a subcomponent doesn't have any subcomponents. After that, the
+subcomponents will be rendered, going back up to the main controller. The main controller will be rendered, after all
+the subcomponents have been rendered.
 
 If a For-Loop is defined in a method annotated with `onRender` in any (sub-)controller,
 the `onRender` will (obviously) be called first. After that, the initializer (`BiConsumer`) of the
@@ -25,7 +25,7 @@ for-Controller will be called and then the for-controller will be initialized an
 public class ExampleController {
 
     // Constructor, elements etc.
-    // This controller has a sub-controller defined in the FXML file
+    // This controller has a subcomponent defined in the FXML file
 
     @onInit
     public void onInit() {
@@ -47,7 +47,7 @@ public class ExampleController {
 public class SubController extends VBox {
 
     // Constructor, elements etc.
-    // This controller has another sub-controller defined in the FXML file
+    // This controller has another subcomponent defined in the FXML file
 
     @onInit
     public void onInit() {
