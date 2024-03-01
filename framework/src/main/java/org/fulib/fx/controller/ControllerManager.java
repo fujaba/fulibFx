@@ -111,7 +111,7 @@ public class ControllerManager {
 
     /**
      * Initializes the given controller/component.
-     * Calls the onInit method(s) and recursively initializes all sub-controllers.
+     * Calls the onInit method(s) and recursively initializes all subcomponents.
      * <p>
      * All initialized controllers will be added to the list of initialized controllers.
      * If a controller/component is added to the list, all its subcomponents will follow right after it.
@@ -136,13 +136,13 @@ public class ControllerManager {
         // Call the onInit method(s)
         callMethodsWithAnnotation(instance, onInit.class, parameters);
 
-        // Initialize all sub-controllers
+        // Initialize all subcomponents
         Reflection.callMethodsForFieldInstances(instance, getSubComponentFields(instance), (subController) -> init(subController, parameters));
 
     }
 
     /**
-     * Renders the given controller/component instance. Renders all sub-controllers recursively and then calls the onRender method(s) before returning the rendered controller.
+     * Renders the given controller/component instance. Renders all subcomponents recursively and then calls the onRender method(s) before returning the rendered controller.
      * <p>
      * <b>Important:</b> This method assumes that the controller has already been initialized.
      * The controller will <u>not automatically be destroyed</u> when using only this method.
@@ -170,7 +170,7 @@ public class ControllerManager {
         if (!component && !instance.getClass().isAnnotationPresent(Controller.class))
             throw new IllegalArgumentException(error(1001).formatted(instance.getClass().getName()));
 
-        // Render all sub-controllers
+        // Render all subcomponents
         Reflection.callMethodsForFieldInstances(instance, getSubComponentFields(instance), (subController) -> render(subController, parameters));
 
         // Get the view of the controller
@@ -211,7 +211,7 @@ public class ControllerManager {
             }
         }
 
-        // If the controller specifies a fxml file, load it. This will also load sub-controllers specified in the FXML file
+        // If the controller specifies a fxml file, load it. This will also load subcomponents specified in the FXML file
         else {
             String fxmlPath = view.isEmpty() ? ControllerUtil.transform(instance.getClass().getSimpleName()) + ".fxml" : view;
             parent = loadFXML(fxmlPath, instance, false);
@@ -270,7 +270,7 @@ public class ControllerManager {
         List<Field> subComponentFields = new ArrayList<>(getSubComponentFields(instance));
         Collections.reverse(subComponentFields);
 
-        // Destroy all sub-controllers
+        // Destroy all subcomponents
         Reflection.callMethodsForFieldInstances(instance, subComponentFields, this::destroy);
 
         // Call destroy methods

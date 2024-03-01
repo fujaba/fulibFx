@@ -34,3 +34,14 @@ captured. The target can be `STAGE` or `SCENE`.
 
 Using `character` and `text` one can access the raw character that was pressed. `character` will be the character that
 would result by pressing the key(s) (e.g. SHIFT + 'a' --> 'A') and `text` will be name of the key that was pressed (e.g. "CTRL" for the ctrl key).
+
+See below for an example in action.
+
+```java
+@onKey(code = KeyCode.R)
+public void rollDice() {
+    // ...
+}
+```
+
+<img width="640" height="360" src="/docs/assets/key-event.gif">
