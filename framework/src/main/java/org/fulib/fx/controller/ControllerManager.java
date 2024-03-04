@@ -233,23 +233,16 @@ public class ControllerManager {
      */
     private void registerKeyEvents(Object instance) {
         Reflection.getMethodsWithAnnotation(instance.getClass(), onKey.class).forEach(method -> {
+
             onKey annotation = method.getAnnotation(onKey.class);
             EventType<KeyEvent> type = annotation.type().asEventType();
+            EventHandler<KeyEvent> handler = createKeyEventHandler(method, instance, annotation);
+
+            keyEventHandlers.computeIfAbsent(instance, k -> new HashSet<>()).add(new KeyEventHolder(annotation.target(), type, handler));
 
             switch (annotation.target()) {
-                case SCENE -> {
-                    EventHandler<KeyEvent> handler = createKeyEventHandler(method, instance, annotation);
-                    keyEventHandlers.computeIfAbsent(instance, k -> new HashSet<>());
-                    keyEventHandlers.get(instance).add(new KeyEventHolder(onKey.Target.SCENE, type, handler));
-                    app.get().stage().getScene().addEventFilter(type, handler);
-                }
-                case STAGE -> {
-                    System.out.println("Registering key event for stage");
-                    EventHandler<KeyEvent> handler = createKeyEventHandler(method, instance, annotation);
-                    keyEventHandlers.computeIfAbsent(instance, k -> new HashSet<>());
-                    keyEventHandlers.get(instance).add(new KeyEventHolder(onKey.Target.STAGE, type, handler));
-                    app.get().stage().addEventFilter(type, handler);
-                }
+                case SCENE -> app.get().stage().getScene().addEventFilter(type, handler);
+                case STAGE -> app.get().stage().addEventFilter(type, handler);
             }
         });
     }
@@ -674,7 +667,7 @@ public class ControllerManager {
         method.setAccessible(true);
 
         return event -> {
-            if (shouldBeCalled(event, annotation)) {
+            if (keyEventMatchesAnnotation(event, annotation)) {
                 try {
                     if (hasEventParameter) {
                         method.invoke(instance, event);
@@ -688,7 +681,7 @@ public class ControllerManager {
         };
     }
 
-    private boolean shouldBeCalled(KeyEvent event, onKey annotation) {
+    private boolean keyEventMatchesAnnotation(KeyEvent event, onKey annotation) {
         return (annotation.code() == KeyCode.UNDEFINED || event.getCode() == annotation.code()) &&
                 (annotation.character().isEmpty() || event.getCharacter().equals(annotation.character())) &&
                 (annotation.text().isEmpty() || event.getText().equals(annotation.text())) &&
@@ -704,7 +697,7 @@ public class ControllerManager {
      * @param instance The instance to clear the key handlers for
      */
     private void cleanUpListeners(Object instance) {
-        var handlers = keyEventHandlers.get(instance);
+        Collection<KeyEventHolder> handlers = keyEventHandlers.get(instance);
         if (handlers != null) {
             for (KeyEventHolder holder : handlers) {
                 switch (holder.target()) {
@@ -715,7 +708,6 @@ public class ControllerManager {
             keyEventHandlers.remove(instance);
         }
     }
-
 
     /**
      * Returns the title of the given controller instance if it has one.
