@@ -59,7 +59,7 @@ dependencies {
     testImplementation group: 'org.hamcrest', name: 'hamcrest', version: '2.2'
 
     // https://mvnrepository.com/artifact/org.testfx/openjfx-monocle
-    testImplementation group: 'org.testfx', name: 'openjfx-monocle', version: '21.0.2'
+    testImplementation group: 'org.testfx', name: 'openjfx-monocle', version: '17.0.10'
 
     // https://mvnrepository.com/artifact/org.mockito/mockito-junit-jupiter
     testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '5.11.0'
