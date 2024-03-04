@@ -4,3 +4,19 @@ plugins {
 }
 
 nexusPublishing.repositories.sonatype()
+
+allprojects {
+    tasks.withType(Test).configureEach {
+        if (hasProperty('headless') || System.getenv('CI')) {
+            systemProperties = [
+                    'java.awt.headless': 'true',
+                    'testfx.robot': 'glass',
+                    'testfx.headless': 'true',
+                    'glass.platform': 'Monocle',
+                    'monocle.platform': 'Headless',
+                    'prism.order': 'sw',
+                    'prism.text': 't2k',
+            ]
+        }
+    }
+}
