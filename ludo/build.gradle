@@ -67,21 +67,10 @@ dependencies {
 java {
     sourceCompatibility = getVersionForMajor(javaSourceVersion)
     targetCompatibility = getVersionForMajor(javaTargetVersion)
-
-    if (generateSourcesJar) {
-        withSourcesJar()
-    }
-    if (generateJavadocJar) {
-        withJavadocJar()
-    }
 }
 
 test {
     useJUnitPlatform()
-}
-
-sourcesJar {
-    duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 
 jar {
