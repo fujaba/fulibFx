@@ -14,3 +14,7 @@ Duplicators.register(MyNode.class, (mynode) -> {
 
 Duplicators.duplicate(new MyNode("Hello World")); // Returns a new MyNode with the text "Hello World"
 ```
+
+---
+
+[⬅ Modals](4-modals.md) | [Data Structures ➡](6-data-structures.md)

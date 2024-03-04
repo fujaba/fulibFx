@@ -71,3 +71,8 @@ in a `@onDestroy` annotated method.
 
 The framework also provides utility classes for dealing with subscriptions and other mechanisms requiring cleanup.
 One example for this is the [`Subscriber` class](../features/1-subscriber.md).
+
+
+---
+
+[⬅ Main](README.md) | [Components ➡](2-components.md)

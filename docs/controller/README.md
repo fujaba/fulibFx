@@ -1,10 +1,8 @@
 # Controllers and Components
 
-Controllers are the backbone of the application. They are responsible for handling the requests and responses. 
-They are the glue between the model and the view. They are responsible for processing the data and rendering the view.
-
-Next to the controllers, the framework also provides components. Components a special kind of controller.
-They can be used inside other controllers and are responsible for handling a specific part of the application.
+Controllers are the backbone of the application. 
+They are responsible for handling the requests and responses and for processing the data and rendering the view.
+This section will give you an overview of the controllers and components and how to use them.
 
 1. [Controllers](1-controllers)
 2. [Components](2-components)

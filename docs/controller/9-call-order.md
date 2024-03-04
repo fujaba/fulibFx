@@ -101,3 +101,7 @@ onRender ForController
 ```
 
 The destruction happens in the reverse order of the rendering.
+
+---
+
+[⬅ Subcomponents](8-subcomponents.md) | [Key Events ➡](10-key-events.md)

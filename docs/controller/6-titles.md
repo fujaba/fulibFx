@@ -43,3 +43,7 @@ public void start(Stage primaryStage) {
 
 The `FulibFxApp` class also provides methods for getting the title of a controller for other purposes.
 Using `getTitle` will return the title of the controller as a string. This can be formatted using the `formatTitle` method
+
+---
+
+[⬅ Internationalization](5-internationalization.md) | [Routing ➡](7-routing.md)

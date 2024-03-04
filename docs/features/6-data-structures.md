@@ -35,3 +35,7 @@ history of routes.
 The `Either` class combines two optionals into a single object. It used to represent a value with two possible types.
 The framework uses it for the history, where the `Either` can be either a controller or a route. It has some methods
 for checking which type it is and for getting the value correct value.
+
+---
+
+[⬅ Duplicator](5-node-duplicator.md) | [Features ➡](README.md)
