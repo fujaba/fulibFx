@@ -622,10 +622,3 @@ This error is thrown if closing the file watcher fails.
 
 This error is thrown if the framework fails to create a copy of an object because no duplicator has been registered for
 the object's class.
-
-### 9007: `Invalid type, expected '*' but got '*'.`
-
-- Runtime: ❌
-- Annotation Processor: ❌
-
-This error is thrown by the framework if the type of a value does not match the expected type.
