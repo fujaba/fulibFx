@@ -1,6 +1,7 @@
 package org.fulib.fx.mocking;
 
 import io.reactivex.rxjava3.core.Observable;
+import javafx.application.Platform;
 import org.fulib.fx.mocking.controller.MyMainController;
 import org.fulib.fx.mocking.controller.MySubComponent;
 import org.fulib.fx.mocking.service.MyService;
@@ -41,10 +42,11 @@ public class MyMainControllerTest extends ControllerTest {
         // We want to mock the subcomponent to override the onRender method
         doNothing().when(mySubComponent).onRender();
 
-        MyApp.FX_SCHEDULER.scheduleDirect(() -> stage.requestFocus());
+        Platform.runLater(() -> {
+            stage.requestFocus();
+            app.show(myMainController); // Show the main controller
+        });
         waitForFxEvents();
-
-        app.show(myMainController); // Show the main controller
 
         assertNotNull(lookup("This is a test string."));
         assertEquals(List.of(), mySubComponent.getChildren());
