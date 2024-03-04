@@ -625,7 +625,7 @@ the object's class.
 
 ### 9007: `Invalid type, expected '*' but got '*'.`
 
-- Runtime: ✅
+- Runtime: ❌
 - Annotation Processor: ❌
 
 This error is thrown by the framework if the type of a value does not match the expected type.
