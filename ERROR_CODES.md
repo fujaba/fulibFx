@@ -138,6 +138,27 @@ public class NotAController { // Wrong, should be a controller or component
 }
 ```
 
+### 1010: `Method '*' annotated with @onKey in class '*' must either take no or exactly one parameter of type KeyEvent.`
+
+- Runtime: ✅
+- Annotation Processor: ✅
+
+This error is thrown when a method annotated with `@onKey` has more than one parameter or a parameter that is not of type
+`KeyEvent`.
+
+```java
+
+@onKey
+public void onKey(String key) { // Wrong, should not have a parameter or have a parameter of type KeyEvent
+    // ...
+}
+
+@onKey
+public void onKey(KeyEvent event, String other) { // Wrong, should not have more than one parameter
+    // ...
+}
+```
+
 ## Resources
 
 ### 2000: `Could not find resource '*'.`
