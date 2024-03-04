@@ -13,3 +13,7 @@ public class MyComponent extends VBox {
 Components can be used in the same way as controllers (including event annotations), but they can also be used as
 subcomponents inside other controllers. As components are much more versatile than controllers, they are the recommended
 way for creating your application.
+
+---
+
+[⬅ Controllers](1-controllers.md) | [Views ➡](3-views.md)

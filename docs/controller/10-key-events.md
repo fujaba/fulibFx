@@ -45,3 +45,7 @@ public void rollDice() {
 ```
 
 <img width="640" height="360" src="/docs/assets/key-event.gif">
+
+---
+
+[⬅ Call order](9-call-order.md) | [Main ➡](README.md)

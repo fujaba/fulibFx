@@ -18,3 +18,7 @@ When being in dev mode, the framework will automatically refresh the controller 
 changed. This can be used to quickly test changes to the view without having to restart the application. In order to
 enable the automatic refresh, call `autoRefresher().setup()` in the `start` method of the `FulibFxApp` class and 
 provide the path where the FXML files are located. The path should be relative to the root of the project.
+
+---
+
+[⬅ For](2-for.md) | [Modals ➡](4-modals.md)

@@ -66,3 +66,7 @@ The order of injection is as follows:
 4. Methods annotated with `@ParamsMap` will be called
 5. The controller will be initialized (`@onInit`)
 6. The controller will be rendered (`@onRender`)
+
+---
+
+[⬅ Views](3-views.md) | [Internationalization ➡](5-internationalization.md)

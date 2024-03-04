@@ -100,3 +100,7 @@ public class TodoController extends VBox {
 
 When displaying this controller, the framework will automatically load the corresponding FXML file and set your
 component as the controller of the root element. The root element will then be set as the view of the controller.
+
+---
+
+[⬅ Components](2-components.md) | [Parameters ➡](4-parameters.md)
