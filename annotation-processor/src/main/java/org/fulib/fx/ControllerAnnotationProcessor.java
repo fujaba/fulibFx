@@ -7,6 +7,7 @@ import org.fulib.fx.annotation.controller.Controller;
 import org.fulib.fx.annotation.controller.Resource;
 import org.fulib.fx.annotation.controller.SubComponent;
 import org.fulib.fx.annotation.controller.Title;
+import org.fulib.fx.annotation.event.onKey;
 import org.fulib.fx.annotation.param.Params;
 import org.fulib.fx.annotation.param.ParamsMap;
 import org.fulib.fx.util.ControllerUtil;
@@ -76,7 +77,19 @@ public class ControllerAnnotationProcessor extends AbstractProcessor {
             checkTitle(element);
         }
 
+        for (Element element : roundEnv.getElementsAnnotatedWith(onKey.class)) {
+            checkOnKey(element);
+        }
+
         return true;
+    }
+
+    private void checkOnKey(Element element) {
+        if (element instanceof ExecutableElement method) {
+            if (!method.getParameters().isEmpty() && !(method.getParameters().size() == 1 && processingEnv.getTypeUtils().isAssignable(method.getParameters().get(0).asType(), processingEnv.getElementUtils().getTypeElement("javafx.scene.input.KeyEvent").asType()))) {
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error(1010).formatted(method.getSimpleName(), method.getEnclosingElement().asType().toString()), method);
+            }
+        }
     }
 
     private void checkResources(Element element) {
