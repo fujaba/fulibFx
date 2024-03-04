@@ -6,6 +6,7 @@ plugins {
 
 group = projectGroup
 version = processorVersion
+description = 'Annotation Processor for fulibFx. Checks for common errors and creates compilation errors and warnings.'
 
 // ------------------- Dependencies -------------------
 

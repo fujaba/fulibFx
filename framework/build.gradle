@@ -8,6 +8,7 @@ plugins {
 
 group = projectGroup
 version = frameworkVersion
+description = 'A versatile Framework for JavaFX applications specifically designed for MVC pattern projects.'
 
 // ------------------- Dependencies -------------------
 
