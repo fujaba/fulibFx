@@ -1,5 +1,7 @@
 plugins {
     id "java"
+    id 'maven-publish'
+    id 'signing'
     id "org.openjfx.javafxplugin" version "0.0.13"
     id "com.github.johnrengelman.shadow" version "7.0.0"
 }
@@ -73,12 +75,8 @@ java {
     sourceCompatibility = getVersionForMajor(javaSourceVersion)
     targetCompatibility = getVersionForMajor(javaTargetVersion)
 
-    if (generateSourcesJar) {
-        withSourcesJar()
-    }
-    if (generateJavadocJar) {
-        withJavadocJar()
-    }
+    withSourcesJar()
+    withJavadocJar()
 }
 
 static JavaVersion getVersionForMajor(String version) {
@@ -107,3 +105,40 @@ jar {
 
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
+
+// ------------------- Publishing -------------------
+
+publishing.publications.create('mavenJava', MavenPublication) {
+    it.artifactId = 'fulibFx'
+    it.from(components.java)
+    it.pom {
+        name = 'fulibFx'
+        description = project.description
+        url = 'https://github.com/fujaba/fulibFx'
+        inceptionYear = '2023'
+
+        scm {
+            url = 'https://github.com/fujaba/fulibFx'
+        }
+
+        licenses {
+            license {
+                name = 'MIT License'
+                url = 'https://www.opensource.org/licenses/mit-license.php'
+            }
+        }
+
+        developers {
+            developer {
+                id = 'LeStegii'
+                name = 'Paul Mertens'
+            }
+            developer {
+                id = 'Clashsoft'
+                name = 'Adrian Kunz'
+            }
+        }
+    }
+}
+
+signing.sign publishing.publications.mavenJava
