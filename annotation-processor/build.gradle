@@ -5,15 +5,7 @@ plugins {
 }
 
 group = projectGroup
-version = project.findProperty('processorVersion') ?: getGitVersion()
-
-String getGitVersion() {
-    String output = 'git describe --tags --always'.execute([], rootDir).text.trim()
-    if (output.startsWith('v')) {
-        output = output.substring(1)
-    }
-    return output
-}
+version = processorVersion
 
 // ------------------- Dependencies -------------------
 
