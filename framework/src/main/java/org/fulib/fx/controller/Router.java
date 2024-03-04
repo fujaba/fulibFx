@@ -122,6 +122,18 @@ public class Router {
         return new Pair<>(controllerInstance, renderedParent);
     }
 
+    /**
+     * Returns the controller with the given route without initializing and rendering it.
+     * The route will be seen as absolute, meaning it will be treated as a full path.
+     *
+     * @param route The route of the controller
+     * @return The controller instance
+     */
+    public Object getController(String route) {
+        Field provider = this.routes.get(route.startsWith("/") ? route : "/" + route);
+        return ReflectionUtil.getInstanceOfProviderField(provider, this.routerObject);
+    }
+
     public void addToHistory(Pair<Either<TraversableNodeTree.Node<Field>, Object>, Map<String, Object>> pair) {
         this.history.insert(pair);
     }

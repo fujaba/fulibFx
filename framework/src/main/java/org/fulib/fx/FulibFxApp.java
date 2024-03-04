@@ -72,20 +72,16 @@ public abstract class FulibFxApp extends Application {
     }
 
     /**
-     * Initializes and renders a component instance (a controller with the {@link Component} annotation).
+     * Initializes and renders the component with the given route.
      * <p>
-     * If a disposable is provided, the disposable will be modified to include the cleanup of the rendered component.
-     * The provided disposable can be used to destroy the component with all its children manually.
-     * <p>
-     * If no disposable is provided, the component has to be destroyed manually, for example by calling {@link #destroy(Parent)}.
+     * The component has to be destroyed manually, for example by calling {@link #destroy(Parent)}.
      *
-     * @param component The component instance
+     * @param route     The route of the component to render
      * @param <T>       The type of the component
-     * @param onDestroy A disposable which will be modified to include the disposable of the component
      * @return The rendered component
      */
-    public @NotNull <T extends Parent> T initAndRender(@NotNull T component, DisposableContainer onDestroy) {
-        return initAndRender(component, Map.of(), onDestroy);
+    public @NotNull <T extends Parent> T initAndRender(@NotNull String route) {
+        return initAndRender(route, Map.of());
     }
 
     /**
@@ -98,7 +94,21 @@ public abstract class FulibFxApp extends Application {
      * @return The rendered component
      */
     public @NotNull <T extends Parent> T initAndRender(@NotNull T component) {
-        return initAndRender(component, Map.of(), null);
+        return initAndRender(component, Map.of());
+    }
+
+    /**
+     * Initializes and renders the component with the given route.
+     * <p>
+     * The component has to be destroyed manually, for example by calling {@link #destroy(Parent)}.
+     *
+     * @param route     The route of the component to render
+     * @param params    The arguments passed to the component
+     * @param <T>       The type of the component
+     * @return The rendered component
+     */
+    public @NotNull <T extends Parent> T initAndRender(@NotNull String route, @NotNull Map<@NotNull String, @Nullable Object> params) {
+        return initAndRender(route, params, null);
     }
 
     /**
@@ -111,8 +121,30 @@ public abstract class FulibFxApp extends Application {
      * @param <T>       The type of the component
      * @return The rendered component
      */
-    public @NotNull <T extends Parent> T initAndRender(@NotNull T component, Map<String, Object> params) {
+    public @NotNull <T extends Parent> T initAndRender(@NotNull T component, @NotNull Map<@NotNull String, @Nullable Object> params) {
         return initAndRender(component, params, null);
+    }
+
+    /**
+     * Initializes and renders the component with the given route.
+     * <p>
+     * If a disposable is provided, the disposable will be modified to include the cleanup of the rendered component.
+     * The provided disposable can be used to destroy the component with all its children manually.
+     * <p>
+     * If no disposable is provided, the component has to be destroyed manually, for example by calling {@link #destroy(Parent)}.
+     *
+     * @param route     The route of the component to render
+     * @param params    The arguments passed to the component
+     * @param onDestroy A disposable which will be modified to include the disposable of the component
+     * @param <T>       The type of the component
+     * @return The rendered component
+     */
+    @SuppressWarnings("unchecked")
+    public @NotNull <T extends Parent> T initAndRender(@NotNull String route, @NotNull Map<@NotNull String, @Nullable Object> params, @Nullable DisposableContainer onDestroy) {
+        Object component = this.frameworkComponent.router().getController(route);
+        if (!ControllerUtil.isComponent(component))
+            throw new IllegalArgumentException(error(1000).formatted(component.getClass().getName()));
+        return initAndRender((T) component, params, onDestroy);
     }
 
     /**
@@ -128,7 +160,7 @@ public abstract class FulibFxApp extends Application {
      * @param onDestroy A disposable which will be modified to include the disposable of the component
      * @return The rendered component
      */
-    public @NotNull <T extends Parent> T initAndRender(@NotNull T component, Map<String, Object> params, DisposableContainer onDestroy) {
+    public @NotNull <T extends Parent> T initAndRender(@NotNull T component, @NotNull Map<@NotNull String, @Nullable Object> params, @Nullable DisposableContainer onDestroy) {
         if (!ControllerUtil.isComponent(component))
             throw new IllegalArgumentException(error(1000).formatted(component.getClass().getName()));
 
