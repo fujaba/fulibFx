@@ -1,11 +1,14 @@
 plugins {
     id "java"
-    id "org.openjfx.javafxplugin" version "0.0.13"
-    id "com.github.johnrengelman.shadow" version "7.0.0"
+    id 'maven-publish'
+    id 'signing'
+    // https://plugins.gradle.org/plugin/org.openjfx.javafxplugin
+    id "org.openjfx.javafxplugin" version "0.1.0"
 }
 
-group projectGroup
-version projectVersion
+group = projectGroup
+version = frameworkVersion
+description = 'A versatile Framework for JavaFX applications specifically designed for MVC pattern projects.'
 
 // ------------------- Dependencies -------------------
 
@@ -19,23 +22,23 @@ repositories {
 
 // JavaFX dependencies
 javafx {
-    version = '20'
+    version = '21.0.2'
     modules = ['javafx.controls', 'javafx.graphics', 'javafx.fxml', 'javafx.media']
 }
 
 // Project dependencies
 dependencies {
     // https://mvnrepository.com/artifact/org.jetbrains/annotations
-    implementation 'org.jetbrains:annotations:24.0.1'
+    implementation group: 'org.jetbrains', name: 'annotations', version: '24.1.0'
 
     // https://mvnrepository.com/artifact/com.google.dagger/dagger
-    implementation group: 'com.google.dagger', name: 'dagger', version: '2.42'
+    implementation group: 'com.google.dagger', name: 'dagger', version: '2.51'
 
     // https://mvnrepository.com/artifact/com.google.dagger/dagger-compiler
-    annotationProcessor group: 'com.google.dagger', name: 'dagger-compiler', version: '2.42'
+    annotationProcessor group: 'com.google.dagger', name: 'dagger-compiler', version: '2.51'
 
     // https://mvnrepository.com/artifact/io.reactivex.rxjava3/rxjava
-    implementation group: 'io.reactivex.rxjava3', name: 'rxjava', version: '3.1.4'
+    implementation group: 'io.reactivex.rxjava3', name: 'rxjava', version: '3.1.8'
 }
 
 // ------------------- Tests -------------------
@@ -44,22 +47,25 @@ dependencies {
 dependencies {
 
     // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
-    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.9.2'
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.10.1'
 
     // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-engine
-    testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.9.2'
+    testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.10.1'
 
     // https://mvnrepository.com/artifact/org.testfx/testfx-junit5
-    testImplementation group: 'org.testfx', name: 'testfx-junit5', version: '4.0.16-alpha'
+    testImplementation group: 'org.testfx', name: 'testfx-junit5', version: '4.0.17'
+
+    // https://mvnrepository.com/artifact/org.hamcrest/hamcrest
+    testImplementation group: 'org.hamcrest', name: 'hamcrest', version: '2.2'
 
     // https://mvnrepository.com/artifact/org.testfx/openjfx-monocle
-    testImplementation group: 'org.testfx', name: 'openjfx-monocle', version: 'jdk-12.0.1+2'
+    testImplementation group: 'org.testfx', name: 'openjfx-monocle', version: '17.0.10'
 
     // https://mvnrepository.com/artifact/org.mockito/mockito-junit-jupiter
-    testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '5.2.0'
+    testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '5.11.0'
 
     // https://mvnrepository.com/artifact/com.google.dagger/dagger-compiler
-    testAnnotationProcessor group: 'com.google.dagger', name: 'dagger-compiler', version: '2.42'
+    testAnnotationProcessor group: 'com.google.dagger', name: 'dagger-compiler', version: '2.51'
 
 }
 
@@ -73,12 +79,8 @@ java {
     sourceCompatibility = getVersionForMajor(javaSourceVersion)
     targetCompatibility = getVersionForMajor(javaTargetVersion)
 
-    if (generateSourcesJar) {
-        withSourcesJar()
-    }
-    if (generateJavadocJar) {
-        withJavadocJar()
-    }
+    withSourcesJar()
+    withJavadocJar()
 }
 
 static JavaVersion getVersionForMajor(String version) {
@@ -107,3 +109,40 @@ jar {
 
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
+
+// ------------------- Publishing -------------------
+
+publishing.publications.create('mavenJava', MavenPublication) {
+    it.artifactId = 'fulibFx'
+    it.from(components.java)
+    it.pom {
+        name = 'fulibFx'
+        description = project.description
+        url = 'https://github.com/fujaba/fulibFx'
+        inceptionYear = '2023'
+
+        scm {
+            url = 'https://github.com/fujaba/fulibFx'
+        }
+
+        licenses {
+            license {
+                name = 'MIT License'
+                url = 'https://www.opensource.org/licenses/mit-license.php'
+            }
+        }
+
+        developers {
+            developer {
+                id = 'LeStegii'
+                name = 'Paul Mertens'
+            }
+            developer {
+                id = 'Clashsoft'
+                name = 'Adrian Kunz'
+            }
+        }
+    }
+}
+
+signing.sign publishing.publications.mavenJava

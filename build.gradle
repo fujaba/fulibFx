@@ -1,0 +1,22 @@
+plugins {
+    // https://plugins.gradle.org/plugin/io.github.gradle-nexus.publish-plugin
+    id 'io.github.gradle-nexus.publish-plugin' version '1.3.0'
+}
+
+nexusPublishing.repositories.sonatype()
+
+allprojects {
+    if (hasProperty('headless') || System.getenv('CI')) {
+        tasks.withType(Test).configureEach {
+            systemProperties = [
+                'java.awt.headless': 'true',
+                'testfx.robot': 'glass',
+                'testfx.headless': 'true',
+                'glass.platform': 'Monocle',
+                'monocle.platform': 'Headless',
+                'prism.order': 'sw',
+                'prism.text': 't2k',
+            ]
+        }
+    }
+}
