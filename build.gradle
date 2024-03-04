@@ -6,16 +6,16 @@ plugins {
 nexusPublishing.repositories.sonatype()
 
 allprojects {
-    tasks.withType(Test).configureEach {
-        if (hasProperty('headless') || System.getenv('CI')) {
+    if (hasProperty('headless') || System.getenv('CI')) {
+        tasks.withType(Test).configureEach {
             systemProperties = [
-                    'java.awt.headless': 'true',
-                    'testfx.robot': 'glass',
-                    'testfx.headless': 'true',
-                    'glass.platform': 'Monocle',
-                    'monocle.platform': 'Headless',
-                    'prism.order': 'sw',
-                    'prism.text': 't2k',
+                'java.awt.headless': 'true',
+                'testfx.robot': 'glass',
+                'testfx.headless': 'true',
+                'glass.platform': 'Monocle',
+                'monocle.platform': 'Headless',
+                'prism.order': 'sw',
+                'prism.text': 't2k',
             ]
         }
     }
