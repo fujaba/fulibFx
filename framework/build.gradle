@@ -6,8 +6,16 @@ plugins {
     id "com.github.johnrengelman.shadow" version "7.0.0"
 }
 
-group projectGroup
-version projectVersion
+group = projectGroup
+version = project.findProperty('frameworkVersion') ?: getGitVersion()
+
+String getGitVersion() {
+    String output = 'git describe --tags --always'.execute([], rootDir).text.trim()
+    if (output.startsWith('v')) {
+        output = output.substring(1)
+    }
+    return output
+}
 
 // ------------------- Dependencies -------------------
 
