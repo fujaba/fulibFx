@@ -72,20 +72,16 @@ public abstract class FulibFxApp extends Application {
     }
 
     /**
-     * Initializes and renders a component instance (a controller with the {@link Component} annotation).
+     * Initializes and renders the component with the given route.
      * <p>
-     * If a disposable is provided, the disposable will be modified to include the cleanup of the rendered component.
-     * The provided disposable can be used to destroy the component with all its children manually.
-     * <p>
-     * If no disposable is provided, the component has to be destroyed manually, for example by calling {@link #destroy(Parent)}.
+     * The component has to be destroyed manually, for example by calling {@link #destroy(Parent)}.
      *
-     * @param component The component instance
+     * @param route     The route of the component to render
      * @param <T>       The type of the component
-     * @param onDestroy A disposable which will be modified to include the disposable of the component
      * @return The rendered component
      */
-    public @NotNull <T extends Parent> T initAndRender(@NotNull T component, @Nullable DisposableContainer onDestroy) {
-        return initAndRender(component, Map.of(), onDestroy);
+    public @NotNull <T extends Parent> T initAndRender(@NotNull String route) {
+        return initAndRender(route, Map.of());
     }
 
     /**
@@ -102,6 +98,20 @@ public abstract class FulibFxApp extends Application {
     }
 
     /**
+     * Initializes and renders the component with the given route.
+     * <p>
+     * The component has to be destroyed manually, for example by calling {@link #destroy(Parent)}.
+     *
+     * @param route     The route of the component to render
+     * @param params    The arguments passed to the component
+     * @param <T>       The type of the component
+     * @return The rendered component
+     */
+    public @NotNull <T extends Parent> T initAndRender(@NotNull String route, @NotNull Map<@NotNull String, @Nullable Object> params) {
+        return initAndRender(route, params, null);
+    }
+
+    /**
      * Initializes and renders a component instance (a controller with the {@link Component} annotation).
      * <p>
      * The component has to be destroyed manually, for example by calling {@link #destroy(Parent)}.
@@ -113,6 +123,28 @@ public abstract class FulibFxApp extends Application {
      */
     public @NotNull <T extends Parent> T initAndRender(@NotNull T component, @NotNull Map<@NotNull String, @Nullable Object> params) {
         return initAndRender(component, params, null);
+    }
+
+    /**
+     * Initializes and renders the component with the given route.
+     * <p>
+     * If a disposable is provided, the disposable will be modified to include the cleanup of the rendered component.
+     * The provided disposable can be used to destroy the component with all its children manually.
+     * <p>
+     * If no disposable is provided, the component has to be destroyed manually, for example by calling {@link #destroy(Parent)}.
+     *
+     * @param route     The route of the component to render
+     * @param params    The arguments passed to the component
+     * @param onDestroy A disposable which will be modified to include the disposable of the component
+     * @param <T>       The type of the component
+     * @return The rendered component
+     */
+    @SuppressWarnings("unchecked")
+    public @NotNull <T extends Parent> T initAndRender(@NotNull String route, @NotNull Map<@NotNull String, @Nullable Object> params, @Nullable DisposableContainer onDestroy) {
+        Object component = this.frameworkComponent.router().getController(route);
+        if (!ControllerUtil.isComponent(component))
+            throw new IllegalArgumentException(error(1000).formatted(component.getClass().getName()));
+        return initAndRender((T) component, params, onDestroy);
     }
 
     /**
@@ -140,118 +172,6 @@ public abstract class FulibFxApp extends Application {
         @SuppressWarnings("unchecked") // We know that the component will return itself as the view
         T rendered = (T) this.frameworkComponent().controllerManager().render(component, params);
         return rendered;
-    }
-
-    /**
-     * Initializes and renders the component with the given route.
-     * <p>
-     * If a disposable is provided, the disposable will be modified to include the cleanup of the rendered component.
-     * The provided disposable can be used to destroy the component with all its children manually.
-     *
-     * @param route The route of the component to render
-     * @return The rendered component
-     */
-    public @NotNull Parent initAndRender(@NotNull String route, @Nullable DisposableContainer onDestroy) {
-        return initAndRender(route, Map.of(), onDestroy);
-    }
-
-    /**
-     * Initializes and renders the component with the given route.
-     * <p>
-     * The component has to be destroyed manually, for example by calling {@link #destroy(Parent)}.
-     *
-     * @param route The route of the component to render
-     * @return The rendered component
-     */
-    public @NotNull Parent initAndRender(@NotNull String route) {
-        return initAndRender(route, Map.of());
-    }
-
-    /**
-     * Initializes and renders the component with the given route.
-     * <p>
-     * The component has to be destroyed manually, for example by calling {@link #destroy(Parent)}.
-     *
-     * @param route  The route of the component to render
-     * @param params The arguments passed to the component
-     * @return The rendered component
-     */
-    public @NotNull Parent initAndRender(@NotNull String route, @NotNull Map<@NotNull String, @Nullable Object> params) {
-        return initAndRender(route, params, null);
-    }
-
-    /**
-     * Initializes and renders the component with the given route.
-     * <p>
-     * If a disposable is provided, the disposable will be modified to include the cleanup of the rendered component.
-     * The provided disposable can be used to destroy the component with all its children manually.
-     * <p>
-     * If no disposable is provided, the component has to be destroyed manually, for example by calling {@link #destroy(Parent)}.
-     *
-     * @param route     The route of the component to render
-     * @param params    The arguments passed to the component
-     * @param onDestroy A disposable which will be modified to include the disposable of the component
-     * @return The rendered component
-     */
-    public @NotNull Parent initAndRender(@NotNull String route, @NotNull Map<@NotNull String, @Nullable Object> params, @Nullable DisposableContainer onDestroy) {
-        return initAndRender(route, Parent.class, params, onDestroy);
-    }
-
-    /**
-     * Initializes and renders the component with the given route.
-     *
-     * @param route The route of the component to render
-     * @param type  The type of the component
-     * @param <T>   The type of the component
-     * @return The rendered component
-     */
-    public @NotNull <T extends Parent> T initAndRender(@NotNull String route, @NotNull Class<T> type, @Nullable DisposableContainer onDestroy) {
-        return initAndRender(route, type, Map.of(), onDestroy);
-    }
-
-    /**
-     * Initializes and renders the component with the given route.
-     *
-     * @param route The route of the component to render
-     * @param type  The type of the component
-     * @param <T>   The type of the component
-     * @return The rendered component
-     */
-    public @NotNull <T extends Parent> T initAndRender(@NotNull String route, @NotNull Class<T> type) {
-        return initAndRender(route, type, Map.of());
-    }
-
-    /**
-     * Initializes and renders the component with the given route.
-     * <p>
-     * The component has to be destroyed manually, for example by calling {@link #destroy(Parent)}.
-     *
-     * @param route The route of the component to render
-     * @param type  The type of the component
-     * @param <T>   The type of the component
-     * @return The rendered component
-     */
-    public @NotNull <T extends Parent> T initAndRender(@NotNull String route, @NotNull Class<T> type, @NotNull Map<@NotNull String, @Nullable Object> params) {
-        return initAndRender(route, type, params, null);
-    }
-
-    /**
-     * Initializes and renders the component with the given route.
-     *
-     * @param route     The route of the component to render
-     * @param type      The type of the component
-     * @param params    The arguments passed to the component
-     * @param onDestroy A disposable which will be modified to include the disposable of the component
-     * @param <T>       The type of the component
-     * @return The rendered component
-     */
-    public @NotNull <T extends Parent> T initAndRender(@NotNull String route, @NotNull Class<T> type, @NotNull Map<@NotNull String, @Nullable Object> params, @Nullable DisposableContainer onDestroy) {
-        Object controller = this.frameworkComponent.router().getController(route);
-        if (!ControllerUtil.isComponent(controller))
-            throw new IllegalArgumentException(error(1000).formatted(controller.getClass().getName()));
-        if (!type.isInstance(controller))
-            throw new IllegalArgumentException(error(9007).formatted(controller.getClass().getName(), type.getName()));
-        return initAndRender(type.cast(controller), params, onDestroy);
     }
 
     /**
