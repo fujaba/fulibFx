@@ -15,8 +15,8 @@ import java.lang.annotation.Target;
  * Provider fields annotated with {@link SubComponent} can be used if the fxml specifies a subcomponent with the same type.
  * Instances manually provided by the provider using {@code get()} will NOT be initialized or rendered!
  * <p>
- * When a sub-controller is specified in the fxml, the framework will look for any component field annotated with @SubController.
- * If a matching field is found, the instance will be used as the sub-controller.
+ * When a subcomponent is specified in the fxml, the framework will look for any component field annotated with @SubController.
+ * If a matching field is found, the instance will be used as the subcomponent.
  * If no matching field is found, the framework will look for any provider field annotated with @SubController.
  */
 @Retention(RetentionPolicy.RUNTIME)

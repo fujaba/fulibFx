@@ -15,6 +15,7 @@ import javafx.fxml.FXML;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -24,6 +25,7 @@ import org.fulib.fx.annotation.controller.SubComponent;
 import org.fulib.fx.annotation.controller.Title;
 import org.fulib.fx.annotation.event.onDestroy;
 import org.fulib.fx.annotation.event.onInit;
+import org.fulib.fx.annotation.event.onKey;
 import org.fulib.fx.annotation.event.onRender;
 import org.fulib.fx.annotation.param.Param;
 import org.fulib.fx.constructs.FxFor;
@@ -252,6 +254,11 @@ public class IngameController {
                 Utils.playSound(Constants.SOUND_FAIL);
             }
         }
+    }
+
+    @onKey(code = KeyCode.ESCAPE)
+    public void onKeyPressed() {
+        onQuitPressed();
     }
 
     /**

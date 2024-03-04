@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
  * <p>
  * Controllers are used to control inputs and connect the view with the model.
  * <p>
- * For controllers which should be reusable inside other controllers ("sub-controllers"), see {@link Component}.
+ * For controllers which should be reusable inside other controllers ("subcomponents"), see {@link Component}.
  * It is recommended to use {@link Component} instead of {@link Controller} as it is more flexible.
  */
 @Target(ElementType.TYPE)
