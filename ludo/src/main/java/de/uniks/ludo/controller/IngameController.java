@@ -114,7 +114,6 @@ public class IngameController {
 
     @onKey(code = KeyCode.R)
     private void rollDice() {
-        System.out.println("Rolling dice");
         if (!this.diceSubComponent.isEnabled()) return;
         LudoUtil.playSound(Constants.SOUND_ROLL_DICES);
         this.subscriber.subscribe(this.diceSubComponent.roll(), Schedulers.computation(),

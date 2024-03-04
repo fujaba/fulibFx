@@ -705,9 +705,6 @@ public class ControllerManager {
      */
     private void cleanUpListeners(Object instance) {
         var handlers = keyEventHandlers.get(instance);
-        System.out.println(keyEventHandlers);
-        System.out.println(Objects.toIdentityString(instance));
-        System.out.println(handlers);
         if (handlers != null) {
             for (KeyEventHolder holder : handlers) {
                 switch (holder.target()) {
