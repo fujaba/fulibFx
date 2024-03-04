@@ -90,12 +90,12 @@ DiceComponent dice2;
 
 ### Managing subcomponents manually
 
-There might be situations where you need a variable amount of subcomponents but a For-Loop is not suitable.
+There might be situations where you need a variable amount of subcomponents but constructs like a For-Loop is not suitable.
 In this case you can also create or provide your own instance(s) and initialize/render it manually.
 
-Either inject a `Provider<T>` and call `get()` or create/inject a new instance of the controller manually.
+Either inject a `Provider<T>` and call `get()` or create/inject a new instance of the component manually.
 After acquiring the instance, you can initialize and render it manually using the `initAndRender` method of the `FulibFxApp` class.
-This method takes the controller, a map of parameters and a container disposable (e.g. ComponentDisposable or Subscriber).
+This method takes the component, a map of parameters and a container disposable (e.g. ComponentDisposable or Subscriber).
 The method will return the rendered instance of the component. If a disposable has been provided, a cleanup task for this component will be added to it.
 Otherwise, one has to manually clean up the component by calling the `destroy` method in the `FulibFxApp` class.
 
@@ -132,6 +132,9 @@ public class TodoController {
         
         // This subcomponent has to be cleaned up manually, e.g. by calling destroy in the app
         container.getChildren().add(app.initAndRender(todoInputComponent));
+
+        // This subcomponent will be created based on the route and cleaned up by the subscriber
+        TodoTaskBarComponent taskBar = app.initAndRender("/todo/taskbar", Map.of("param", value), subscriber); 
         
     }
 }
