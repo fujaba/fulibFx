@@ -1,6 +1,7 @@
 package org.fulib.fx.app;
 
 import org.fulib.fx.FulibFxApp;
+import org.fulib.fx.app.controllertypes.BasicComponent;
 import org.fulib.fx.app.history.AController;
 import org.fulib.fx.app.history.BController;
 import org.fulib.fx.app.history.CController;
@@ -90,6 +91,13 @@ public class FrameworkTest extends ApplicationTest {
         ButtonSubComponent button = lookup("#buttonSubComponent").query();
         verifyThat(button, Node::isVisible);
         assertEquals(100, button.getMinWidth());
+    }
+
+    @Test
+    public void routeSubComponent() {
+        assertThrows(IllegalArgumentException.class, () -> app.initAndRender("/controller/view"));
+
+        assertEquals(BasicComponent.class, app.initAndRender("/component/basic").getClass());
     }
 
     /**
