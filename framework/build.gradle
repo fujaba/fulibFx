@@ -55,6 +55,9 @@ dependencies {
     // https://mvnrepository.com/artifact/org.testfx/testfx-junit5
     testImplementation group: 'org.testfx', name: 'testfx-junit5', version: '4.0.17'
 
+    // https://mvnrepository.com/artifact/org.hamcrest/hamcrest
+    testImplementation group: 'org.hamcrest', name: 'hamcrest', version: '2.2'
+
     // https://mvnrepository.com/artifact/org.testfx/openjfx-monocle
     testImplementation group: 'org.testfx', name: 'openjfx-monocle', version: '21.0.2'
 
