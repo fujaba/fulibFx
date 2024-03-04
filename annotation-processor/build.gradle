@@ -76,7 +76,7 @@ publishing.publications.create('mavenJava', MavenPublication) {
         name = 'fulibFx-processor'
         description = project.description
         url = 'https://github.com/fujaba/fulibFx'
-        inceptionYear = '2023'
+        inceptionYear = '2024'
 
         scm {
             url = 'https://github.com/fujaba/fulibFx'
