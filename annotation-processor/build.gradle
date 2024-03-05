@@ -1,9 +1,12 @@
 plugins {
     id "java"
+    id 'maven-publish'
+    id 'signing'
 }
 
-group projectGroup
-version projectVersion
+group = projectGroup
+version = processorVersion
+description = 'Annotation Processor for fulibFx. Checks for common errors and creates compilation errors and warnings.'
 
 // ------------------- Dependencies -------------------
 
@@ -18,8 +21,10 @@ repositories {
 // Project dependencies
 dependencies {
     // https://mvnrepository.com/artifact/com.google.auto.service/auto-service-annotations
-    implementation 'com.google.auto.service:auto-service-annotations:1.1.1'
-    annotationProcessor 'com.google.auto.service:auto-service:1.1.1'
+    implementation group: 'com.google.auto.service', name: 'auto-service-annotations', version: '1.1.1'
+
+    // https://mvnrepository.com/artifact/com.google.auto.service/auto-service
+    annotationProcessor group: 'com.google.auto.service', name: 'auto-service', version: '1.1.1'
 
     // Framework
     implementation project(":framework")
@@ -31,12 +36,8 @@ java {
     sourceCompatibility = getVersionForMajor(javaSourceVersion)
     targetCompatibility = getVersionForMajor(javaTargetVersion)
 
-    if (generateSourcesJar) {
-        withSourcesJar()
-    }
-    if (generateJavadocJar) {
-        withJavadocJar()
-    }
+    withSourcesJar()
+    withJavadocJar()
 }
 
 static JavaVersion getVersionForMajor(String version) {
@@ -65,3 +66,40 @@ jar {
 
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
+
+// ------------------- Publishing -------------------
+
+publishing.publications.create('mavenJava', MavenPublication) {
+    it.artifactId = 'fulibFx-processor'
+    it.from(components.java)
+    it.pom {
+        name = 'fulibFx-processor'
+        description = project.description
+        url = 'https://github.com/fujaba/fulibFx'
+        inceptionYear = '2024'
+
+        scm {
+            url = 'https://github.com/fujaba/fulibFx'
+        }
+
+        licenses {
+            license {
+                name = 'MIT License'
+                url = 'https://www.opensource.org/licenses/mit-license.php'
+            }
+        }
+
+        developers {
+            developer {
+                id = 'LeStegii'
+                name = 'Paul Mertens'
+            }
+            developer {
+                id = 'Clashsoft'
+                name = 'Adrian Kunz'
+            }
+        }
+    }
+}
+
+signing.sign publishing.publications.mavenJava
