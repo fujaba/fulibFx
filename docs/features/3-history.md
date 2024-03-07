@@ -12,7 +12,7 @@ destroy the controller and reload it with the same parameters as before. This ca
 controller whilst being in dev mode. Refreshing a controller will run the `onDestroy` method of the controller and then
 run the `onInit` and `onRender` methods again.
 
-<img width="640" height="360" src=".github/assets/hot-reload.gif">
+<img width="640" height="360" src="../assets/hot-reload.gif" alt="Hot reloading">
 
 When being in dev mode, the framework will automatically refresh the controller when the corresponding FXML file is
 changed. This can be used to quickly test changes to the view without having to restart the application. In order to

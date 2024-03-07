@@ -44,7 +44,7 @@ public void rollDice() {
 }
 ```
 
-<img width="640" height="360" src="/docs/assets/key-event.gif">
+<img width="640" height="360" src="../assets/key-event.gif" alt="Rolling a dice">
 
 ---
 
