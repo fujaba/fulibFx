@@ -32,7 +32,10 @@ public class AppTest extends ApplicationTest {
 
         press(KeyCode.LEFT);
         release(KeyCode.LEFT);
-        clickOn("#startButton");
+        press(KeyCode.TAB);
+        release(KeyCode.TAB);
+        press(KeyCode.SPACE);
+        release(KeyCode.SPACE);
 
         waitForFxEvents();
 
