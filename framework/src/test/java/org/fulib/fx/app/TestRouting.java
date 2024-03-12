@@ -1,8 +1,11 @@
 package org.fulib.fx.app;
 
 import org.fulib.fx.annotation.Route;
-import org.fulib.fx.app.controllertypes.*;
-import org.fulib.fx.app.subcontrollertest.MainController;
+import org.fulib.fx.app.controller.*;
+import org.fulib.fx.app.controller.subcomponent.basic.SubComponentController;
+import org.fulib.fx.app.controller.types.*;
+import org.fulib.fx.app.controller.types.invalid.NonExtendingComponent;
+import org.fulib.fx.app.controller.subcomponent.order.MainController;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -23,7 +26,7 @@ public class TestRouting {
 
     @Inject
     @Route("controller/view")
-    Provider<ViewController> viewControllerProvider;
+    Provider<FXMLController> viewControllerProvider;
 
     @Inject
     @Route("controller/method")
