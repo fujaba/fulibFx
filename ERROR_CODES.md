@@ -73,7 +73,7 @@ This error is thrown if a method annotated with an event annotation (onInit, onR
 successfully.
 This can happen if the method throws an exception.
 
-### 1006: `Components must extend (a subtype of) 'javafx.scene.Parent'.`
+### 1006: `Components must extend (a subtype of) 'javafx.scene.Node'.`
 
 - Runtime: ❌
 - Annotation Processor: ✅
