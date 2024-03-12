@@ -1,8 +1,9 @@
 package de.uniks.ludo;
 
+import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
-import javafx.scene.input.MouseButton;
+import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
 import org.junit.jupiter.api.Test;
 import org.mockito.Spy;
@@ -26,10 +27,11 @@ public class AppTest extends ApplicationTest {
 
     @Test
     public void test() {
-        moveTo("2");;
-        moveBy(0, -20);
-        press(MouseButton.PRIMARY);
-        release(MouseButton.PRIMARY);
+        Platform.runLater(() -> app.stage().requestFocus());
+        waitForFxEvents();
+
+        press(KeyCode.LEFT);
+        release(KeyCode.LEFT);
         clickOn("#startButton");
 
         waitForFxEvents();
@@ -247,7 +249,7 @@ public class AppTest extends ApplicationTest {
     }
 
     private void roll() {
-        clickOn("#eyesLabel");;
+        clickOn("#eyesLabel");
         sleep(1100);
     }
 
