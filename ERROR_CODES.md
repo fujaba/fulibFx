@@ -159,6 +159,26 @@ public void onKey(KeyEvent event, String other) { // Wrong, should not have more
 }
 ```
 
+### 1011: `Controller '*' must provide a parent as their view to be able to be shown as a root node.`
+
+- Runtime: ✅
+- Annotation Processor: ❌
+
+This error is thrown when a controller or component is shown as a root node of a scene, but does not provide a parent as
+its view. This can happen when calling `show` or opening a modal.
+
+```java
+
+@Component
+public class MyComponent extends ImageView { // Wrong, should extend Parent (or a subclass of it) to be displayed directly
+    // ...
+}
+```
+
+```java
+show(new MyComponent()); // Wrong, should not be able to show a controller that does not provide a parent as its view
+```
+
 ## Resources
 
 ### 2000: `Could not find resource '*'.`

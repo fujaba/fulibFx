@@ -1,6 +1,7 @@
 package org.fulib.fx.controller;
 
 import dagger.Lazy;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.util.Pair;
 import org.fulib.fx.FulibFxApp;
@@ -85,7 +86,8 @@ public class Router {
     }
 
     /**
-     * Initializes and renders the controller with the given route.
+     * Initializes and renders the controller/component with the given route.
+     * This only works for controllers and components having a parent as their root node.
      *
      * @param route      The route of the controller
      * @param parameters The parameters to pass to the controller
@@ -117,9 +119,13 @@ public class Router {
 
         // Get the instance of the controller
         Object controllerInstance = ReflectionUtil.getInstanceOfProviderField(provider, this.routerObject);
-        Parent renderedParent = this.manager.get().initAndRender(controllerInstance, parameters);
+        Node renderedNode = this.manager.get().initAndRender(controllerInstance, parameters);
 
-        return new Pair<>(controllerInstance, renderedParent);
+        if (renderedNode instanceof Parent parent) {
+            return new Pair<>(controllerInstance, parent);
+        } else {
+            throw new RuntimeException(error(1011).formatted(controllerClass.getName()));
+        }
     }
 
     /**
@@ -143,7 +149,7 @@ public class Router {
      *
      * @return The rendered controller
      */
-    public Pair<Object, Parent> back() {
+    public Pair<Object, Node> back() {
         try {
             var pair = this.history.back();
             return navigate(pair);
@@ -157,7 +163,7 @@ public class Router {
      *
      * @return The rendered controller
      */
-    public Pair<Object, Parent> forward() {
+    public Pair<Object, Node> forward() {
         try {
             var pair = this.history.forward();
             return navigate(pair);
@@ -166,7 +172,7 @@ public class Router {
         }
     }
 
-    private Pair<Object, Parent> navigate(Pair<Either<TraversableNodeTree.Node<Field>, Object>, Map<String, Object>> pair) {
+    private Pair<Object, Node> navigate(Pair<Either<TraversableNodeTree.Node<Field>, Object>, Map<String, Object>> pair) {
         var either = pair.getKey();
         either.getLeft().ifPresent(node -> ((TraversableNodeTree<Field>) routes).setCurrentNode(node));
 

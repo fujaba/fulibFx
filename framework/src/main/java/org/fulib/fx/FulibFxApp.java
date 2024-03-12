@@ -6,6 +6,7 @@ import io.reactivex.rxjava3.disposables.DisposableContainer;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
@@ -74,54 +75,54 @@ public abstract class FulibFxApp extends Application {
     /**
      * Initializes and renders the component with the given route.
      * <p>
-     * The component has to be destroyed manually, for example by calling {@link #destroy(Parent)}.
+     * The component has to be destroyed manually, for example by calling {@link #destroy(Node)}.
      *
-     * @param route     The route of the component to render
-     * @param <T>       The type of the component
+     * @param route The route of the component to render
+     * @param <T>   The type of the component
      * @return The rendered component
      */
-    public @NotNull <T extends Parent> T initAndRender(@NotNull String route) {
+    public @NotNull <T extends Node> T initAndRender(@NotNull String route) {
         return initAndRender(route, Map.of());
     }
 
     /**
      * Initializes and renders a component instance (a controller with the {@link Component} annotation).
      * <p>
-     * The component has to be destroyed manually, for example by calling {@link #destroy(Parent)}.
+     * The component has to be destroyed manually, for example by calling {@link #destroy(Node)}.
      *
      * @param component The component instance
      * @param <T>       The type of the component
      * @return The rendered component
      */
-    public @NotNull <T extends Parent> T initAndRender(@NotNull T component) {
+    public @NotNull <T extends Node> T initAndRender(@NotNull T component) {
         return initAndRender(component, Map.of());
     }
 
     /**
      * Initializes and renders the component with the given route.
      * <p>
-     * The component has to be destroyed manually, for example by calling {@link #destroy(Parent)}.
+     * The component has to be destroyed manually, for example by calling {@link #destroy(Node)}.
      *
-     * @param route     The route of the component to render
-     * @param params    The arguments passed to the component
-     * @param <T>       The type of the component
+     * @param route  The route of the component to render
+     * @param params The arguments passed to the component
+     * @param <T>    The type of the component
      * @return The rendered component
      */
-    public @NotNull <T extends Parent> T initAndRender(@NotNull String route, @NotNull Map<@NotNull String, @Nullable Object> params) {
+    public @NotNull <T extends Node> T initAndRender(@NotNull String route, @NotNull Map<@NotNull String, @Nullable Object> params) {
         return initAndRender(route, params, null);
     }
 
     /**
      * Initializes and renders a component instance (a controller with the {@link Component} annotation).
      * <p>
-     * The component has to be destroyed manually, for example by calling {@link #destroy(Parent)}.
+     * The component has to be destroyed manually, for example by calling {@link #destroy(Node)}.
      *
      * @param component The component instance
      * @param params    The arguments passed to the component
      * @param <T>       The type of the component
      * @return The rendered component
      */
-    public @NotNull <T extends Parent> T initAndRender(@NotNull T component, @NotNull Map<@NotNull String, @Nullable Object> params) {
+    public @NotNull <T extends Node> T initAndRender(@NotNull T component, @NotNull Map<@NotNull String, @Nullable Object> params) {
         return initAndRender(component, params, null);
     }
 
@@ -131,7 +132,7 @@ public abstract class FulibFxApp extends Application {
      * If a disposable is provided, the disposable will be modified to include the cleanup of the rendered component.
      * The provided disposable can be used to destroy the component with all its children manually.
      * <p>
-     * If no disposable is provided, the component has to be destroyed manually, for example by calling {@link #destroy(Parent)}.
+     * If no disposable is provided, the component has to be destroyed manually, for example by calling {@link #destroy(Node)}.
      *
      * @param route     The route of the component to render
      * @param params    The arguments passed to the component
@@ -140,7 +141,7 @@ public abstract class FulibFxApp extends Application {
      * @return The rendered component
      */
     @SuppressWarnings("unchecked")
-    public @NotNull <T extends Parent> T initAndRender(@NotNull String route, @NotNull Map<@NotNull String, @Nullable Object> params, @Nullable DisposableContainer onDestroy) {
+    public @NotNull <T extends Node> T initAndRender(@NotNull String route, @NotNull Map<@NotNull String, @Nullable Object> params, @Nullable DisposableContainer onDestroy) {
         Object component = this.frameworkComponent.router().getController(route);
         if (!ControllerUtil.isComponent(component))
             throw new IllegalArgumentException(error(1000).formatted(component.getClass().getName()));
@@ -153,14 +154,14 @@ public abstract class FulibFxApp extends Application {
      * If a disposable is provided, the disposable will be modified to include the cleanup of the rendered component.
      * The provided disposable can be used to destroy the component with all its children manually.
      * <p>
-     * If no disposable is provided, the component has to be destroyed manually, for example by calling {@link #destroy(Parent)}.
+     * If no disposable is provided, the component has to be destroyed manually, for example by calling {@link #destroy(Node)}.
      *
      * @param component The component instance
      * @param params    The arguments passed to the component
      * @param onDestroy A disposable which will be modified to include the disposable of the component
      * @return The rendered component
      */
-    public @NotNull <T extends Parent> T initAndRender(@NotNull T component, @NotNull Map<@NotNull String, @Nullable Object> params, @Nullable DisposableContainer onDestroy) {
+    public @NotNull <T extends Node> T initAndRender(@NotNull T component, @NotNull Map<@NotNull String, @Nullable Object> params, @Nullable DisposableContainer onDestroy) {
         if (!ControllerUtil.isComponent(component))
             throw new IllegalArgumentException(error(1000).formatted(component.getClass().getName()));
 
@@ -182,7 +183,7 @@ public abstract class FulibFxApp extends Application {
      * @return The destroyed controller instance
      * @throws IllegalArgumentException If the given instance is not a controller extending Parent
      */
-    public @NotNull <T extends Parent> T destroy(@NotNull T rendered) {
+    public @NotNull <T extends Node> T destroy(@NotNull T rendered) {
         this.frameworkComponent().controllerManager().destroy(rendered);
         return rendered;
     }
@@ -235,15 +236,19 @@ public abstract class FulibFxApp extends Application {
      * @return The rendered parent of the controller
      */
     public @NotNull Parent show(@NotNull Object controller, @NotNull Map<String, Object> params) {
+        // Check if the given instance is a controller
         if (!ControllerUtil.isController(controller))
             throw new IllegalArgumentException(error(1001).formatted(controller.getClass().getName()));
+
+        // Render the new controller and check if it's a parent
         cleanup();
-        Parent renderedParent = this.frameworkComponent().controllerManager().initAndRender(controller, params);
-        this.currentMainController = controller;
+        Node renderedNode = this.frameworkComponent().controllerManager().initAndRender(controller, params);
+        if (!(renderedNode instanceof Parent renderedParent))
+            throw new IllegalArgumentException(error(1011).formatted(controller.getClass().getName()));
+
+        // Add the new controller to the history and display it
         this.frameworkComponent.router().addToHistory(new Pair<>(Either.right(controller), params));
-        onShow(Optional.empty(), controller, renderedParent, params);
-        display(renderedParent);
-        getTitle(controller).ifPresent(title -> stage.setTitle(formatTitle(title)));
+        prepareDisplay(null, renderedParent, controller, params);
         return renderedParent;
     }
 
@@ -255,14 +260,27 @@ public abstract class FulibFxApp extends Application {
      * @return The rendered parent of the controller
      */
     public @NotNull Parent show(@NotNull String route, @NotNull Map<@NotNull String, @Nullable Object> params) {
+        // Get the controller instance and display it (most logic is in renderRoute)
         cleanup();
         Pair<Object, Parent> rendered = this.frameworkComponent.router().renderRoute(route, params);
-        Object controller = rendered.getKey();
-        this.currentMainController = controller;
-        display(rendered.getValue());
-        getTitle(currentMainController).ifPresent(title -> stage.setTitle(formatTitle(title)));
-        onShow(Optional.of(route), rendered.getKey(), rendered.getValue(), params);
+        prepareDisplay(route, rendered.getValue(), rendered.getKey(), params);
         return rendered.getValue();
+    }
+
+    /**
+     * Prepares the display of a controller by setting all required properties and calling the onShow method.
+     * The controller will be displayed using {@link #display(Parent)}.
+     *
+     * @param route      The route of the controller to render
+     * @param parent     The parent to display
+     * @param controller The controller instance
+     * @param params     The arguments passed to the controller
+     */
+    protected void prepareDisplay(@Nullable String route, @NotNull Parent parent, @NotNull Object controller, @NotNull Map<String, Object> params) {
+        this.currentMainController = controller;
+        getTitle(currentMainController).ifPresent(title -> stage.setTitle(formatTitle(title)));
+        display(parent);
+        onShow(Optional.ofNullable(route), controller, parent, params);
     }
 
     /**
@@ -343,10 +361,10 @@ public abstract class FulibFxApp extends Application {
      */
     public void back() {
         cleanup();
-        Pair<Object, Parent> back = this.frameworkComponent.router().back();
-        if (back != null) {
+        Pair<Object, Node> back = this.frameworkComponent.router().back();
+        if (back != null && back.getValue() instanceof Parent parent) { // TODO: Correctly handle the case when the value is not a parent
             this.currentMainController = back.getKey();
-            display(back.getValue());
+            display(parent);
         }
     }
 
@@ -355,10 +373,10 @@ public abstract class FulibFxApp extends Application {
      */
     public void forward() {
         cleanup();
-        Pair<Object, Parent> forward = this.frameworkComponent.router().forward();
-        if (forward != null) {
+        Pair<Object, Node> forward = this.frameworkComponent.router().forward();
+        if (forward != null && forward.getValue() instanceof Parent parent) {
             this.currentMainController = forward.getKey();
-            display(forward.getValue());
+            display(parent);
         }
     }
 
@@ -373,7 +391,9 @@ public abstract class FulibFxApp extends Application {
         Object controller = this.currentMainController; // Get the current controller
         Map<String, Object> params = this.frameworkComponent.router().current().getValue(); // Use the same parameters as before
         this.frameworkComponent.controllerManager().init(controller, params, true); // Re-initialize the controller
-        Parent parent = this.frameworkComponent.controllerManager().render(controller, params); // Re-render the controller
+        Node node = this.frameworkComponent.controllerManager().render(controller, params); // Re-render the controller
+        if (!(node instanceof Parent parent))
+            throw new IllegalArgumentException(error(1011).formatted(controller.getClass().getName()));
         ReflectionUtil.resetMouseHandler(stage());
         display(parent);
     }
