@@ -1,4 +1,4 @@
-# Components
+# Components [![Javadocs](https://javadoc.io/badge2/org.fulib/fulibFx/Javadocs.svg?color=green)](https://javadoc.io/doc/org.fulib/fulibFx/latest/org/fulib/fx/annotation/controller/Component.html)
 
 Components are a special type of controller that can be used to create reusable components. Components have to extend
 from a JavaFX Parent (or any class extending from Parent) and have to be annotated with `@Component`.
