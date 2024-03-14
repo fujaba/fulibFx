@@ -38,4 +38,4 @@ for checking which type it is and for getting the value correct value.
 
 ---
 
-[⬅ Duplicator](5-node-duplicator.md) | [Features ➡](README.md)
+[⬅ Duplicator](5-node-duplicator.md) | [Overview](README.md) | [Features ➡](README.md)

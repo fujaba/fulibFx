@@ -21,4 +21,4 @@ provide the path where the FXML files are located. The path should be relative t
 
 ---
 
-[⬅ For](2-for.md) | [Modals ➡](4-modals.md)
+[⬅ For](2-for.md) | [Overview](README.md) | [Modals ➡](4-modals.md)

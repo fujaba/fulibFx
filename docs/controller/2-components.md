@@ -16,4 +16,4 @@ way for creating your application.
 
 ---
 
-[⬅ Controllers](1-controllers.md) | [Views ➡](3-views.md)
+[⬅ Controllers](1-controllers.md) | [Overview](README.md) | [Views ➡](3-views.md)

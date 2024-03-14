@@ -18,4 +18,4 @@ Modals.showModal(app, confirmComponent, (stage, component) -> {
 
 ---
 
-[⬅ History](3-history.md) | [Duplicator ➡](5-node-duplicator.md)
+[⬅ History](3-history.md) | [Overview](README.md) | [Duplicator ➡](5-node-duplicator.md)

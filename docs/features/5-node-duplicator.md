@@ -17,4 +17,4 @@ Duplicators.duplicate(new MyNode("Hello World")); // Returns a new MyNode with t
 
 ---
 
-[⬅ Modals](4-modals.md) | [Data Structures ➡](6-data-structures.md)
+[⬅ Modals](4-modals.md) | [Overview](README.md) | [Data Structures ➡](6-data-structures.md)
