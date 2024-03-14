@@ -21,10 +21,10 @@ repositories {
 // Project dependencies
 dependencies {
     // https://mvnrepository.com/artifact/com.google.auto.service/auto-service-annotations
-    implementation group: 'com.google.auto.service', name: 'auto-service-annotations', version: '1.1.1'
+    implementation group: 'com.google.auto.service', name: 'auto-service-annotations', version: autoServiceVersion
 
     // https://mvnrepository.com/artifact/com.google.auto.service/auto-service
-    annotationProcessor group: 'com.google.auto.service', name: 'auto-service', version: '1.1.1'
+    annotationProcessor group: 'com.google.auto.service', name: 'auto-service', version: autoServiceVersion
 
     // Framework
     implementation project(":framework")
