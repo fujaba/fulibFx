@@ -1,4 +1,5 @@
-# ☕ fulibFx
+# ☕ fulibFx 
+[![Javadocs](https://javadoc.io/badge2/org.fulib/fulibFx/javadoc.svg?style=for-the-badge&color=green)](https://javadoc.io/doc/org.fulib/fulibFx) ![Java 17/21](https://img.shields.io/github/actions/workflow/status/fujaba/fulibFx/java-ci-cd.yaml?style=for-the-badge&logo=github&color=green) ![GH Pages](https://img.shields.io/badge/GH_Pages-Click_here-green?style=for-the-badge&logo=github)
 
 fulibFx is a versatile framework for JavaFX applications that is specifically designed for MVC pattern projects.
 It provides a simple way to create and manage controllers, views, routes, subcomponents, modals, and more.
