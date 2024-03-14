@@ -463,24 +463,32 @@ public class ControllerManager {
         // Fill the parameters into fields annotated with @Param
         for (Field field : Reflection.getFieldsWithAnnotation(instance.getClass(), Param.class).toList()) {
             try {
-                boolean accessible = field.canAccess(instance);
                 field.setAccessible(true);
+
+                // Don't fill the parameter if it's not present (field will not be overwritten, "default value")
+                if (!parameters.containsKey(field.getAnnotation(Param.class).value())) return;
+
+                Object value = parameters.get(field.getAnnotation(Param.class).value());
 
                 // If the field is a WriteableValue, use the setValue method
                 if (WritableValue.class.isAssignableFrom(field.getType())) {
-                    field.get(instance).getClass().getMethod("setValue", Object.class).invoke(field.get(instance), parameters.get(field.getAnnotation(Param.class).value()));
-                } else {
-                    Object value = parameters.get(field.getAnnotation(Param.class).value());
-                    if (value == null) { // If the value is null, we don't need to check the type
-                        field.set(instance, null);
+                    field.get(instance).getClass().getMethod("setValue", Object.class).invoke(field.get(instance), value);
+                }
+
+                // If not, set the field's value directly
+                else {
+                    if (value == null) {
+                        // If the value is null and the field is a primitive, throw an error
+                        if (field.getType().isPrimitive()) {
+                            throw new RuntimeException(error(4007).formatted(field.getAnnotation(Param.class).value(), field.getName(), instance.getClass().getName(), field.getType().getName(), "null"));
+                        }
+                        field.set(instance, null); // If the value is null and the field is not a primitive, no type check is necessary
                     } else if (Reflection.canBeAssigned(field.getType(), value)) {
-                        field.set(instance, value);
+                        field.set(instance, value); // If the value is not null, we need a type check (respects primitive types)
                     } else {
                         throw new RuntimeException(error(4007).formatted(field.getAnnotation(Param.class).value(), field.getName(), instance.getClass().getName(), field.getType().getName(), value.getClass().getName()));
                     }
                 }
-
-                field.setAccessible(accessible);
             } catch (IllegalAccessException e) {
                 throw new RuntimeException(error(4000).formatted(field.getAnnotation(Param.class).value(), field.getName(), instance.getClass().getName()), e);
             } catch (InvocationTargetException | NoSuchMethodException e) {
@@ -496,10 +504,9 @@ public class ControllerManager {
             }
 
             try {
-                boolean accessible = field.canAccess(instance);
                 field.setAccessible(true);
 
-                // Check if field is final
+                // If the map is final, clear it and put all parameters into it
                 if (Modifier.isFinal(field.getModifiers())) {
                     @SuppressWarnings("unchecked")
                     Map<String, Object> map = (Map<String, Object>) field.get(instance);
@@ -508,7 +515,6 @@ public class ControllerManager {
                 } else {
                     field.set(instance, parameters);
                 }
-                field.setAccessible(accessible);
             } catch (IllegalAccessException e) {
                 throw new RuntimeException(error(4010).formatted(field.getName(), instance.getClass().getName()), e);
             }

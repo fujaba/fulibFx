@@ -53,7 +53,8 @@ public class FooController {
 }
 ```
 
-If a controller expects an argument but no argument with a suitable name is passed, `null` will be passed instead.
+If a controller expects an argument but no argument with a suitable name is passed, `null` will be passed instead, except
+for fields which will be left unchanged ("default value").
 Any arguments not expected by the controller will be ignored.
 
 If an argument is provided, but the type doesn't match the type of the field or method parameter, an exception will be
