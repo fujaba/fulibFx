@@ -46,4 +46,4 @@ Using `getTitle` will return the title of the controller as a string. This can b
 
 ---
 
-[⬅ Internationalization](5-internationalization.md) | [Routing ➡](7-routing.md)
+[⬅ Internationalization](5-internationalization.md) | [Overview](README.md) | [Routing ➡](7-routing.md)

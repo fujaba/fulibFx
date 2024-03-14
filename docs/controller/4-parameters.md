@@ -69,4 +69,4 @@ The order of injection is as follows:
 
 ---
 
-[⬅ Views](3-views.md) | [Internationalization ➡](5-internationalization.md)
+[⬅ Views](3-views.md) | [Overview](README.md) | [Internationalization ➡](5-internationalization.md)

@@ -75,4 +75,4 @@ One example for this is the [`Subscriber` class](../features/1-subscriber.md).
 
 ---
 
-[⬅ Main](README.md) | [Components ➡](2-components.md)
+[Overview](README.md) | [Components ➡](2-components.md)

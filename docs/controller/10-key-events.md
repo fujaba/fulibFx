@@ -44,8 +44,8 @@ public void rollDice() {
 }
 ```
 
-<img width="640" height="360" src="/docs/assets/key-event.gif">
+<img width="640" height="360" src="../assets/key-event.gif" alt="Rolling a dice">
 
 ---
 
-[⬅ Call order](9-call-order.md) | [Main ➡](README.md)
+[⬅ Call order](9-call-order.md) | [Overview](README.md) | [Main ➡](README.md)

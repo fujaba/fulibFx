@@ -57,4 +57,4 @@ the return value of the `disposable()` method to your list of disposables.
 
 ---
 
-[⬅ Subscriber](1-subscriber.md) | [History ➡](3-history.md)
+[⬅ Subscriber](1-subscriber.md) | [Overview](README.md) | [History ➡](3-history.md)
