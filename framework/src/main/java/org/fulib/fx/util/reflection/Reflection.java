@@ -1,12 +1,13 @@
 package org.fulib.fx.util.reflection;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.lang.annotation.Annotation;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -30,6 +31,17 @@ public class Reflection {
      */
     public static Stream<Field> getFieldsWithAnnotation(Class<?> clazz, Class<? extends Annotation> annotation) {
         return Arrays.stream(clazz.getDeclaredFields()).filter(field -> field.isAnnotationPresent(annotation));
+    }
+
+    /**
+     * Returns all fields of the given class (or a subclass) that are annotated with the given annotation.
+     *
+     * @param clazz      The class to get the fields from
+     * @param annotation The annotation to filter the fields by
+     * @return A list of fields that are annotated with the given annotation
+     */
+    public static Stream<Field> getAllFieldsWithAnnotation(Class<?> clazz, Class<? extends Annotation> annotation) {
+        return getAllFields(clazz).stream().filter(field -> field.isAnnotationPresent(annotation));
     }
 
     /**
@@ -76,6 +88,17 @@ public class Reflection {
     }
 
     /**
+     * Returns all methods of the given class (or a subclass) that are annotated with the given annotation.
+     *
+     * @param clazz      The class to get the methods from
+     * @param annotation The annotation to filter the methods by
+     * @return A list of methods that are annotated with the given annotation
+     */
+    public static Stream<Method> getAllMethodsWithAnnotation(Class<?> clazz, Class<? extends Annotation> annotation) {
+        return getAllMethods(clazz, false).stream().filter(method -> method.isAnnotationPresent(annotation));
+    }
+
+    /**
      * Checks if the value can be assigned to the given type.
      *
      * @param type  The type to check
@@ -91,26 +114,6 @@ public class Reflection {
         return getWrapperType(type).isAssignableFrom(valueType);
     }
 
-
-    /**
-     * Returns all fields of the given class and its superclasses.
-     *
-     * @param clazz The class to get the fields from
-     * @return A set of all fields of the given class and its superclasses
-     */
-    public static @NotNull Set<Field> getAllFields(@NotNull Class<?> clazz) {
-
-        Set<Field> fields = new HashSet<>(Arrays.asList(clazz.getDeclaredFields()));
-
-        // Recursively add fields from superclass until it reaches Object class
-        Class<?> superClass = clazz.getSuperclass();
-        if (superClass != null && superClass != Object.class) {
-            fields.addAll(getAllFields(superClass));
-        }
-
-        return fields;
-    }
-
     public static Class<?> getWrapperType(Class<?> type) {
         return type.isPrimitive() ? wrap(type) : type;
     }
@@ -124,6 +127,36 @@ public class Reflection {
     @SuppressWarnings("unchecked")
     public static <T> Class<T> unwrap(Class<T> wrapped) {
         return (Class<T>) MethodType.methodType(wrapped).unwrap().returnType();
+    }
+
+    /**
+     * Returns all fields of a class including private and inherited fields.
+     *
+     * @param clazz The class to get the fields from
+     * @return A list of all fields of the given class
+     */
+    public static List<Field> getAllFields(Class<?> clazz) {
+        List<Field> fields = new ArrayList<>(Arrays.asList(clazz.getDeclaredFields()));
+        while (clazz.getSuperclass() != null) {
+            clazz = clazz.getSuperclass();
+            fields.addAll(Arrays.asList(clazz.getDeclaredFields()));
+        }
+        return fields;
+    }
+
+    /**
+     * Returns all methods of a class including private and inherited methods.
+     *
+     * @param clazz The class to get the methods from
+     * @return A list of all methods of the given class
+     */
+    public static List<Method> getAllMethods(Class<?> clazz, boolean includeObjectMethods) {
+        List<Method> methods = new ArrayList<>(Arrays.asList(clazz.getDeclaredMethods()));
+        while (clazz.getSuperclass() != null && (includeObjectMethods || clazz.getSuperclass() != Object.class)) {
+            clazz = clazz.getSuperclass();
+            methods.addAll(Arrays.asList(clazz.getDeclaredMethods()));
+        }
+        return methods;
     }
 
 }
