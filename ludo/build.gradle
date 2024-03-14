@@ -5,11 +5,6 @@ plugins {
     id 'org.fulib.fulibGradle' version '0.5.0'
 }
 
-configurations {
-    internal
-    implementation.extendsFrom(internal)
-}
-
 // JavaFX dependencies
 javafx {
     version = '20'
@@ -74,10 +69,6 @@ test {
 }
 
 jar {
-    from {
-        configurations.internal.collect { it.isDirectory() ? it : zipTree(it) }
-    }
-
     manifest {
         attributes(
                 "Manifest-Version": 1.0,
@@ -105,12 +96,6 @@ repositories {
 
 group projectGroup
 version projectVersion
-
-// Include local jar dependencies
-dependencies {
-    implementation fileTree(dir: "libs/implementation", include: "*.jar")
-    internal fileTree(dir: "libs/internal", include: "*.jar")
-}
 
 static JavaVersion getVersionForMajor(String version) {
     return JavaVersion.values().find { (it.majorVersion == version) }
