@@ -22,6 +22,7 @@ repositories {
 
 // JavaFX dependencies
 javafx {
+    // https://mvnrepository.com/artifact/org.openjfx/javafx-base
     version = '21.0.2'
     modules = ['javafx.controls', 'javafx.graphics', 'javafx.fxml', 'javafx.media']
 }
