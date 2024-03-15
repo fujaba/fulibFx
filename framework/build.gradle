@@ -28,9 +28,10 @@ javafx {
 // Project dependencies
 dependencies {
     implementation group: 'org.jetbrains', name: 'annotations', version: jetbrainsAnnotationsVersion
+    implementation group: 'io.reactivex.rxjava3', name: 'rxjava', version: rxJavaVersion
+
     implementation group: 'com.google.dagger', name: 'dagger', version: daggerVersion
     annotationProcessor group: 'com.google.dagger', name: 'dagger-compiler', version: daggerVersion
-    implementation group: 'io.reactivex.rxjava3', name: 'rxjava', version: rxJavaVersion
 }
 
 // ------------------- Tests -------------------
@@ -39,13 +40,13 @@ dependencies {
 dependencies {
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: junitJupiterVersion
     testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: junitJupiterVersion
+
     testImplementation group: 'org.testfx', name: 'testfx-junit5', version: testFxVersion
     testImplementation group: 'org.testfx', name: 'openjfx-monocle', version: monocleVersion
     testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: mockitoVersion
-    testAnnotationProcessor group: 'com.google.dagger', name: 'dagger-compiler', version: daggerVersion
+    testImplementation group: 'org.hamcrest', name: 'hamcrest', version: hamcrestVersion
 
-    // https://mvnrepository.com/artifact/org.hamcrest/hamcrest
-    testImplementation group: 'org.hamcrest', name: 'hamcrest', version: '2.2'
+    testAnnotationProcessor group: 'com.google.dagger', name: 'dagger-compiler', version: daggerVersion
 }
 
 test {

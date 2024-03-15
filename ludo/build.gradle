@@ -14,17 +14,15 @@ javafx {
 // Project dependencies
 dependencies {
     implementation group: 'org.jetbrains', name: 'annotations', version: jetbrainsAnnotationsVersion
-    implementation group: 'com.google.dagger', name: 'dagger', version: daggerVersion
-    annotationProcessor group: 'com.google.dagger', name: 'dagger-compiler', version: daggerVersion
     implementation group: 'io.reactivex.rxjava3', name: 'rxjava', version: rxJavaVersion
 
-    // https://mvnrepository.com/artifact/org.fulib/fulibScenarios
-    fulibScenarios group: 'org.fulib', name: 'fulibScenarios', version: '1.7.1'
+    implementation group: 'com.google.dagger', name: 'dagger', version: daggerVersion
+    annotationProcessor group: 'com.google.dagger', name: 'dagger-compiler', version: daggerVersion
 
-    // https://mvnrepository.com/artifact/org.fulib/fulib
-    fulibScenarios group: 'org.fulib', name: 'fulib', version: '1.6.2'
+    fulibScenarios group: 'org.fulib', name: 'fulibScenarios', version: fulibScenariosVersion
+    fulibScenarios group: 'org.fulib', name: 'fulib', version: fulibVersion
 
-    implementation project(":framework")
+    implementation project(':framework')
 }
 
 // ------------------- Tests -------------------
