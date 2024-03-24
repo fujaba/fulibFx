@@ -1,4 +1,5 @@
-# ☕ fulibFx
+# ☕ fulibFx 
+[![Javadocs](https://javadoc.io/badge2/org.fulib/fulibFx/javadoc.svg?style=for-the-badge&color=green)](https://javadoc.io/doc/org.fulib/fulibFx) ![Java 17/21](https://img.shields.io/github/actions/workflow/status/fujaba/fulibFx/java-ci-cd.yaml?style=for-the-badge&logo=github&color=green) [![GH Pages](https://img.shields.io/badge/GH_Pages-Click_here-green?style=for-the-badge&logo=github)](https://fujaba.github.io/fulibFx)
 
 fulibFx is a versatile framework for JavaFX applications that is specifically designed for MVC pattern projects.
 It provides a simple way to create and manage controllers, views, routes, subcomponents, modals, and more.
@@ -125,7 +126,7 @@ When developing an application, it is often necessary to reload the application 
 a way to [refresh a controller](docs/features/3-history.md) without having to reload the whole application. 
 This can be done by calling the `refresh` method
 
-<img width="640" height="360" src="docs/assets/hot-reload.gif">
+<img width="640" height="360" src="docs/assets/hot-reload.gif" alt="GIF showing the hot reload feature">
 
 ### 🧷 Utilities
 

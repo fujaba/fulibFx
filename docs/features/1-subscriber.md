@@ -1,4 +1,4 @@
-# Subscriber
+# Subscriber [![Javadocs](https://javadoc.io/badge2/org.fulib/fulibFx/Javadocs.svg?color=green)](https://javadoc.io/doc/org.fulib/fulibFx/latest/org/fulib/fx/controller/Subscriber.html)
 
 By creating a new `Subscriber` instance (or by using dependency injection to provide one) and using its utility methods,
 you can easily manage subscriptions without having to worry about disposing them one by one. Using `subscriber.dispose()`
