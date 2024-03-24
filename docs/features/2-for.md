@@ -1,4 +1,4 @@
-# For-Loops [![Javadocs](https://javadoc.io/badge2/org.fulib/fulibFx/Javadocs.svg?color=green)](https://javadoc.io/doc/org.fulib/fulibFx/latest/org/fulib/fx/constructs/FxFor.html)
+# For-Loops [![Javadocs](https://javadoc.io/badge2/org.fulib/fulibFx/Javadocs.svg?color=green)](https://javadoc.io/doc/org.fulib/fulibFx/latest/org/fulib/fx/constructs/forloop/FxFor.html)
 
 For-Loops can be used to easily display a node/subcomponent for all items in a list. Whenever an item is added to or
 removed from the list, the list of nodes updates accordingly.
@@ -14,6 +14,9 @@ This will create a component for each item in the list `items` and add it to the
 
 Currently, no information is passed to the created label. In order to pass static information you can add
 parameters like you would when using the `show`-method using a map.
+
+When a new component is created, the parameters `item` and `list` are automatically added to the map. The `item` parameter contains the current item of the component and the `list` parameter contains the list of all items.
+If parameters with the same key are already present in the map, they will not be overwritten.
 
 ```java
 fxFor.of(container, items, myComponentProvider, Map.of("key", value));
@@ -41,7 +44,7 @@ fxFor.of(container, items, () -> new Button("This is a button!"));
 fxFor.of(container, items, () -> new VBox(new Button("This is a button!"))); // Nodes can have children
 ```
 
-Unlike with controllers, it is not possible to pass static information in the form of paramters to nodes, as there is no
+Unlike with controllers, it is not possible to pass static information in the form of parameters to nodes, as there is no
 way of accessing them in the code. However, dynamic information in the form of an `BiConsumer` can be used just like with
 controllers.
 

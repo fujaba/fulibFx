@@ -8,7 +8,7 @@ import org.fulib.fx.annotation.event.onDestroy;
 import org.fulib.fx.annotation.event.onRender;
 import org.fulib.fx.annotation.param.Param;
 import org.fulib.fx.app.controller.subcomponent.basic.ButtonSubComponent;
-import org.fulib.fx.constructs.FxFor;
+import org.fulib.fx.constructs.forloop.FxFor;
 import org.fulib.fx.controller.Subscriber;
 
 import javax.inject.Inject;

@@ -48,4 +48,4 @@ public void rollDice() {
 
 ---
 
-[⬅ Call order](9-call-order.md) | [Overview](README.md) | [Main ➡](README.md)
+[⬅ Call order](9-call-order.md) | [Overview](README.md)

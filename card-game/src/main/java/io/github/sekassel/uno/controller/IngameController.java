@@ -28,7 +28,7 @@ import org.fulib.fx.annotation.event.onInit;
 import org.fulib.fx.annotation.event.onKey;
 import org.fulib.fx.annotation.event.onRender;
 import org.fulib.fx.annotation.param.Param;
-import org.fulib.fx.constructs.FxFor;
+import org.fulib.fx.constructs.forloop.FxFor;
 import org.fulib.fx.controller.Subscriber;
 
 import javax.inject.Inject;

@@ -1,4 +1,4 @@
-package org.fulib.fx.constructs;
+package org.fulib.fx.constructs.forloop;
 
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.disposables.Disposable;
@@ -209,8 +209,12 @@ public class For<Node extends javafx.scene.Node, Item> {
 
         // Initialize and render the controller if the node is a component
         if (ControllerUtil.isComponent(node)) {
-            controllerManager.init(node, this.params);
-            controllerManager.render(node, this.params);
+            // Add item and list to parameters if they are not already present
+            HashMap<String, Object> params = new HashMap<>(this.params);
+            params.putIfAbsent("item", item);
+            params.putIfAbsent("list", this.items);
+            controllerManager.init(node, params);
+            controllerManager.render(node, params);
         }
 
         // Add the node to the container
