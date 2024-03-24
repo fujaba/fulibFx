@@ -28,7 +28,11 @@ public class ControllerUtil {
      * @return True if the instance is a component (controller extending a Parent)
      */
     public static boolean isComponent(@Nullable Object instance) {
-        return instance != null && instance.getClass().isAnnotationPresent(Component.class) && Parent.class.isAssignableFrom(instance.getClass());
+        return instance != null && isComponent(instance.getClass());
+    }
+
+    public static boolean isComponent(@Nullable Class<?> clazz) {
+        return clazz != null && clazz.isAnnotationPresent(Component.class) && Parent.class.isAssignableFrom(clazz);
     }
 
     /**

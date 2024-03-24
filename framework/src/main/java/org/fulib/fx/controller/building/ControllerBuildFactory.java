@@ -38,7 +38,7 @@ public class ControllerBuildFactory implements BuilderFactory {
      * Searches the controller class for fields annotated with @SubController and stores the instances.
      */
     private void initSubControllers() {
-        Reflection.getFieldsWithAnnotation(instance.getClass(), SubComponent.class).forEach(field -> {
+        Reflection.getAllFieldsWithAnnotation(instance.getClass(), SubComponent.class).forEach(field -> {
 
             // If the field is a provider, store it in the provider map
             if (field.getType() == Provider.class) {
