@@ -52,6 +52,9 @@ You can pass parameters to the component by adding them to the `ComponentListCel
 listView.setCellFactory(param -> new ComponentListCell<>(app, componentProvider, params));
 ```
 
+When a new component is created, the parameters `item` and `list` are automatically added to the map. The `item` parameter contains the current item of the cell and the `list` parameter contains the list of all items.
+If parameters with the same key are already present in the map, they will not be overwritten.
+
 ### Disposing
 The components created by the `ComponentListCell` are automatically disposed when they are removed from the list. 
 Therefore, you have to make sure that the listview is cleared, when the main controller is destroyed.
