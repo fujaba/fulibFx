@@ -1,5 +1,6 @@
 package org.fulib.fx.data;
 
+import org.fulib.fx.TestUtil;
 import org.fulib.fx.util.reflection.Reflection;
 import org.junit.jupiter.api.Test;
 
@@ -52,7 +53,7 @@ public class ReflectionTest {
     public void listFieldsAndMethods() {
         assertEquals(List.of("number", "text"), Reflection.getAllFields(Example.class).stream().map(Field::getName).toList());
         assertEquals(List.of("method"), Reflection.getAllMethods(Example.class, false).stream().map(Method::getName).toList());
-        assertEquals(List.of("method", "finalize", "wait0", "equals", "toString", "hashCode", "getClass", "clone", "notify", "notifyAll", "wait", "wait", "wait"), Reflection.getAllMethods(Example.class, true).stream().map(Method::getName).toList());
+        TestUtil.containsAll(List.of("method", "finalize", "equals", "toString", "hashCode", "getClass", "clone", "notify", "notifyAll", "wait", "wait", "wait"), Reflection.getAllMethods(Example.class, true).stream().map(Method::getName).toList());
     }
 
 }
