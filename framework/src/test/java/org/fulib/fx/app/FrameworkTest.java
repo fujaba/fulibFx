@@ -1,7 +1,10 @@
 package org.fulib.fx.app;
 
 import javafx.application.Platform;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import org.fulib.fx.FulibFxApp;
+import org.fulib.fx.app.controller.InvalidParamController;
 import org.fulib.fx.app.controller.types.BasicComponent;
 import org.fulib.fx.app.controller.ParamController;
 import org.fulib.fx.app.controller.TitleController;
@@ -186,11 +189,13 @@ public class FrameworkTest extends ApplicationTest {
     @Test
     public void params() {
         ParamController controller = new ParamController();
+        StringProperty property = new SimpleStringProperty("string");
         Map<String, Object> params = Map.of(
                 "integer", 1,
                 "string", "string",
                 "character", 'a',
-                "bool", true
+                "bool", true,
+                "property", property
         );
         runAndWait(() -> app.show(controller, params));
 
@@ -200,12 +205,35 @@ public class FrameworkTest extends ApplicationTest {
 
         assertEquals("string", controller.fieldPropertyParamProperty().get());
 
-        assertEquals(Map.of("integer", 1, "string", "string", "character", 'a', "bool", true), controller.getOnInitParamsMap());
-        assertEquals(Map.of("integer", 1, "string", "string", "character", 'a', "bool", true), controller.getSetterParamsMap());
-        assertEquals(Map.of("integer", 1, "string", "string", "character", 'a', "bool", true), controller.getFieldParamsMap());
+        assertEquals(Map.of("integer", 1, "string", "string", "character", 'a', "bool", true, "property", property), controller.getOnInitParamsMap());
+        assertEquals(Map.of("integer", 1, "string", "string", "character", 'a', "bool", true, "property", property), controller.getSetterParamsMap());
+        assertEquals(Map.of("integer", 1, "string", "string", "character", 'a', "bool", true, "property", property), controller.getFieldParamsMap());
 
         assertEquals('a', controller.getSetterMultiParams1());
         assertEquals(true, controller.getSetterMultiParams2());
+
+        assertEquals(property, controller.stringPropertyProperty());
+
+        runAndWait(() ->
+                assertThrows(
+                        RuntimeException.class, // Fails because the field is of type Integer, but a String is provided
+                        () -> app.show(new InvalidParamController(), Map.of("one", "string"))
+                )
+        );
+
+        runAndWait(() ->
+                assertThrows(
+                        RuntimeException.class, // Fails because the property expects an Integer, but a String is provided
+                        () -> app.show(new InvalidParamController(), Map.of("two", "123"))
+                )
+        );
+
+        runAndWait(() ->
+                assertThrows(
+                        RuntimeException.class, // Fails because the property is null
+                        () -> app.show(new InvalidParamController(), Map.of("three", 123))
+                )
+        );
     }
 
     @Test

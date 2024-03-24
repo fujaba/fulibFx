@@ -35,10 +35,7 @@ import javax.inject.Singleton;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
+import java.lang.reflect.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
@@ -464,29 +461,51 @@ public class ControllerManager {
     private void fillParametersIntoFields(@NotNull Object instance, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
         // Fill the parameters into fields annotated with @Param
         for (Field field : Reflection.getAllFieldsWithAnnotation(instance.getClass(), Param.class).toList()) {
+
+            Param paramAnnotation = field.getAnnotation(Param.class);
+            String param = paramAnnotation.value();
+
+            // Don't fill the parameter if it's not present (field will not be overwritten, "default value")
+            if (!parameters.containsKey(param)) continue;
+
+            Class<?> fieldType = field.getType();
             try {
-                boolean accessible = field.canAccess(instance);
                 field.setAccessible(true);
 
+                Object value = parameters.get(param);
+                Object fieldValue = field.get(instance);
+
                 // If the field is a WriteableValue, use the setValue method
-                if (WritableValue.class.isAssignableFrom(field.getType())) {
-                    field.get(instance).getClass().getMethod("setValue", Object.class).invoke(field.get(instance), parameters.get(field.getAnnotation(Param.class).value()));
-                } else {
-                    Object value = parameters.get(field.getAnnotation(Param.class).value());
-                    if (value == null) { // If the value is null, we don't need to check the type
-                        field.set(instance, null);
-                    } else if (Reflection.canBeAssigned(field.getType(), value)) {
-                        field.set(instance, value);
-                    } else {
-                        throw new RuntimeException(error(4007).formatted(field.getAnnotation(Param.class).value(), field.getName(), instance.getClass().getName(), field.getType().getName(), value.getClass().getName()));
+                if (WritableValue.class.isAssignableFrom(fieldType) && !(value instanceof WritableValue)) {
+
+                    // We cannot call setValue on a non-existing property
+                    if (fieldValue == null) {
+                        throw new RuntimeException(error(4001).formatted(param, field.getName(), instance.getClass().getName()));
+                    }
+
+                    try {
+                        // noinspection unchecked
+                        ((WritableValue<Object>) field.get(instance)).setValue(value);
+                    } catch (ClassCastException e) {
+                        throw new RuntimeException(error(4007).formatted(param, field.getName(), instance.getClass().getName(), fieldType.getName(), value == null ? "null" : value.getClass().getName()));
                     }
                 }
 
-                field.setAccessible(accessible);
+                // If not, set the field's value directly
+                else if (value == null) {
+                    // If the value is null and the field is a primitive, throw an error
+                    if (fieldType.isPrimitive()) {
+                        throw new RuntimeException(error(4007).formatted(param, field.getName(), instance.getClass().getName(), fieldType.getName(), "null"));
+                    }
+                    field.set(instance, null); // If the value is null and the field is not a primitive, no type check is necessary
+                } else if (Reflection.canBeAssigned(fieldType, value)) {
+                    field.set(instance, value); // If the value is not null, we need a type check (respects primitive types)
+                } else {
+                    throw new RuntimeException(error(4007).formatted(param, field.getName(), instance.getClass().getName(), fieldType.getName(), value.getClass().getName()));
+                }
+
             } catch (IllegalAccessException e) {
-                throw new RuntimeException(error(4000).formatted(field.getAnnotation(Param.class).value(), field.getName(), instance.getClass().getName()), e);
-            } catch (InvocationTargetException | NoSuchMethodException e) {
-                throw new RuntimeException(error(4001).formatted(field.getAnnotation(Param.class).value(), field.getName(), instance.getClass().getName()), e);
+                throw new RuntimeException(error(4000).formatted(param, field.getName(), instance.getClass().getName()), e);
             }
         }
 
@@ -498,10 +517,9 @@ public class ControllerManager {
             }
 
             try {
-                boolean accessible = field.canAccess(instance);
                 field.setAccessible(true);
 
-                // Check if field is final
+                // If the map is final, clear it and put all parameters into it
                 if (Modifier.isFinal(field.getModifiers())) {
                     @SuppressWarnings("unchecked")
                     Map<String, Object> map = (Map<String, Object>) field.get(instance);
@@ -510,7 +528,6 @@ public class ControllerManager {
                 } else {
                     field.set(instance, parameters);
                 }
-                field.setAccessible(accessible);
             } catch (IllegalAccessException e) {
                 throw new RuntimeException(error(4010).formatted(field.getName(), instance.getClass().getName()), e);
             }

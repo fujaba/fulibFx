@@ -54,10 +54,8 @@ public class Reflection {
     public static void callMethodsForFieldInstances(Object instance, Collection<Field> fields, Consumer<Object> method) {
         for (Field field : fields) {
             try {
-                boolean accessible = field.canAccess(instance);
                 field.setAccessible(true);
                 Object component = field.get(instance);
-                field.setAccessible(accessible);
                 method.accept(component);
             } catch (IllegalAccessException e) {
                 throw new RuntimeException(error(9000).formatted(field.getName(), instance.getClass().getName()), e);

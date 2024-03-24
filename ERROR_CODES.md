@@ -143,8 +143,7 @@ public class NotAController { // Wrong, should be a controller or component
 - Runtime: ✅
 - Annotation Processor: ✅
 
-This error is thrown when a method annotated with `@onKey` has more than one parameter or a parameter that is not of type
-`KeyEvent`.
+This error is thrown when a method annotated with `@onKey` has more than one parameter or a parameter that is not of type `KeyEvent`.
 
 ```java
 
@@ -259,7 +258,7 @@ This can happen if the field isn't initialized.
 - Runtime: ✅
 - Annotation Processor: ❌
 
-This error is thrown when a title is specified using a language key, but no resource bundle is provided using `@Resource`
+This error is thrown when a title is specified using a language key, but no resource bundle is provided using `@Resource`.
 in the controller or component class.
 
 ## Routes
@@ -359,6 +358,7 @@ This error is thrown when the framework fails to put a parameter value into a fi
 - Annotation Processor: ❌
 
 This error is thrown when the framework fails to call the set method of a property field with the parameter value.
+This can happen if the property is not initialized.
 
 ### 4002: `Field '*' annotated with @ParamsMap in class '*' is not of type Map<String, Object>.`
 
@@ -450,6 +450,7 @@ public class MyController {
 - Annotation Processor: ❌
 
 This error is thrown if the type of the parameter value does not match the type of the field.
+This error also occurs if the expected type is a primitive type and the provided value is `null`.
 
 ### 4008: `Parameter '*' in method '*' in class '*' is of type '*' but the provided value is of type '*'.`
 
