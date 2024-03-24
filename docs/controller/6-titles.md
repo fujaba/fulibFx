@@ -1,4 +1,4 @@
-# Titles
+# Titles [![Javadocs](https://javadoc.io/badge2/org.fulib/fulibFx/Javadocs.svg?color=green)](https://javadoc.io/doc/org.fulib/fulibFx/latest/org/fulib/fx/annotation/controller/Title.html)
 
 The title of a controller or component can be set by annotating The class with `@Title`.
 The annotation takes an argument specifying the title of the controller or component.
