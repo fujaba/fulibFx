@@ -2,6 +2,7 @@ package org.fulib.fx.app;
 
 import javafx.application.Platform;
 import org.fulib.fx.FulibFxApp;
+import org.fulib.fx.app.controller.InvalidParamController;
 import org.fulib.fx.app.controller.types.BasicComponent;
 import org.fulib.fx.app.controller.ParamController;
 import org.fulib.fx.app.controller.TitleController;
@@ -206,6 +207,27 @@ public class FrameworkTest extends ApplicationTest {
 
         assertEquals('a', controller.getSetterMultiParams1());
         assertEquals(true, controller.getSetterMultiParams2());
+
+        runAndWait(() ->
+                assertThrows(
+                        RuntimeException.class, // Fails because the field is of type Integer, but a String is provided
+                        () -> app.show(new InvalidParamController(), Map.of("one", "string"))
+                )
+        );
+
+        runAndWait(() ->
+                assertThrows(
+                        RuntimeException.class, // Fails because the property expects an Integer, but a String is provided
+                        () -> app.show(new InvalidParamController(), Map.of("two", "123"))
+                )
+        );
+
+        runAndWait(() ->
+                assertThrows(
+                        RuntimeException.class, // Fails because the property is null
+                        () -> app.show(new InvalidParamController(), Map.of("three", 123))
+                )
+        );
     }
 
     @Test

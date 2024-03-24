@@ -34,10 +34,7 @@ import javax.inject.Singleton;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
+import java.lang.reflect.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
@@ -465,36 +462,45 @@ public class ControllerManager {
 
             Param paramAnnotation = field.getAnnotation(Param.class);
             String param = paramAnnotation.value();
-            Class<?> type = field.getType();
+
+            // Don't fill the parameter if it's not present (field will not be overwritten, "default value")
+            if (!parameters.containsKey(param)) continue;
+
+            Class<?> fieldType = field.getType();
 
             try {
                 field.setAccessible(true);
 
-                // Don't fill the parameter if it's not present (field will not be overwritten, "default value")
-                if (!parameters.containsKey(param)) return;
-
                 Object value = parameters.get(param);
+                Object fieldValue = field.get(instance);
+
                 // If the field is a WriteableValue, use the setValue method
-                if (field.get(instance) instanceof WritableValue<?>) {
+                if (WritableValue.class.isAssignableFrom(fieldType)) {
+
+                    // We cannot call setValue on a non-existing property
+                    if (fieldValue == null) {
+                        throw new RuntimeException(error(4001).formatted(param, field.getName(), instance.getClass().getName()));
+                    }
+
                     try {
                         // noinspection unchecked
                         ((WritableValue<Object>) field.get(instance)).setValue(value);
                     } catch (ClassCastException e) {
-                        throw new RuntimeException(error(4001).formatted(param, field.getName(), instance.getClass().getName()));
+                        throw new RuntimeException(error(4007).formatted(param, field.getName(), instance.getClass().getName(), fieldType.getName(), value == null ? "null" : value.getClass().getName()));
                     }
                 }
 
                 // If not, set the field's value directly
                 else if (value == null) {
                     // If the value is null and the field is a primitive, throw an error
-                    if (type.isPrimitive()) {
-                        throw new RuntimeException(error(4007).formatted(param, field.getName(), instance.getClass().getName(), type.getName(), "null"));
+                    if (fieldType.isPrimitive()) {
+                        throw new RuntimeException(error(4007).formatted(param, field.getName(), instance.getClass().getName(), fieldType.getName(), "null"));
                     }
                     field.set(instance, null); // If the value is null and the field is not a primitive, no type check is necessary
-                } else if (Reflection.canBeAssigned(type, value)) {
+                } else if (Reflection.canBeAssigned(fieldType, value)) {
                     field.set(instance, value); // If the value is not null, we need a type check (respects primitive types)
                 } else {
-                    throw new RuntimeException(error(4007).formatted(param, field.getName(), instance.getClass().getName(), type.getName(), value.getClass().getName()));
+                    throw new RuntimeException(error(4007).formatted(param, field.getName(), instance.getClass().getName(), fieldType.getName(), value.getClass().getName()));
                 }
 
             } catch (IllegalAccessException e) {
