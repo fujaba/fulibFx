@@ -462,37 +462,38 @@ public class ControllerManager {
     private void fillParametersIntoFields(@NotNull Object instance, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
         // Fill the parameters into fields annotated with @Param
         for (Field field : Reflection.getFieldsWithAnnotation(instance.getClass(), Param.class).toList()) {
+
+            String param = field.getAnnotation(Param.class).value();
+            Class<?> type = field.getType();
+
             try {
                 field.setAccessible(true);
 
                 // Don't fill the parameter if it's not present (field will not be overwritten, "default value")
-                if (!parameters.containsKey(field.getAnnotation(Param.class).value())) return;
+                if (!parameters.containsKey(param)) return;
 
-                Object value = parameters.get(field.getAnnotation(Param.class).value());
-
+                Object value = parameters.get(param);
                 // If the field is a WriteableValue, use the setValue method
-                if (WritableValue.class.isAssignableFrom(field.getType())) {
-                    field.get(instance).getClass().getMethod("setValue", Object.class).invoke(field.get(instance), value);
+                if (field.get(instance) instanceof WritableValue<?>) {
+                    // noinspection unchecked
+                    ((WritableValue<Object>) field.get(instance)).setValue(value);
                 }
 
                 // If not, set the field's value directly
-                else {
-                    if (value == null) {
-                        // If the value is null and the field is a primitive, throw an error
-                        if (field.getType().isPrimitive()) {
-                            throw new RuntimeException(error(4007).formatted(field.getAnnotation(Param.class).value(), field.getName(), instance.getClass().getName(), field.getType().getName(), "null"));
-                        }
-                        field.set(instance, null); // If the value is null and the field is not a primitive, no type check is necessary
-                    } else if (Reflection.canBeAssigned(field.getType(), value)) {
-                        field.set(instance, value); // If the value is not null, we need a type check (respects primitive types)
-                    } else {
-                        throw new RuntimeException(error(4007).formatted(field.getAnnotation(Param.class).value(), field.getName(), instance.getClass().getName(), field.getType().getName(), value.getClass().getName()));
+                else if (value == null) {
+                    // If the value is null and the field is a primitive, throw an error
+                    if (type.isPrimitive()) {
+                        throw new RuntimeException(error(4007).formatted(param, field.getName(), instance.getClass().getName(), type.getName(), "null"));
                     }
+                    field.set(instance, null); // If the value is null and the field is not a primitive, no type check is necessary
+                } else if (Reflection.canBeAssigned(type, value)) {
+                    field.set(instance, value); // If the value is not null, we need a type check (respects primitive types)
+                } else {
+                    throw new RuntimeException(error(4007).formatted(param, field.getName(), instance.getClass().getName(), type.getName(), value.getClass().getName()));
                 }
+
             } catch (IllegalAccessException e) {
-                throw new RuntimeException(error(4000).formatted(field.getAnnotation(Param.class).value(), field.getName(), instance.getClass().getName()), e);
-            } catch (InvocationTargetException | NoSuchMethodException e) {
-                throw new RuntimeException(error(4001).formatted(field.getAnnotation(Param.class).value(), field.getName(), instance.getClass().getName()), e);
+                throw new RuntimeException(error(4000).formatted(param, field.getName(), instance.getClass().getName()), e);
             }
         }
 
