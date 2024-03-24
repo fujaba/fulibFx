@@ -407,11 +407,12 @@ public class ControllerManager {
     private List<Field> getSubComponentFields(Object instance) {
         return Reflection.getAllFieldsWithAnnotation(instance.getClass(), SubComponent.class)
                 .filter(field -> {
+                    if (ControllerUtil.isComponent(field.getType())) return true;
+
                     if (!ControllerUtil.canProvideSubComponent(field)) {
                         FulibFxApp.LOGGER.warning(error(6005).formatted(field.getName(), instance.getClass().getName()));
-                        return false;
                     }
-                    return true;
+                    return false;
                 }).toList();
     }
 
