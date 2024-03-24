@@ -46,6 +46,19 @@ public class App extends FulibFxApp {
                 }
             });
 
+            //
+            stage().addEventHandler(KEY_PRESSED, event -> {
+                if (event.getCode() == KeyCode.D) {
+                    System.out.println(this.forward() ? "Forwarded!" : "No way forward!");
+                }
+            });
+
+            stage().addEventHandler(KEY_PRESSED, event -> {
+                if (event.getCode() == KeyCode.A) {
+                    System.out.println(this.back() ? "Back!" : "No way back!");
+                }
+            });
+
             // Setting the title pattern of the application. The %s will be replaced with the title of the view
             setTitlePattern("Ludo - %s");
 

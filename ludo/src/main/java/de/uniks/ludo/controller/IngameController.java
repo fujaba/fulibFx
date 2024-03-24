@@ -1,11 +1,9 @@
 package de.uniks.ludo.controller;
 
-import de.uniks.ludo.App;
 import de.uniks.ludo.Constants;
 import de.uniks.ludo.LudoUtil;
 import de.uniks.ludo.controller.sub.DiceSubComponent;
 import de.uniks.ludo.model.*;
-import de.uniks.ludo.service.GameService;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
@@ -21,7 +19,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.StrokeType;
 import org.fulib.fx.annotation.controller.Controller;
-import org.fulib.fx.annotation.controller.Resource;
 import org.fulib.fx.annotation.controller.SubComponent;
 import org.fulib.fx.annotation.controller.Title;
 import org.fulib.fx.annotation.event.onDestroy;
@@ -29,29 +26,20 @@ import org.fulib.fx.annotation.event.onInit;
 import org.fulib.fx.annotation.event.onKey;
 import org.fulib.fx.annotation.event.onRender;
 import org.fulib.fx.annotation.param.Param;
-import org.fulib.fx.controller.Subscriber;
 
 import javax.inject.Inject;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 @Title("%ingame.title")
 @Controller
-public class IngameController {
+public class IngameController extends BaseController {
 
     @FXML
     public Label playerLabel;
     @FXML
     private AnchorPane boardPane;
-
-    @Inject
-    GameService gameService;
-    @Inject
-    Subscriber subscriber;
-    @Resource
-    @Inject
-    ResourceBundle bundle;
-    @Inject
-    App app;
 
     @FXML
     @Inject

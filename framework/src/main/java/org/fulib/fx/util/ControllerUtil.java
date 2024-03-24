@@ -1,6 +1,6 @@
 package org.fulib.fx.util;
 
-import javafx.scene.Parent;
+import javafx.scene.Node;
 import org.fulib.fx.annotation.Route;
 import org.fulib.fx.annotation.controller.Component;
 import org.fulib.fx.annotation.controller.Controller;
@@ -20,15 +20,26 @@ public class ControllerUtil {
     }
 
     /**
-     * Checks if an instance is a component (controller extending a Parent).
+     * Checks if an instance is a component (controller extending a Node).
      * <p>
      * This method is used internally by the framework and shouldn't be required for developers.
      *
      * @param instance The instance to check
-     * @return True if the instance is a component (controller extending a Parent)
+     * @return True if the instance is a component (controller extending a Node)
      */
     public static boolean isComponent(@Nullable Object instance) {
-        return instance != null && instance.getClass().isAnnotationPresent(Component.class) && Parent.class.isAssignableFrom(instance.getClass());
+        return instance != null && isComponent(instance.getClass());
+    }
+    /**
+     * Checks if a class is a component (controller extending a Node).
+     * <p>
+     * This method is used internally by the framework and shouldn't be required for developers.
+     *
+     * @param clazz The clazz to check
+     * @return True if the clazz is a component (controller extending a Node)
+     */
+    public static boolean isComponent(@Nullable Class<?> clazz) {
+        return clazz != null && clazz.isAnnotationPresent(Component.class) && Node.class.isAssignableFrom(clazz);
     }
 
     /**
@@ -54,12 +65,12 @@ public class ControllerUtil {
      * @return True if the field is a field that can provide a component
      */
     public static boolean canProvideSubComponent(Field field) {
-        if (field.getType().isAnnotationPresent(Component.class) && Parent.class.isAssignableFrom(field.getType()))
+        if (field.getType().isAnnotationPresent(Component.class) && Node.class.isAssignableFrom(field.getType()))
             return true; // Field is a component
 
         Class<?> providedClass = getProvidedClass(field);
 
-        return providedClass != null && providedClass.isAnnotationPresent(Component.class) && Parent.class.isAssignableFrom(providedClass); // Field is a provider of a component
+        return providedClass != null && providedClass.isAnnotationPresent(Component.class) && Node.class.isAssignableFrom(providedClass); // Field is a provider of a component
     }
 
     /**

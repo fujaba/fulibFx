@@ -6,6 +6,7 @@ import javafx.beans.value.WritableValue;
 import javafx.event.EventHandler;
 import javafx.event.EventType;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -74,7 +75,7 @@ public class ControllerManager {
      * @param parameters The parameters to pass to the controller
      * @return The rendered controller
      */
-    public Parent initAndRender(Object instance, Map<String, Object> parameters) {
+    public Node initAndRender(Object instance, Map<String, Object> parameters) {
 
         // Initialize the controller
         init(instance, parameters, true);
@@ -148,10 +149,10 @@ public class ControllerManager {
      * If the controller specifies a fxml file in its {@link Controller#view()},
      * it will be loaded and the controller will be set as the controller of the fxml file.
      * <p>
-     * If the controller is a component (extends from a JavaFX Parent), the component itself will be rendered and returned.
+     * If the controller is a component (extends from a JavaFX Node), the component itself will be rendered and returned.
      * This can be combined with the {@link Component#view()} to set the controller as the root of the fxml file.
      * <p>
-     * If the controller specifies a method as {@link Controller#view()}, the method will be called and the returned Parent will be returned.
+     * If the controller specifies a method as {@link Controller#view()}, the method will be called and the returned Parent will be used as the view.
      * In order to specify a method, the view must start with a '#'. The method must be in the controller class and must return a (subclass of) Parent.
      * Example: {@code @Controller(view = "#getView")} will call the method {@code Parent getView()} in the controller.
      *
@@ -159,7 +160,7 @@ public class ControllerManager {
      * @param parameters The parameters to pass to the controller
      * @return The rendered controller/component
      */
-    public Parent render(Object instance, Map<String, Object> parameters) {
+    public Node render(Object instance, Map<String, Object> parameters) {
 
         // Check if the instance is a controller/component
         boolean component = instance.getClass().isAnnotationPresent(Component.class) && ControllerUtil.isComponent(instance);
@@ -171,25 +172,25 @@ public class ControllerManager {
         Reflection.callMethodsForFieldInstances(instance, getSubComponentFields(instance), (subController) -> render(subController, parameters));
 
         // Get the view of the controller
-        Parent parent;
+        Node node;
         String view = component ?
                 instance.getClass().getAnnotation(Component.class).view() :
                 instance.getClass().getAnnotation(Controller.class).view();
 
-        // If the controller extends from a javafx Parent, render it
+        // If the controller extends from a javafx Node, render it
         // This can be combined with the view annotation to set the controller as the root of the fxml file
         if (component) {
             if (view.isEmpty()) {
-                parent = (Parent) instance;
+                node = (Node) instance;
             } else {
-                Parent root = (Parent) instance;
+                Node root = (Node) instance;
                 // Due to the way JavaFX works, we have to clear the children list of the old root before loading its fxml file again
-                ReflectionUtil.getChildrenList(instance.getClass(), root).clear();
-                parent = loadFXML(view, instance, true);
+                if (root instanceof Parent parent) ReflectionUtil.getChildrenList(instance.getClass(), parent).clear();
+                node = loadFXML(view, instance, true);
             }
         }
 
-        // If the controller specifies a method as view, call it
+        // If the controller specifies a method returning a parent as its view, call it
         else if (view.startsWith("#")) {
             String methodName = view.substring(1);
             try {
@@ -200,7 +201,7 @@ public class ControllerManager {
                 if (!Parent.class.isAssignableFrom(method.getReturnType()))
                     throw new RuntimeException(error(1002).formatted(methodName, instance.getClass().getName()));
                 method.setAccessible(true);
-                parent = (Parent) method.invoke(instance);
+                node = (Parent) method.invoke(instance);
             } catch (NoSuchMethodException e) {
                 throw new RuntimeException(error(1003).formatted(methodName, instance.getClass().getName()), e);
             } catch (InvocationTargetException | IllegalAccessException e) {
@@ -211,7 +212,7 @@ public class ControllerManager {
         // If the controller specifies a fxml file, load it. This will also load subcomponents specified in the FXML file
         else {
             String fxmlPath = view.isEmpty() ? ControllerUtil.transform(instance.getClass().getSimpleName()) + ".fxml" : view;
-            parent = loadFXML(fxmlPath, instance, false);
+            node = loadFXML(fxmlPath, instance, false);
         }
 
         // Call the onRender method
@@ -220,7 +221,7 @@ public class ControllerManager {
         // Register key events
         registerKeyEvents(instance);
 
-        return parent;
+        return node;
     }
 
     /**
@@ -311,7 +312,7 @@ public class ControllerManager {
      * @param instance The controller instance to use
      * @return A parent representing the fxml file
      */
-    private @NotNull Parent loadFXML(@NotNull String fileName, @NotNull Object instance, boolean setRoot) {
+    private @NotNull Node loadFXML(@NotNull String fileName, @NotNull Object instance, boolean setRoot) {
 
         URL url = instance.getClass().getResource(fileName);
         if (url == null) {
@@ -366,7 +367,7 @@ public class ControllerManager {
      */
     private static @Nullable ResourceBundle getResourceBundle(@NotNull Object instance) {
 
-        List<Field> fields = Reflection.getFieldsWithAnnotation(instance.getClass(), Resource.class).toList();
+        List<Field> fields = Reflection.getAllFieldsWithAnnotation(instance.getClass(), Resource.class).toList();
 
         if (fields.isEmpty())
             return defaultResourceBundle;
@@ -402,13 +403,14 @@ public class ControllerManager {
      */
     @Unmodifiable
     private List<Field> getSubComponentFields(Object instance) {
-        return Reflection.getFieldsWithAnnotation(instance.getClass(), SubComponent.class)
+        return Reflection.getAllFieldsWithAnnotation(instance.getClass(), SubComponent.class)
                 .filter(field -> {
-                    if (!field.getType().isAnnotationPresent(Component.class)) {
+                    if (ControllerUtil.isComponent(field.getType())) return true;
+
+                    if (!ControllerUtil.canProvideSubComponent(field)) {
                         FulibFxApp.LOGGER.warning(error(6005).formatted(field.getName(), instance.getClass().getName()));
-                        return false;
                     }
-                    return true;
+                    return false;
                 }).toList();
     }
 
@@ -439,7 +441,7 @@ public class ControllerManager {
      * @param parameters The parameters to pass to the methods
      */
     private void callMethodsWithAnnotation(@NotNull Object instance, @NotNull Class<? extends Annotation> annotation, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
-        for (Method method : Reflection.getMethodsWithAnnotation(instance.getClass(), annotation).sorted(annotationComparator(annotation)).toList()) {
+        for (Method method : Reflection.getAllMethodsWithAnnotation(instance.getClass(), annotation).sorted(annotationComparator(annotation)).toList()) {
             try {
                 method.setAccessible(true);
                 method.invoke(instance, getApplicableParameters(method, parameters));
@@ -458,7 +460,7 @@ public class ControllerManager {
      */
     private void fillParametersIntoFields(@NotNull Object instance, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
         // Fill the parameters into fields annotated with @Param
-        for (Field field : Reflection.getFieldsWithAnnotation(instance.getClass(), Param.class).toList()) {
+        for (Field field : Reflection.getAllFieldsWithAnnotation(instance.getClass(), Param.class).toList()) {
 
             Param paramAnnotation = field.getAnnotation(Param.class);
             String param = paramAnnotation.value();
@@ -467,7 +469,6 @@ public class ControllerManager {
             if (!parameters.containsKey(param)) continue;
 
             Class<?> fieldType = field.getType();
-
             try {
                 field.setAccessible(true);
 
@@ -541,7 +542,7 @@ public class ControllerManager {
      * @param parameters The parameters to fill into the methods
      */
     private void callParamMethods(Object instance, Map<String, Object> parameters) {
-        Reflection.getMethodsWithAnnotation(instance.getClass(), Param.class).forEach(method -> {
+        Reflection.getAllMethodsWithAnnotation(instance.getClass(), Param.class).forEach(method -> {
             try {
                 method.setAccessible(true);
                 Object value = parameters.get(method.getAnnotation(Param.class).value());
@@ -570,7 +571,7 @@ public class ControllerManager {
      * @param parameters The parameters to fill into the methods
      */
     private void callParamsMethods(Object instance, Map<String, Object> parameters) {
-        Reflection.getMethodsWithAnnotation(instance.getClass(), Params.class).forEach(method -> {
+        Reflection.getAllMethodsWithAnnotation(instance.getClass(), Params.class).forEach(method -> {
             try {
                 method.setAccessible(true);
 
@@ -605,7 +606,7 @@ public class ControllerManager {
      * @param parameters The parameters to fill into the methods
      */
     private void callParamsMapMethods(Object instance, Map<String, Object> parameters) {
-        Reflection.getMethodsWithAnnotation(instance.getClass(), ParamsMap.class).forEach(method -> {
+        Reflection.getAllMethodsWithAnnotation(instance.getClass(), ParamsMap.class).forEach(method -> {
 
             if (method.getParameterCount() != 1 || !MapUtil.isMapWithTypes(method.getParameters()[0], String.class, Object.class)) {
                 throw new RuntimeException(error(4003).formatted(method.getName(), instance.getClass().getName()));

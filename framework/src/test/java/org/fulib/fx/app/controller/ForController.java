@@ -1,14 +1,13 @@
 package org.fulib.fx.app.controller;
 
+import javafx.collections.ObservableList;
+import javafx.scene.control.Labeled;
+import javafx.scene.layout.VBox;
 import org.fulib.fx.annotation.controller.Controller;
-import org.fulib.fx.annotation.controller.SubComponent;
 import org.fulib.fx.annotation.event.onDestroy;
 import org.fulib.fx.annotation.event.onRender;
 import org.fulib.fx.annotation.param.Param;
 import org.fulib.fx.app.controller.subcomponent.basic.ButtonSubComponent;
-import javafx.collections.ObservableList;
-import javafx.scene.control.Labeled;
-import javafx.scene.layout.VBox;
 import org.fulib.fx.constructs.FxFor;
 import org.fulib.fx.controller.Subscriber;
 
@@ -19,7 +18,6 @@ import javax.inject.Provider;
 public class ForController {
 
     @Inject
-    @SubComponent
     Provider<ButtonSubComponent> subComponentProvider;
 
     @Inject
