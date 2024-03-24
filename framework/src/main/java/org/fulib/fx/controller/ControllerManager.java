@@ -475,7 +475,7 @@ public class ControllerManager {
                 Object fieldValue = field.get(instance);
 
                 // If the field is a WriteableValue, use the setValue method
-                if (WritableValue.class.isAssignableFrom(fieldType)) {
+                if (WritableValue.class.isAssignableFrom(fieldType) && !(value instanceof WritableValue)) {
 
                     // We cannot call setValue on a non-existing property
                     if (fieldValue == null) {

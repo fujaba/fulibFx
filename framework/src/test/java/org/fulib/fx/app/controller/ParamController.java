@@ -28,6 +28,9 @@ public class ParamController {
     @ParamsMap
     private Map<String, Object> fieldParamsMap;
 
+    @Param("property")
+    private StringProperty stringProperty;
+
     private Character setterMultiParams1;
     private Boolean setterMultiParams2;
 
@@ -73,10 +76,6 @@ public class ParamController {
         return fieldParam;
     }
 
-    public String getFieldPropertyParam() {
-        return fieldPropertyParam.get();
-    }
-
     public StringProperty fieldPropertyParamProperty() {
         return fieldPropertyParam;
     }
@@ -101,4 +100,7 @@ public class ParamController {
         return setterMultiParams2;
     }
 
+    public StringProperty stringPropertyProperty() {
+        return stringProperty;
+    }
 }

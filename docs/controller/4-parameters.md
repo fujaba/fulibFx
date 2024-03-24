@@ -10,7 +10,9 @@ the field will be injected with the value of the parameter before the controller
 on a method, the method will be called with the value of the parameter before the controller is initialized. If the
 annotation is used on a method parameter of a render/init method, the method will be called with the value of the parameter.
 
-If `@Param` is used on a field containing a `WriteableValue` (e.g. a `StringProperty`), the value will be set to the parameter.
+If `@Param` is used on a field containing a `WriteableValue` (e.g. a `StringProperty`), its value will be set to the
+parameter's value if the parameter has the correct type (e.g. a `String` for a `StringProperty`). If the parameter is
+a `WritableValue` as well, the logic will be the same as for a normal field.
 
 Instead of accessing the parameters one by one, you can also use the `@ParamsMap` annotation to inject a map of all parameters.
 This annotation can be used for fields and method parameters of type `Map<String, Object>`. If the annotated field is final,
