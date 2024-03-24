@@ -22,4 +22,14 @@ public @interface Route {
      */
     String value() default "$name";
 
+
+    /**
+     * The parent route of the controller.
+     * <p>
+     * If not specified the controller will be registered at the root.
+     *
+     * @return The parent route of the controller.
+     */
+    String parent() default "";
+
 }

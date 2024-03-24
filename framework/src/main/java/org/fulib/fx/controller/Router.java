@@ -73,13 +73,13 @@ public class Router {
         ControllerUtil.requireControllerProvider(field);
 
         Route annotation = field.getAnnotation(Route.class);
-        String route = annotation.value().equals("$name") ? "/" + field.getName() : annotation.value();
+        String route = annotation.parent() + "/" + (annotation.value().equals("$name") ? field.getName() : annotation.value());
 
         // Make sure the route starts with a slash to prevent issues with the traversal
         route = route.startsWith("/") ? route : "/" + route;
 
         if (this.routes.containsPath(route))
-            throw new ControllerDuplicatedRouteException(route, field.getType(), this.routes.get(route).getType());
+            throw new ControllerDuplicatedRouteException(route, field.getType(), Objects.requireNonNull(this.routes.get(route)).getType());
 
         this.routes.insert(route, field);
     }
