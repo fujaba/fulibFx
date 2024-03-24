@@ -240,8 +240,7 @@ This can happen if the field isn't initialized.
 - Runtime: ✅
 - Annotation Processor: ❌
 
-This error is thrown when a title is specified using a language key, but no resource bundle is provided
-using `@Resource`
+This error is thrown when a title is specified using a language key, but no resource bundle is provided using `@Resource`.
 in the controller or component class.
 
 ## Routes
