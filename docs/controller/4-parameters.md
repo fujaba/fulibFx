@@ -1,4 +1,4 @@
-# Parameters
+# Parameters [![Javadocs](https://javadoc.io/badge2/org.fulib/fulibFx/Javadocs.svg?color=green)](https://javadoc.io/doc/org.fulib/fulibFx/latest/org/fulib/fx/annotation/param/package-summary.html)
 
 To pass parameters to a controller, an additional argument can be provided to the show method, consisting of a map of
 strings and objects. The strings specify the argument's name and the objects are the value of the argument. For example,

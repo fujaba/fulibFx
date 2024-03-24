@@ -2,8 +2,7 @@ plugins {
     id "java"
     id 'maven-publish'
     id 'signing'
-    // https://plugins.gradle.org/plugin/org.openjfx.javafxplugin
-    id "org.openjfx.javafxplugin" version "0.1.0"
+    id "org.openjfx.javafxplugin" version "$javaFxPluginVersion"
 }
 
 group = projectGroup
@@ -22,51 +21,32 @@ repositories {
 
 // JavaFX dependencies
 javafx {
-    version = '21.0.2'
+    version = javaFxVersion
     modules = ['javafx.controls', 'javafx.graphics', 'javafx.fxml', 'javafx.media']
 }
 
 // Project dependencies
 dependencies {
-    // https://mvnrepository.com/artifact/org.jetbrains/annotations
-    implementation group: 'org.jetbrains', name: 'annotations', version: '24.1.0'
+    implementation group: 'org.jetbrains', name: 'annotations', version: jetbrainsAnnotationsVersion
+    implementation group: 'io.reactivex.rxjava3', name: 'rxjava', version: rxJavaVersion
 
-    // https://mvnrepository.com/artifact/com.google.dagger/dagger
-    implementation group: 'com.google.dagger', name: 'dagger', version: '2.51'
-
-    // https://mvnrepository.com/artifact/com.google.dagger/dagger-compiler
-    annotationProcessor group: 'com.google.dagger', name: 'dagger-compiler', version: '2.51'
-
-    // https://mvnrepository.com/artifact/io.reactivex.rxjava3/rxjava
-    implementation group: 'io.reactivex.rxjava3', name: 'rxjava', version: '3.1.8'
+    implementation group: 'com.google.dagger', name: 'dagger', version: daggerVersion
+    annotationProcessor group: 'com.google.dagger', name: 'dagger-compiler', version: daggerVersion
 }
 
 // ------------------- Tests -------------------
 
 // Test dependencies
 dependencies {
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: junitJupiterVersion
+    testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: junitJupiterVersion
 
-    // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
-    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.10.1'
+    testImplementation group: 'org.testfx', name: 'testfx-junit5', version: testFxVersion
+    testImplementation group: 'org.testfx', name: 'openjfx-monocle', version: monocleVersion
+    testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: mockitoVersion
+    testImplementation group: 'org.hamcrest', name: 'hamcrest', version: hamcrestVersion
 
-    // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-engine
-    testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.10.1'
-
-    // https://mvnrepository.com/artifact/org.testfx/testfx-junit5
-    testImplementation group: 'org.testfx', name: 'testfx-junit5', version: '4.0.17'
-
-    // https://mvnrepository.com/artifact/org.hamcrest/hamcrest
-    testImplementation group: 'org.hamcrest', name: 'hamcrest', version: '2.2'
-
-    // https://mvnrepository.com/artifact/org.testfx/openjfx-monocle
-    testImplementation group: 'org.testfx', name: 'openjfx-monocle', version: '17.0.10'
-
-    // https://mvnrepository.com/artifact/org.mockito/mockito-junit-jupiter
-    testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '5.11.0'
-
-    // https://mvnrepository.com/artifact/com.google.dagger/dagger-compiler
-    testAnnotationProcessor group: 'com.google.dagger', name: 'dagger-compiler', version: '2.51'
-
+    testAnnotationProcessor group: 'com.google.dagger', name: 'dagger-compiler', version: daggerVersion
 }
 
 test {

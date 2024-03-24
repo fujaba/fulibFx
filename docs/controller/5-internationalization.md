@@ -1,4 +1,4 @@
-# Internationalization
+# Internationalization [![Javadocs](https://javadoc.io/badge2/org.fulib/fulibFx/Javadocs.svg?color=green)](https://javadoc.io/doc/org.fulib/fulibFx/latest/org/fulib/fx/annotation/controller/Resource.html)
 
 In order to use resource bundles in your controller's FXML file, you have to provide an instance of the resource bundle to the
 framework. This can be done by creating a field containing your instance (e.g. with Dagger) and annotating it with `@Resource`.

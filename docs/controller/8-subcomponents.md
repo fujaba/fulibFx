@@ -1,4 +1,4 @@
-# Subcomponents
+# Subcomponents [![Javadocs](https://javadoc.io/badge2/org.fulib/fulibFx/Javadocs.svg?color=green)](https://javadoc.io/doc/org.fulib/fulibFx/latest/org/fulib/fx/annotation/controller/SubComponent.html)
 
 Components can be used inside other controllers to reduce the complexity of a single controller by moving some features
 into subcomponents (also called subcomponents).
