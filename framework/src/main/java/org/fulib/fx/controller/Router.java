@@ -174,15 +174,18 @@ public class Router {
 
     private Pair<Object, Node> navigate(Pair<Either<TraversableNodeTree.Node<Field>, Object>, Map<String, Object>> pair) {
         var either = pair.getKey();
-        either.getLeft().ifPresent(node -> ((TraversableNodeTree<Field>) routes).setCurrentNode(node));
+        either.getLeft().ifPresent(node -> ((TraversableNodeTree<Field>) routes).setCurrentNode(node)); // If the history contains a route, set it as the current node
 
         Object controller = either.isLeft() ?
-                ReflectionUtil.getInstanceOfProviderField(either.getLeft().orElseThrow().value(), this.routerObject) :
-                either.getRight().orElseThrow();
+                ReflectionUtil.getInstanceOfProviderField(either.getLeft().orElseThrow().value(), this.routerObject) : // Get the controller instance from the provider
+                either.getRight().orElseThrow(); // Get the controller instance from the history
 
+        this.manager.get().cleanup(); // Cleanup the current controller
+
+        // Returns the controller instance and the rendered node
         return new Pair<>(controller, this.manager.get().initAndRender(
                 controller,
-                pair.getValue()
+                pair.getValue() // The parameters
         ));
     }
 

@@ -358,26 +358,34 @@ public abstract class FulibFxApp extends Application {
 
     /**
      * Returns to the previous controller in the history if possible.
+     *
+     * @return True if the application could go back, false otherwise
      */
-    public void back() {
-        cleanup();
-        Pair<Object, Node> back = this.frameworkComponent.router().back();
-        if (back != null && back.getValue() instanceof Parent parent) { // TODO: Correctly handle the case when the value is not a parent
-            this.currentMainController = back.getKey();
-            display(parent);
-        }
+    public boolean back() {
+        return navigate(this.frameworkComponent.router().back());
     }
 
     /**
      * Forwards to the next controller in the history if possible.
+     *
+     * @return True if the application could go forward, false otherwise
      */
-    public void forward() {
-        cleanup();
-        Pair<Object, Node> forward = this.frameworkComponent.router().forward();
-        if (forward != null && forward.getValue() instanceof Parent parent) {
-            this.currentMainController = forward.getKey();
-            display(parent);
+    public boolean forward() {
+        return navigate(this.frameworkComponent.router().forward());
+    }
+
+    private boolean navigate(Pair<Object, Node> to) {
+        if (to != null) {
+
+            // Check if the controller is a parent (should always be the case except if provoked by the user)
+            if (!(to.getValue() instanceof Parent parent))
+                throw new IllegalArgumentException(error(1011).formatted(to.getKey().getClass().getName()));
+
+            this.currentMainController = to.getKey(); // Set the current controller instance
+            display(parent); // Display the controller (already rendered)
+            return true;
         }
+        return false;
     }
 
     /**
