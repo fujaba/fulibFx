@@ -143,9 +143,7 @@ public class NotAController { // Wrong, should be a controller or component
 - Runtime: ✅
 - Annotation Processor: ✅
 
-This error is thrown when a method annotated with `@onKey` has more than one parameter or a parameter that is not of
-type
-`KeyEvent`.
+This error is thrown when a method annotated with `@onKey` has more than one parameter or a parameter that is not of type `KeyEvent`.
 
 ```java
 
