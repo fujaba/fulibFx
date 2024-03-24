@@ -1,6 +1,7 @@
 package org.fulib.fx.controller;
 
 import javafx.event.EventHandler;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.paint.Paint;
@@ -12,6 +13,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 import java.util.function.BiConsumer;
+
+import static org.fulib.fx.util.FrameworkUtil.error;
 
 public class Modals {
 
@@ -164,14 +167,17 @@ public class Modals {
      * @param params       the parameters to pass to the controller
      * @param <Display>    the type of the controller
      */
-    public static <Display extends Parent> void showModal(FulibFxApp app, Stage currentStage, Display component, BiConsumer<Stage, Display> initializer, Map<String, Object> params, boolean destroyOnClose) {
+    public static <Display extends Node> void showModal(FulibFxApp app, Stage currentStage, Display component, BiConsumer<Stage, Display> initializer, Map<String, Object> params, boolean destroyOnClose) {
         FulibFxApp.FX_SCHEDULER.scheduleDirect(() -> {
             ModalStage modalStage = new ModalStage(app, destroyOnClose, component);
 
             app.frameworkComponent().controllerManager().init(component, params);
-            Parent rendered = app.frameworkComponent().controllerManager().render(component, params);
+            Node rendered = app.frameworkComponent().controllerManager().render(component, params);
 
-            Scene scene = new Scene(rendered);
+            if (!(rendered instanceof Parent parent))
+                throw new IllegalArgumentException(error(1011).formatted(component.getClass().getName()));
+
+            Scene scene = new Scene(parent);
             scene.setFill(Paint.valueOf("transparent"));
 
             modalStage.setScene(scene);

@@ -73,7 +73,7 @@ This error is thrown if a method annotated with an event annotation (onInit, onR
 successfully.
 This can happen if the method throws an exception.
 
-### 1006: `Components must extend (a subtype of) 'javafx.scene.Parent'.`
+### 1006: `Components must extend (a subtype of) 'javafx.scene.Node'.`
 
 - Runtime: ❌
 - Annotation Processor: ✅
@@ -157,6 +157,26 @@ public void onKey(String key) { // Wrong, should not have a parameter or have a 
 public void onKey(KeyEvent event, String other) { // Wrong, should not have more than one parameter
     // ...
 }
+```
+
+### 1011: `Controller '*' must provide a parent as their view to be able to be shown as a root node.`
+
+- Runtime: ✅
+- Annotation Processor: ❌
+
+This error is thrown when a controller or component is shown as a root node of a scene, but does not provide a parent as
+its view. This can happen when calling `show` or opening a modal.
+
+```java
+
+@Component
+public class MyComponent extends ImageView { // Wrong, should extend Parent (or a subclass of it) to be displayed directly
+    // ...
+}
+```
+
+```java
+show(new MyComponent()); // Wrong, should not be able to show a controller that does not provide a parent as its view
 ```
 
 ## Resources

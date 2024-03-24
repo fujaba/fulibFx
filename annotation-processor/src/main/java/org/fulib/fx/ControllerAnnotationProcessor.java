@@ -163,8 +163,8 @@ public class ControllerAnnotationProcessor extends AbstractProcessor {
             checkViewResource(element, view);
         }
 
-        // Check if the element is a subclass of javafx.scene.Parent
-        if (!processingEnv.getTypeUtils().isAssignable(element.asType(), processingEnv.getElementUtils().getTypeElement("javafx.scene.Parent").asType())) {
+        // Check if the element is a subclass of javafx.scene.Node
+        if (!processingEnv.getTypeUtils().isAssignable(element.asType(), processingEnv.getElementUtils().getTypeElement("javafx.scene.Node").asType())) {
             processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error(1006), element);
         }
     }
