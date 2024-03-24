@@ -28,10 +28,18 @@ public class ControllerUtil {
      * @return True if the instance is a component (controller extending a Node)
      */
     public static boolean isComponent(@Nullable Object instance) {
-        if (instance == null) return false;
-        if (!instance.getClass().isAnnotationPresent(Component.class)) return false;
-
-        return Node.class.isAssignableFrom(instance.getClass());
+        return instance != null && isComponent(instance.getClass());
+    }
+    /**
+     * Checks if a class is a component (controller extending a Node).
+     * <p>
+     * This method is used internally by the framework and shouldn't be required for developers.
+     *
+     * @param clazz The clazz to check
+     * @return True if the clazz is a component (controller extending a Node)
+     */
+    public static boolean isComponent(@Nullable Class<?> clazz) {
+        return clazz != null && clazz.isAnnotationPresent(Component.class) && Node.class.isAssignableFrom(clazz);
     }
 
     /**

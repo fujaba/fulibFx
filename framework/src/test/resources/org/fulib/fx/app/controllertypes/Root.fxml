@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.layout.VBox?>
-
-<fx:root type="VBox" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.fulib.fx.app.controllertypes.RootComponent">
-   <Label fx:id="rootLabel" text="Root Component"/>
-</fx:root>

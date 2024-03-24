@@ -1,4 +1,4 @@
-# Node duplication
+# Node duplication [![Javadocs](https://javadoc.io/badge2/org.fulib/fulibFx/Javadocs.svg?color=green)](https://javadoc.io/doc/org.fulib/fulibFx/latest/org/fulib/fx/duplicate/Duplicators.html)
 
 As JavaFX by itself doesn't support the duplication of nodes, the framework implements its own duplication logic in the
 form of `Duplicator`s. The framework includes duplicators for most of the
@@ -17,4 +17,4 @@ Duplicators.duplicate(new MyNode("Hello World")); // Returns a new MyNode with t
 
 ---
 
-[⬅ Modals](4-modals.md) | [Data Structures ➡](6-data-structures.md)
+[⬅ Modals](4-modals.md) | [Overview](README.md) | [Data Structures ➡](6-data-structures.md)

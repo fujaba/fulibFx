@@ -103,4 +103,4 @@ component as the controller of the root element. The root element will then be s
 
 ---
 
-[⬅ Components](2-components.md) | [Parameters ➡](4-parameters.md)
+[⬅ Components](2-components.md) | [Overview](README.md) | [Parameters ➡](4-parameters.md)

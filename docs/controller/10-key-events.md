@@ -1,4 +1,4 @@
-# Keyboard Listener
+# Keyboard Listener [![Javadocs](https://javadoc.io/badge2/org.fulib/fulibFx/Javadocs.svg?color=green)](https://javadoc.io/doc/org.fulib/fulibFx/latest/org/fulib/fx/annotation/event/onKey.html)
 
 The framework provides an easy way of registering keybinds for a controller. By using the `@onKey` annotation, you can
 define methods that will be called when a key is pressed.
@@ -48,4 +48,4 @@ public void rollDice() {
 
 ---
 
-[⬅ Call order](9-call-order.md) | [Main ➡](README.md)
+[⬅ Call order](9-call-order.md) | [Overview](README.md) | [Main ➡](README.md)

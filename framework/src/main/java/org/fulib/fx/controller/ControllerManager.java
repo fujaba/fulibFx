@@ -370,7 +370,7 @@ public class ControllerManager {
      */
     private static @Nullable ResourceBundle getResourceBundle(@NotNull Object instance) {
 
-        List<Field> fields = Reflection.getFieldsWithAnnotation(instance.getClass(), Resource.class).toList();
+        List<Field> fields = Reflection.getAllFieldsWithAnnotation(instance.getClass(), Resource.class).toList();
 
         if (fields.isEmpty())
             return defaultResourceBundle;
@@ -406,13 +406,14 @@ public class ControllerManager {
      */
     @Unmodifiable
     private List<Field> getSubComponentFields(Object instance) {
-        return Reflection.getFieldsWithAnnotation(instance.getClass(), SubComponent.class)
+        return Reflection.getAllFieldsWithAnnotation(instance.getClass(), SubComponent.class)
                 .filter(field -> {
-                    if (!field.getType().isAnnotationPresent(Component.class)) {
+                    if (ControllerUtil.isComponent(field.getType())) return true;
+
+                    if (!ControllerUtil.canProvideSubComponent(field)) {
                         FulibFxApp.LOGGER.warning(error(6005).formatted(field.getName(), instance.getClass().getName()));
-                        return false;
                     }
-                    return true;
+                    return false;
                 }).toList();
     }
 
@@ -443,7 +444,7 @@ public class ControllerManager {
      * @param parameters The parameters to pass to the methods
      */
     private void callMethodsWithAnnotation(@NotNull Object instance, @NotNull Class<? extends Annotation> annotation, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
-        for (Method method : Reflection.getMethodsWithAnnotation(instance.getClass(), annotation).sorted(annotationComparator(annotation)).toList()) {
+        for (Method method : Reflection.getAllMethodsWithAnnotation(instance.getClass(), annotation).sorted(annotationComparator(annotation)).toList()) {
             try {
                 method.setAccessible(true);
                 method.invoke(instance, getApplicableParameters(method, parameters));
@@ -462,7 +463,7 @@ public class ControllerManager {
      */
     private void fillParametersIntoFields(@NotNull Object instance, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
         // Fill the parameters into fields annotated with @Param
-        for (Field field : Reflection.getFieldsWithAnnotation(instance.getClass(), Param.class).toList()) {
+        for (Field field : Reflection.getAllFieldsWithAnnotation(instance.getClass(), Param.class).toList()) {
             try {
                 boolean accessible = field.canAccess(instance);
                 field.setAccessible(true);
@@ -524,7 +525,7 @@ public class ControllerManager {
      * @param parameters The parameters to fill into the methods
      */
     private void callParamMethods(Object instance, Map<String, Object> parameters) {
-        Reflection.getMethodsWithAnnotation(instance.getClass(), Param.class).forEach(method -> {
+        Reflection.getAllMethodsWithAnnotation(instance.getClass(), Param.class).forEach(method -> {
             try {
                 method.setAccessible(true);
                 Object value = parameters.get(method.getAnnotation(Param.class).value());
@@ -553,7 +554,7 @@ public class ControllerManager {
      * @param parameters The parameters to fill into the methods
      */
     private void callParamsMethods(Object instance, Map<String, Object> parameters) {
-        Reflection.getMethodsWithAnnotation(instance.getClass(), Params.class).forEach(method -> {
+        Reflection.getAllMethodsWithAnnotation(instance.getClass(), Params.class).forEach(method -> {
             try {
                 method.setAccessible(true);
 
@@ -588,7 +589,7 @@ public class ControllerManager {
      * @param parameters The parameters to fill into the methods
      */
     private void callParamsMapMethods(Object instance, Map<String, Object> parameters) {
-        Reflection.getMethodsWithAnnotation(instance.getClass(), ParamsMap.class).forEach(method -> {
+        Reflection.getAllMethodsWithAnnotation(instance.getClass(), ParamsMap.class).forEach(method -> {
 
             if (method.getParameterCount() != 1 || !MapUtil.isMapWithTypes(method.getParameters()[0], String.class, Object.class)) {
                 throw new RuntimeException(error(4003).formatted(method.getName(), instance.getClass().getName()));

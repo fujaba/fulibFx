@@ -1,4 +1,4 @@
-# For-Loops
+# For-Loops [![Javadocs](https://javadoc.io/badge2/org.fulib/fulibFx/Javadocs.svg?color=green)](https://javadoc.io/doc/org.fulib/fulibFx/latest/org/fulib/fx/constructs/FxFor.html)
 
 For-Loops can be used to easily display a node/subcomponent for all items in a list. Whenever an item is added to or
 removed from the list, the list of nodes updates accordingly.
@@ -57,4 +57,4 @@ the return value of the `disposable()` method to your list of disposables.
 
 ---
 
-[⬅ Subscriber](1-subscriber.md) | [History ➡](3-history.md)
+[⬅ Subscriber](1-subscriber.md) | [Overview](README.md) | [History ➡](3-history.md)

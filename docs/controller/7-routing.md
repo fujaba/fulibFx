@@ -1,4 +1,4 @@
-# Routing
+# Routing [![Javadocs](https://javadoc.io/badge2/org.fulib/fulibFx/Javadocs.svg?color=green)](https://javadoc.io/doc/org.fulib/fulibFx/latest/org/fulib/fx/annotation/Route.html)
 
 Routes are the main way to navigate between views. To set up routes to different views, you have to create a class where the
 routes will be defined.
@@ -64,4 +64,4 @@ public class TodoApp extends FulibFxApp {
 
 ---
 
-[⬅ Titles](6-titles.md) | [Subcomponents ➡](8-subcomponents.md)
+[⬅ Titles](6-titles.md) | [Overview](README.md) | [Subcomponents ➡](8-subcomponents.md)

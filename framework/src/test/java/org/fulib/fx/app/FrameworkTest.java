@@ -1,12 +1,15 @@
 package org.fulib.fx.app;
 
+import javafx.application.Platform;
 import org.fulib.fx.FulibFxApp;
-import org.fulib.fx.app.controllertypes.BasicComponent;
-import org.fulib.fx.app.history.AController;
-import org.fulib.fx.app.history.BController;
-import org.fulib.fx.app.history.CController;
-import org.fulib.fx.app.modal.ModalComponent;
-import org.fulib.fx.app.controllertypes.sub.ButtonSubComponent;
+import org.fulib.fx.app.controller.types.BasicComponent;
+import org.fulib.fx.app.controller.ParamController;
+import org.fulib.fx.app.controller.TitleController;
+import org.fulib.fx.app.controller.history.AController;
+import org.fulib.fx.app.controller.history.BController;
+import org.fulib.fx.app.controller.history.CController;
+import org.fulib.fx.app.controller.ModalComponent;
+import org.fulib.fx.app.controller.subcomponent.basic.ButtonSubComponent;
 import org.fulib.fx.controller.Modals;
 import org.fulib.fx.controller.exception.ControllerInvalidRouteException;
 import org.fulib.fx.controller.exception.IllegalControllerException;
@@ -28,6 +31,11 @@ import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
 
 public class FrameworkTest extends ApplicationTest {
 
+    public static void runAndWait(Runnable runnable) {
+        Platform.runLater(runnable);
+        waitForFxEvents();
+    }
+
     public final FulibFxApp app = new FulibFxApp() {
 
         final TestComponent component = DaggerTestComponent.builder().mainApp(this).build();
@@ -46,32 +54,38 @@ public class FrameworkTest extends ApplicationTest {
         stage.requestFocus();
     }
 
+    @Test
+    public void title() {
+        runAndWait(() -> app.show(new TitleController()));
+        assertEquals("Title", app.stage().getTitle());
+    }
+
     /**
      * Tests if the framework is able to load the routes and different kinds of controllers.
      */
     @Test
     public void controllerTypes() {
-        app.show("/controller/basic");
+        runAndWait(() -> app.show("/controller/basic"));
         verifyThat("Basic Controller", Node::isVisible);
         sleep(200);
 
-        app.show("/controller/method");
+        runAndWait(() -> app.show("/controller/method"));
         verifyThat("Method Controller", Node::isVisible);
         sleep(200);
 
-        app.show("/controller/view");
+        runAndWait(() -> app.show("/controller/view"));
         verifyThat("View Controller", Node::isVisible);
         sleep(200);
 
-        app.show("/component/basic");
+        runAndWait(() -> app.show("/component/basic"));
         verifyThat("Basic Component", Node::isVisible);
         sleep(200);
 
-        app.show("/component/root");
+        runAndWait(() -> app.show("/component/root"));
         verifyThat("Root Component", Node::isVisible);
         sleep(200);
 
-        app.show("../root");
+        runAndWait(() -> app.show("../root"));
         verifyThat("Root Component", Node::isVisible);
         sleep(200);
 
@@ -86,7 +100,7 @@ public class FrameworkTest extends ApplicationTest {
      */
     @Test
     public void subComponent() {
-        app.show("/controller/withsubcomponent");
+        runAndWait(() -> app.show("/controller/withsubcomponent"));
         sleep(200);
         ButtonSubComponent button = lookup("#buttonSubComponent").query();
         verifyThat(button, Node::isVisible);
@@ -97,7 +111,7 @@ public class FrameworkTest extends ApplicationTest {
     public void routeSubComponent() {
         assertThrows(IllegalArgumentException.class, () -> app.initAndRender("/controller/view"));
 
-        assertEquals(BasicComponent.class, app.initAndRender("/component/basic").getClass());
+        runAndWait(() -> assertEquals(BasicComponent.class, app.initAndRender("/component/basic").getClass()));
     }
 
     /**
@@ -112,7 +126,7 @@ public class FrameworkTest extends ApplicationTest {
             list.add("!");
         });
 
-        app.show("/controller/for", Map.of("list", list));
+        runAndWait(() -> app.show("/controller/for", Map.of("list", list)));
         verifyThat("#container", Node::isVisible);
 
         VBox container = lookup("#container").queryAs(VBox.class);
@@ -135,20 +149,20 @@ public class FrameworkTest extends ApplicationTest {
         List<String> renderList = new ArrayList<>();
         List<String> destroyList = new ArrayList<>();
 
-        app.show("/ordertest/main", Map.of("initList", initList, "renderList", renderList, "destroyList", destroyList));
+        runAndWait(() -> app.show("/ordertest/main", Map.of("initList", initList, "renderList", renderList, "destroyList", destroyList)));
 
         assertEquals(List.of("main", "sub", "subsub", "othersubsub"), initList);
         assertEquals(List.of("subsub", "othersubsub", "sub", "main"), renderList);
         assertEquals(List.of(), destroyList);
 
-        app.show("/controller/basic");
+        runAndWait(() -> app.show("/controller/basic"));
 
         assertEquals(List.of("othersubsub", "subsub", "sub", "main"), destroyList);
     }
 
     @Test
     public void modalTest() {
-        app.show("/controller/basic");
+        runAndWait(() -> app.show("/controller/basic"));
         verifyThat("Basic Controller", Node::isVisible);
         sleep(200);
 
@@ -178,7 +192,7 @@ public class FrameworkTest extends ApplicationTest {
                 "character", 'a',
                 "bool", true
         );
-        app.show(controller, params);
+        runAndWait(() -> app.show(controller, params));
 
         assertEquals(1, controller.getOnInitParam());
         assertEquals("string", controller.getSetterParam());
@@ -196,31 +210,31 @@ public class FrameworkTest extends ApplicationTest {
 
     @Test
     public void history() {
-        app.show(new AController(), Map.of("string", "a"));
+        runAndWait(() -> app.show(new AController(), Map.of("string", "a")));
         verifyThat("A:a", Node::isVisible);
 
-        app.show(new BController(), Map.of("string", "b"));
+        runAndWait(() -> app.show(new BController(), Map.of("string", "b")));
         verifyThat("B:b", Node::isVisible);
 
-        app.show(new CController(), Map.of("string", "c"));
+        runAndWait(() -> app.show(new CController(), Map.of("string", "c")));
         verifyThat("C:c", Node::isVisible);
 
-        app.back();
+        runAndWait(app::back);
         verifyThat("B:b", Node::isVisible);
 
-        app.back();
+        runAndWait(app::back);
         verifyThat("A:a", Node::isVisible);
 
-        app.forward();
+        runAndWait(app::forward);
         verifyThat("B:b", Node::isVisible);
 
-        app.forward();
+        runAndWait(app::forward);
         verifyThat("C:c", Node::isVisible);
 
-        app.forward();
+        runAndWait(app::forward);
         verifyThat("C:c", Node::isVisible); // should not change
 
-        app.back();
+        runAndWait(app::back);
         verifyThat("B:b", Node::isVisible);
 
         FulibFxApp.FX_SCHEDULER.scheduleDirect(app::refresh);

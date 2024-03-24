@@ -13,6 +13,7 @@ allprojects {
                 'java.awt.headless': 'true',
                 'testfx.robot': 'glass',
                 'testfx.headless': 'true',
+                'headless.geometry': '1920x1080-32',
                 'glass.platform': 'Monocle',
                 'monocle.platform': 'Headless',
                 'prism.order': 'sw',
