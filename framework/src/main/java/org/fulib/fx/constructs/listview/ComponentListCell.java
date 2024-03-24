@@ -76,8 +76,8 @@ public class ComponentListCell<Item, Component extends Parent> extends ListCell<
             component = provider.get();
             // Add item and list to parameters if they are not already present
             final Map<String, Object> params = new HashMap<>(extraParams);
-            if (!params.containsKey("item")) params.put("item", item);
-            if (!params.containsKey("list")) params.put("list", getListView().getItems());
+            params.putIfAbsent("item", item);
+            params.putIfAbsent("list", getListView().getItems());
             setGraphic(app.initAndRender(component, params));
         }
 

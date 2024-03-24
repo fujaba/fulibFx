@@ -211,8 +211,8 @@ public class For<Node extends javafx.scene.Node, Item> {
         if (ControllerUtil.isComponent(node)) {
             // Add item and list to parameters if they are not already present
             HashMap<String, Object> params = new HashMap<>(this.params);
-            if (!params.containsKey("item")) params.put("item", item);
-            if (!params.containsKey("list")) params.put("list", this.items);
+            params.putIfAbsent("item", item);
+            params.putIfAbsent("list", this.items);
             controllerManager.init(node, params);
             controllerManager.render(node, params);
         }
