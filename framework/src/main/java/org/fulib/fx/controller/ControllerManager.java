@@ -463,7 +463,8 @@ public class ControllerManager {
         // Fill the parameters into fields annotated with @Param
         for (Field field : Reflection.getFieldsWithAnnotation(instance.getClass(), Param.class).toList()) {
 
-            String param = field.getAnnotation(Param.class).value();
+            Param paramAnnotation = field.getAnnotation(Param.class);
+            String param = paramAnnotation.value();
             Class<?> type = field.getType();
 
             try {
@@ -475,8 +476,12 @@ public class ControllerManager {
                 Object value = parameters.get(param);
                 // If the field is a WriteableValue, use the setValue method
                 if (field.get(instance) instanceof WritableValue<?>) {
-                    // noinspection unchecked
-                    ((WritableValue<Object>) field.get(instance)).setValue(value);
+                    try {
+                        // noinspection unchecked
+                        ((WritableValue<Object>) field.get(instance)).setValue(value);
+                    } catch (ClassCastException e) {
+                        throw new RuntimeException(error(4001).formatted(param, field.getName(), instance.getClass().getName()));
+                    }
                 }
 
                 // If not, set the field's value directly
