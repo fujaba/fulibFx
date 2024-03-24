@@ -121,7 +121,7 @@ public class DuplicationTest extends ApplicationTest {
     public void imageView() throws URISyntaxException, MalformedURLException {
         HBox hBox = new HBox(
                 new ImageView(
-                        new Image(String.valueOf(Objects.requireNonNull(this.getClass().getResource("128.jpg")).toURI().toURL()))
+                        new Image(this.getClass().getResource("128.jpg").toString())
                 )
         );
 
