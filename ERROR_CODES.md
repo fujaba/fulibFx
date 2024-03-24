@@ -338,6 +338,7 @@ This error is thrown when the framework fails to put a parameter value into a fi
 - Annotation Processor: ❌
 
 This error is thrown when the framework fails to call the set method of a property field with the parameter value.
+This can happen if the property is not initialized.
 
 ### 4002: `Field '*' annotated with @ParamsMap in class '*' is not of type Map<String, Object>.`
 
