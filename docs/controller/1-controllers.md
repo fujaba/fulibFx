@@ -11,7 +11,7 @@ public class TodoController {
 }
 ```
 
-### Events [![Javadocs](https://javadoc.io/badge2/org.fulib/fulibFx/Javadocs.svg?color=green)](https://javadoc.io/doc/org.fulib/fulibFx/latest/org/fulib/fx/annotation/event)
+### Events [![Javadocs](https://javadoc.io/badge2/org.fulib/fulibFx/Javadocs.svg?color=green)](https://javadoc.io/doc/org.fulib/fulibFx/latest/org/fulib/fx/annotation/event/package-summary.html)
 
 Within your controller class, you have the ability to define methods that are automatically triggered when the
 controller is initialized, rendered or destroyed. These methods should be annotated with either `@onInit`, `@onRender`
