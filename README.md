@@ -1,7 +1,7 @@
 # ☕ fulibFx 
 [![Javadocs](https://javadoc.io/badge2/org.fulib/fulibFx/javadoc.svg?style=for-the-badge&color=green)](https://javadoc.io/doc/org.fulib/fulibFx) ![Java 17/21](https://img.shields.io/github/actions/workflow/status/fujaba/fulibFx/java-ci-cd.yaml?style=for-the-badge&logo=github&color=green) [![GH Pages](https://img.shields.io/badge/GH_Pages-Click_here-green?style=for-the-badge&logo=github)](https://fujaba.github.io/fulibFx)
 
-fulibFx is a versatile framework for JavaFX applications that is specifically designed for MVC pattern projects.
+fulibFx is a framework for JavaFX applications adding different utilities and features.
 It provides a simple way to create and manage controllers, views, routes, subcomponents, modals, and more.
 
 The framework is built on top of JavaFX and uses Dagger for dependency injection and RxJava for reactive programming.
@@ -36,16 +36,16 @@ provides an overview of the most important features:
 ### 🎮 Controllers and Components
 
 [Controllers](docs/controller/README.md) can be created by annotating a class with [`@Controller`](docs/controller/1-controllers.md).
-To specify [methods which should be executed](docs/controller/1-controllers.md) during the lifetime of the controller, they should be annotated with either 
-`@onInit`, `@onRender` or `@onDestroy` to specify their respective execution points.
+To specify methods which should be executed during the lifetime of the controller, they should be annotated with either 
+[`@onInit`, `@onRender` or `@onDestroy`](docs/controller/1-controllers.md) to specify their respective execution points.
 
 A special type of controller is the [component](docs/controller/2-components.md). They can be used to create controller which can be used inside other
 controllers. Components have to extend from a JavaFX Parent (or any class extending from Parent) and have to be annotated
-with `@Component`. Using [`@SubComponent` on a field containing a component](docs/controller/8-subcomponents.md) will automatically initialize and render the
+with `@Component`. Using [`@SubComponent`](docs/controller/8-subcomponents.md) on a field containing a component will automatically initialize and render the
 component along with the parent controller.
 
-The framework also provides a way to [pass parameters](docs/controller/4-parameters.md) to a controller using `@Param` 
-or utilities like [setting a title](docs/controller/6-titles.md) using `@Title` or registering 
+The framework also provides a way to pass [parameters](docs/controller/4-parameters.md) to a controller using `@Param` 
+or utilities like setting a [title](docs/controller/6-titles.md) using `@Title` or registering 
 [key events](docs/controller/10-key-events.md) `@onKey`.
 
 ```java
@@ -123,8 +123,8 @@ public class Router {
 ### 🔄 Hot Reload
 
 When developing an application, it is often necessary to reload the application to see the changes. The framework provides
-a way to [refresh a controller](docs/features/3-history.md) without having to reload the whole application. 
-This can be done by calling the `refresh` method
+a way to [refresh a controller's view](docs/features/3-history.md) without having to restart the whole application. 
+This can be done by calling the `refresh` method of the `FulibFxApp` class.
 
 <img width="640" height="360" src="docs/assets/hot-reload.gif" alt="GIF showing the hot reload feature">
 
