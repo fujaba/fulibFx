@@ -22,6 +22,7 @@ import org.fulib.fx.annotation.param.Params;
 import org.fulib.fx.annotation.param.ParamsMap;
 import org.fulib.fx.controller.building.ControllerBuildFactory;
 import org.fulib.fx.controller.exception.IllegalControllerException;
+import org.fulib.fx.controller.internal.FxSidecar;
 import org.fulib.fx.data.disposable.RefreshableCompositeDisposable;
 import org.fulib.fx.util.*;
 import org.fulib.fx.util.reflection.Reflection;
@@ -55,6 +56,7 @@ public class ControllerManager {
     private final RefreshableCompositeDisposable cleanup = new RefreshableCompositeDisposable();
 
     private static ResourceBundle defaultResourceBundle;
+    private static final Map<Class<?>, FxSidecar<?>> sidecars = new IdentityHashMap<>();
 
     private final Map<Object, Collection<KeyEventHolder>> keyEventHandlers = new HashMap<>();
 
@@ -123,6 +125,12 @@ public class ControllerManager {
         if (!ControllerUtil.isController(instance))
             throw new IllegalControllerException(error(1001).formatted(instance.getClass().getName()));
 
+        final FxSidecar sidecar = sidecars.computeIfAbsent(instance.getClass(), this::createSidecar);
+        if (sidecar != null) {
+            sidecar.init(instance, parameters);
+            return;
+        }
+
         // Inject parameters into the controller fields
         fillParametersIntoFields(instance, parameters);
 
@@ -137,6 +145,18 @@ public class ControllerManager {
         // Initialize all subcomponents
         Reflection.callMethodsForFieldInstances(instance, getSubComponentFields(instance), (subController) -> init(subController, parameters));
 
+    }
+
+    private FxSidecar<?> createSidecar(Class<?> componentClass) {
+        final Class<?> sidecarClass = Class.forName(componentClass.getModule(), componentClass.getName() + "_Fx");
+        if (sidecarClass == null) {
+            return null;
+        }
+        try {
+            return (FxSidecar<?>) sidecarClass.getDeclaredConstructor().newInstance();
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**

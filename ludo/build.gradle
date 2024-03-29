@@ -23,6 +23,7 @@ dependencies {
     fulibScenarios group: 'org.fulib', name: 'fulib', version: fulibVersion
 
     implementation project(':framework')
+    annotationProcessor project(':annotation-processor')
 }
 
 // ------------------- Tests -------------------
