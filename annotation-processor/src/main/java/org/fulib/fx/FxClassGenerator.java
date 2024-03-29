@@ -14,7 +14,6 @@ import javax.tools.JavaFileObject;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -77,6 +76,8 @@ public class FxClassGenerator {
         callParamMethods(out, componentClass, ParamsMap.class);
 
         callInitMethods(out, componentClass);
+
+        // TODO init subcomponents
     }
 
     private void fillParametersInfoFields(PrintWriter out, TypeElement componentClass) {
@@ -86,12 +87,14 @@ public class FxClassGenerator {
                 String fieldName = varElement.getSimpleName().toString();
                 String fieldType = varElement.asType().toString();
                 // TODO handle ParamsMap, primitives, not found, WritableValue
+                // TODO field must be public, package-private or protected -- add a diagnostic if it's private
                 out.printf("    instance.%s = (%s) params.get(\"%s\");%n", fieldName, fieldType, param.value());
             }
         }
     }
 
     private void callInitMethods(PrintWriter out, TypeElement componentClass) {
+        // TODO inherited methods
         componentClass
             .getEnclosedElements()
             .stream()
@@ -104,6 +107,7 @@ public class FxClassGenerator {
     }
 
     private void callParamMethods(PrintWriter out, TypeElement componentClass, Class<? extends Annotation> annotation) {
+        // TODO inherited methods
         componentClass
             .getEnclosedElements()
             .stream()
