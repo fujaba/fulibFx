@@ -39,6 +39,17 @@ import static org.fulib.fx.util.FrameworkUtil.note;
 @SuppressWarnings("unused")
 public class ControllerAnnotationProcessor extends AbstractProcessor {
 
+    private FxClassGenerator generator;
+
+    public ControllerAnnotationProcessor() {
+    }
+
+    @Override
+    public synchronized void init(ProcessingEnvironment processingEnv) {
+        super.init(processingEnv);
+        this.generator = new FxClassGenerator(processingEnv);
+    }
+
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
 
@@ -46,11 +57,17 @@ public class ControllerAnnotationProcessor extends AbstractProcessor {
         for (Element element : roundEnv.getElementsAnnotatedWith(Component.class)) {
             checkComponent(element);
             checkDoubleAnnotation(element); // Check if a class is annotated with both @Controller and @Component
+            if (element instanceof TypeElement typeElement) {
+                generator.generateSidecar(typeElement);
+            }
         }
 
         // Check if the element is a valid controller
         for (Element element : roundEnv.getElementsAnnotatedWith(Controller.class)) {
             checkController(element);
+            if (element instanceof TypeElement typeElement) {
+                generator.generateSidecar(typeElement);
+            }
         }
 
         for (Element element : roundEnv.getElementsAnnotatedWith(SubComponent.class)) {
