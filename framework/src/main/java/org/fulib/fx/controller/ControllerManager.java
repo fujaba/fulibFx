@@ -148,7 +148,14 @@ public class ControllerManager {
     }
 
     private @Nullable FxSidecar<?> getSidecar(@NotNull Object instance) {
-        return sidecars.computeIfAbsent(instance.getClass(), this::createSidecar);
+        final Class<?> instanceClass = instance.getClass();
+        if (sidecars.containsKey(instanceClass)) {
+            return sidecars.get(instanceClass);
+        } else {
+            final FxSidecar<?> sidecar = createSidecar(instanceClass);
+            sidecars.put(instanceClass, sidecar);
+            return sidecar;
+        }
     }
 
     private FxSidecar<?> createSidecar(Class<?> componentClass) {
