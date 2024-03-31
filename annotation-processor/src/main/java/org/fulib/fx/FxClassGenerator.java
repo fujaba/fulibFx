@@ -150,12 +150,10 @@ public class FxClassGenerator {
 
         final Params paramsAnnotation = methodElement.getAnnotation(Params.class);
         if (paramsAnnotation != null) {
-            for (int i = 0; i < parameters.size(); i++) {
+            final String[] paramNames = paramsAnnotation.value();
+            for (int i = 0; i < paramNames.length; i++) {
                 final VariableElement parameter = parameters.get(i);
-                final Param param = parameter.getAnnotation(Param.class);
-                if (param != null) {
-                    arguments.set(i, "(%s) params.get(\"%s\")".formatted(parameter.asType(), param.value()));
-                }
+                arguments.set(i, "(%s) params.get(\"%s\")".formatted(parameter.asType(), paramNames[i]));
             }
         }
 
