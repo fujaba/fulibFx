@@ -12,10 +12,7 @@ import org.fulib.fx.annotation.param.ParamsMap;
 import org.fulib.fx.util.ControllerUtil;
 
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
+import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
@@ -101,13 +98,28 @@ public class FxClassGenerator {
 
     private void fillParametersInfoFields(PrintWriter out, TypeElement componentClass) {
         for (Element element : componentClass.getEnclosedElements()) {
+            if (!(element instanceof VariableElement varElement)) {
+                continue;
+            }
+
             final Param param = element.getAnnotation(Param.class);
-            if (param != null && element instanceof VariableElement varElement) {
+            if (param != null) {
                 String fieldName = varElement.getSimpleName().toString();
                 String fieldType = varElement.asType().toString();
-                // TODO handle ParamsMap, primitives, not found, WritableValue
+                // TODO handle primitives, not found, WritableValue
                 // TODO field must be public, package-private or protected -- add a diagnostic if it's private
                 out.printf("    instance.%s = (%s) params.get(\"%s\");%n", fieldName, fieldType, param.value());
+            }
+
+            final ParamsMap paramsMap = element.getAnnotation(ParamsMap.class);
+            if (paramsMap != null) {
+                String fieldName = varElement.getSimpleName().toString();
+                if (varElement.getModifiers().contains(Modifier.FINAL)) {
+                    out.printf("    instance.%s.clear();%n", fieldName);
+                    out.printf("    instance.%s.putAll(params);%n", fieldName);
+                } else {
+                    out.printf("    instance.%s = params;%n", fieldName);
+                }
             }
         }
     }

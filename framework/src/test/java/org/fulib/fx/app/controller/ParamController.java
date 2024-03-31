@@ -26,7 +26,8 @@ public class ParamController {
     private Map<String, Object> onInitParamsMap;
     private Map<String, Object> setterParamsMap;
     @ParamsMap
-    private Map<String, Object> fieldParamsMap;
+    Map<String, Object> fieldParamsMap;
+    // TODO add a test for @ParamsMap final Map<String, Object>
 
     @Param("property")
     StringProperty stringProperty;
