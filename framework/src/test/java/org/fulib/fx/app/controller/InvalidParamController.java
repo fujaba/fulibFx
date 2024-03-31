@@ -10,13 +10,13 @@ import org.fulib.fx.annotation.param.Param;
 public class InvalidParamController {
 
     @Param("one")
-    private Integer integer;
+    Integer integer;
 
     @Param("two")
-    private IntegerProperty integerProperty = new SimpleIntegerProperty();
+    IntegerProperty integerProperty = new SimpleIntegerProperty();
 
     @Param("three")
-    private IntegerProperty integerProperty2;
+    IntegerProperty integerProperty2;
 
     public VBox render() {
         return new VBox();

@@ -19,9 +19,9 @@ public class ParamController {
     private int onInitParam;
     private String setterParam;
     @Param("integer")
-    private int fieldParam;
+    int fieldParam;
     @Param("string")
-    private final StringProperty fieldPropertyParam = new SimpleStringProperty();
+    final StringProperty fieldPropertyParam = new SimpleStringProperty();
 
     private Map<String, Object> onInitParamsMap;
     private Map<String, Object> setterParamsMap;
@@ -29,7 +29,7 @@ public class ParamController {
     private Map<String, Object> fieldParamsMap;
 
     @Param("property")
-    private StringProperty stringProperty;
+    StringProperty stringProperty;
 
     private Character setterMultiParams1;
     private Boolean setterMultiParams2;
