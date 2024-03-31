@@ -125,7 +125,7 @@ public class ControllerManager {
         if (!ControllerUtil.isController(instance))
             throw new IllegalControllerException(error(1001).formatted(instance.getClass().getName()));
 
-        final FxSidecar sidecar = sidecars.computeIfAbsent(instance.getClass(), this::createSidecar);
+        final FxSidecar sidecar = getSidecar(instance);
         if (sidecar != null) {
             sidecar.init(instance, parameters);
             return;
@@ -145,6 +145,10 @@ public class ControllerManager {
         // Initialize all subcomponents
         Reflection.callMethodsForFieldInstances(instance, getSubComponentFields(instance), (subController) -> init(subController, parameters));
 
+    }
+
+    private @Nullable FxSidecar<?> getSidecar(@NotNull Object instance) {
+        return sidecars.computeIfAbsent(instance.getClass(), this::createSidecar);
     }
 
     private FxSidecar<?> createSidecar(Class<?> componentClass) {
@@ -280,15 +284,20 @@ public class ControllerManager {
         if (!ControllerUtil.isController(instance))
             throw new IllegalArgumentException(error(1001).formatted(instance.getClass().getName()));
 
-        // Destroying should be done in exactly the reverse order of initialization
-        List<Field> subComponentFields = new ArrayList<>(getSubComponentFields(instance));
-        Collections.reverse(subComponentFields);
+        final FxSidecar sidecar = getSidecar(instance);
+        if (sidecar != null) {
+            sidecar.destroy(instance);
+        } else {
+            // Destroying should be done in exactly the reverse order of initialization
+            List<Field> subComponentFields = new ArrayList<>(getSubComponentFields(instance));
+            Collections.reverse(subComponentFields);
 
-        // Destroy all subcomponents
-        Reflection.callMethodsForFieldInstances(instance, subComponentFields, this::destroy);
+            // Destroy all subcomponents
+            Reflection.callMethodsForFieldInstances(instance, subComponentFields, this::destroy);
 
-        // Call destroy methods
-        callMethodsWithAnnotation(instance, onDestroy.class, Map.of());
+            // Call destroy methods
+            callMethodsWithAnnotation(instance, onDestroy.class, Map.of());
+        }
 
         // Unregister key events
         cleanUpListeners(instance);
@@ -736,15 +745,15 @@ public class ControllerManager {
      * @param instance The instance to clear the key handlers for
      */
     private void cleanUpListeners(Object instance) {
-        Collection<KeyEventHolder> handlers = keyEventHandlers.get(instance);
-        if (handlers != null) {
-            for (KeyEventHolder holder : handlers) {
-                switch (holder.target()) {
-                    case SCENE -> app.get().stage().getScene().removeEventFilter(holder.type(), holder.handler());
-                    case STAGE -> app.get().stage().removeEventFilter(holder.type(), holder.handler());
-                }
+        final Collection<KeyEventHolder> handlers = keyEventHandlers.remove(instance);
+        if (handlers == null) {
+            return;
+        }
+        for (KeyEventHolder holder : handlers) {
+            switch (holder.target()) {
+                case SCENE -> app.get().stage().getScene().removeEventFilter(holder.type(), holder.handler());
+                case STAGE -> app.get().stage().removeEventFilter(holder.type(), holder.handler());
             }
-            keyEventHandlers.remove(instance);
         }
     }
 

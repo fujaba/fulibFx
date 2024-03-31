@@ -1,6 +1,7 @@
 package org.fulib.fx;
 
 import org.fulib.fx.annotation.controller.SubComponent;
+import org.fulib.fx.annotation.event.onDestroy;
 import org.fulib.fx.annotation.event.onInit;
 import org.fulib.fx.annotation.param.Param;
 import org.fulib.fx.annotation.param.Params;
@@ -15,9 +16,7 @@ import javax.tools.JavaFileObject;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.annotation.Annotation;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 public class FxClassGenerator {
     private static final String CLASS_SUFFIX = "_Fx";
@@ -70,6 +69,10 @@ public class FxClassGenerator {
         out.println("  @Override");
         out.printf("  public void init(%s instance, Map<String, Object> params) {%n", simpleClassName);
         generateSidecarInit(out, componentClass);
+        out.println("  }");
+        out.println("  @Override");
+        out.printf("  public void destroy(%s instance) {%n", simpleClassName);
+        generateSidecarDestroy(out, componentClass);
         out.println("  }");
         out.println("}");
     }
@@ -187,6 +190,50 @@ public class FxClassGenerator {
 
             final String fieldName = varElement.getSimpleName().toString();
             out.printf("    this.controllerManager.init(instance.%s, params);%n", fieldName);
+        }
+    }
+
+    private void generateSidecarDestroy(PrintWriter out, TypeElement componentClass) {
+        destroySubComponents(out, componentClass);
+        callDestroyMethods(out, componentClass);
+    }
+
+    private void callDestroyMethods(PrintWriter out, TypeElement componentClass) {
+        // TODO inherited methods
+        componentClass
+            .getEnclosedElements()
+            .stream()
+            .filter(element -> element.getAnnotation(onDestroy.class) != null && element instanceof ExecutableElement)
+            .sorted(Comparator.comparingInt(a -> a.getAnnotation(onDestroy.class).value()))
+            .forEach(element -> {
+                generateInitCall(out, (ExecutableElement) element);
+            });
+    }
+
+    private void destroySubComponents(PrintWriter out, TypeElement componentClass) {
+        final List<String> fieldNames = new ArrayList<>();
+        for (final Element element : componentClass.getEnclosedElements()) {
+            if (!(element instanceof VariableElement varElement)) {
+                continue;
+            }
+
+            final SubComponent subComponent = element.getAnnotation(SubComponent.class);
+            if (subComponent == null) {
+                continue;
+            }
+
+            if (varElement.asType().toString().startsWith("javax.inject.Provider")) {
+                // Provider fields are destroyed on demand
+                continue;
+            }
+
+            final String fieldName = varElement.getSimpleName().toString();
+            fieldNames.add(fieldName);
+        }
+
+        Collections.reverse(fieldNames);
+        for (String fieldName : fieldNames) {
+            out.printf("    this.controllerManager.destroy(instance.%s);%n", fieldName);
         }
     }
 }
