@@ -199,10 +199,28 @@ public class ControllerManager {
         if (!component && !instance.getClass().isAnnotationPresent(Controller.class))
             throw new IllegalArgumentException(error(1001).formatted(instance.getClass().getName()));
 
-        // Render all subcomponents
-        Reflection.callMethodsForFieldInstances(instance, getSubComponentFields(instance), (subController) -> render(subController, parameters));
+        final Node node;
+        final FxSidecar sidecar = getSidecar(instance);
+        if (sidecar != null) {
+            node = sidecar.render(instance, parameters);
+        } else {
+            // Render all subcomponents
+            Reflection.callMethodsForFieldInstances(instance, getSubComponentFields(instance), (subController) -> render(subController, parameters));
 
-        // Get the view of the controller
+            // Get the view of the controller
+            node = renderNode(instance, component);
+
+            // Call the onRender method
+            callMethodsWithAnnotation(instance, onRender.class, parameters);
+        }
+
+        // TODO Register key events via Sidecar
+        registerKeyEvents(instance);
+
+        return node;
+    }
+
+    private Node renderNode(Object instance, boolean component) {
         Node node;
         String view = component ?
                 instance.getClass().getAnnotation(Component.class).view() :
@@ -245,13 +263,6 @@ public class ControllerManager {
             String fxmlPath = view.isEmpty() ? ControllerUtil.transform(instance.getClass().getSimpleName()) + ".fxml" : view;
             node = loadFXML(fxmlPath, instance, false);
         }
-
-        // Call the onRender method
-        callMethodsWithAnnotation(instance, onRender.class, parameters);
-
-        // Register key events
-        registerKeyEvents(instance);
-
         return node;
     }
 
@@ -306,7 +317,7 @@ public class ControllerManager {
             callMethodsWithAnnotation(instance, onDestroy.class, Map.of());
         }
 
-        // Unregister key events
+        // TODO Unregister key events via Sidecar
         cleanUpListeners(instance);
 
         // In development mode, check for undestroyed subscribers
@@ -348,7 +359,8 @@ public class ControllerManager {
      * @param instance The controller instance to use
      * @return A parent representing the fxml file
      */
-    private @NotNull Node loadFXML(@NotNull String fileName, @NotNull Object instance, boolean setRoot) {
+    @ApiStatus.Internal
+    public @NotNull Node loadFXML(@NotNull String fileName, @NotNull Object instance, boolean setRoot) {
 
         URL url = instance.getClass().getResource(fileName);
         if (url == null) {

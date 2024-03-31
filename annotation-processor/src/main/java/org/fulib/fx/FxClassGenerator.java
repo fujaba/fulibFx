@@ -1,17 +1,22 @@
 package org.fulib.fx;
 
+import org.fulib.fx.annotation.controller.Component;
+import org.fulib.fx.annotation.controller.Controller;
 import org.fulib.fx.annotation.controller.SubComponent;
 import org.fulib.fx.annotation.event.onDestroy;
 import org.fulib.fx.annotation.event.onInit;
+import org.fulib.fx.annotation.event.onRender;
 import org.fulib.fx.annotation.param.Param;
 import org.fulib.fx.annotation.param.Params;
 import org.fulib.fx.annotation.param.ParamsMap;
+import org.fulib.fx.util.ControllerUtil;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -57,6 +62,7 @@ public class FxClassGenerator {
         }
 
         out.println("import java.util.Map;");
+        out.println("import javafx.scene.Node;");
         out.println("import org.fulib.fx.controller.ControllerManager;");
         out.println("import org.fulib.fx.controller.internal.FxSidecar;");
         out.println();
@@ -69,6 +75,10 @@ public class FxClassGenerator {
         out.println("  @Override");
         out.printf("  public void init(%s instance, Map<String, Object> params) {%n", simpleClassName);
         generateSidecarInit(out, componentClass);
+        out.println("  }");
+        out.println("  @Override");
+        out.printf("  public Node render(%s instance, Map<String, Object> params) {%n", simpleClassName);
+        generateSidecarRender(out, componentClass);
         out.println("  }");
         out.println("  @Override");
         out.printf("  public void destroy(%s instance) {%n", simpleClassName);
@@ -86,7 +96,7 @@ public class FxClassGenerator {
 
         callInitMethods(out, componentClass);
 
-        initSubComponents(out, componentClass);
+        initSubComponents(out, componentClass, "init");
     }
 
     private void fillParametersInfoFields(PrintWriter out, TypeElement componentClass) {
@@ -172,7 +182,7 @@ public class FxClassGenerator {
         }
     }
 
-    private void initSubComponents(PrintWriter out, TypeElement componentClass) {
+    private void initSubComponents(PrintWriter out, TypeElement componentClass, String method) {
         for (final Element element : componentClass.getEnclosedElements()) {
             if (!(element instanceof VariableElement varElement)) {
                 continue;
@@ -189,7 +199,7 @@ public class FxClassGenerator {
             }
 
             final String fieldName = varElement.getSimpleName().toString();
-            out.printf("    this.controllerManager.init(instance.%s, params);%n", fieldName);
+            out.printf("    this.controllerManager.%s(instance.%s, params);%n", method, fieldName);
         }
     }
 
@@ -235,5 +245,51 @@ public class FxClassGenerator {
         for (String fieldName : fieldNames) {
             out.printf("    this.controllerManager.destroy(instance.%s);%n", fieldName);
         }
+    }
+
+    private void generateSidecarRender(PrintWriter out, TypeElement componentClass) {
+        initSubComponents(out, componentClass, "render");
+        generateRenderResult(out, componentClass);
+        callRenderMethods(out, componentClass);
+        // TODO Register key events
+        out.println("    return result;");
+    }
+
+    private void generateRenderResult(PrintWriter out, TypeElement componentClass) {
+        final Component component = componentClass.getAnnotation(Component.class);
+        final Controller controller = componentClass.getAnnotation(Controller.class);
+
+        if (component != null) {
+            final String view = component.view();
+            if (view.isEmpty()) {
+                out.println("    final Node result = instance;");
+            } else {
+                final TypeMirror parent = processingEnv.getElementUtils().getTypeElement("javafx.scene.Parent").asType();
+                if (processingEnv.getTypeUtils().isAssignable(componentClass.asType(), parent)) {
+                    out.println("    instance.getChildren().clear();");
+                }
+                out.printf("    final Node result = this.controllerManager.loadFXML(\"%s\", instance, true);%n", view);
+            }
+        } else if (controller != null) {
+            final String view = controller.view();
+            if (view.startsWith("#")) {
+                out.printf("    final Node result = instance.%s();%n", view.substring(1));
+            } else {
+                final String inferredView = view.isEmpty() ? ControllerUtil.transform(componentClass.getSimpleName().toString()) + ".fxml" : view;
+                out.printf("    final Node result = this.controllerManager.loadFXML(\"%s\", instance, false);%n", inferredView);
+            }
+        }
+    }
+
+    private void callRenderMethods(PrintWriter out, TypeElement componentClass) {
+        // TODO inherited methods
+        componentClass
+            .getEnclosedElements()
+            .stream()
+            .filter(element -> element.getAnnotation(onRender.class) != null && element instanceof ExecutableElement)
+            .sorted(Comparator.comparingInt(a -> a.getAnnotation(onRender.class).value()))
+            .forEach(element -> {
+                generateInitCall(out, (ExecutableElement) element);
+            });
     }
 }
