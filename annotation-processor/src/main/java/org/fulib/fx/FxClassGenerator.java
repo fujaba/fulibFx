@@ -1,5 +1,6 @@
 package org.fulib.fx;
 
+import org.fulib.fx.annotation.controller.SubComponent;
 import org.fulib.fx.annotation.event.onInit;
 import org.fulib.fx.annotation.param.Param;
 import org.fulib.fx.annotation.param.Params;
@@ -57,10 +58,15 @@ public class FxClassGenerator {
         }
 
         out.println("import java.util.Map;");
+        out.println("import org.fulib.fx.controller.ControllerManager;");
         out.println("import org.fulib.fx.controller.internal.FxSidecar;");
         out.println();
 
         out.printf("public class %s implements FxSidecar<%s> {%n", builderSimpleClassName, simpleClassName);
+        out.println("  private final ControllerManager controllerManager;");
+        out.printf("  public %s(ControllerManager cm) {%n", builderSimpleClassName);
+        out.println("    this.controllerManager = cm;");
+        out.println("  }");
         out.println("  @Override");
         out.printf("  public void init(%s instance, Map<String, Object> params) {%n", simpleClassName);
         generateSidecarInit(out, componentClass);
@@ -77,7 +83,7 @@ public class FxClassGenerator {
 
         callInitMethods(out, componentClass);
 
-        // TODO init subcomponents
+        initSubComponents(out, componentClass);
     }
 
     private void fillParametersInfoFields(PrintWriter out, TypeElement componentClass) {
@@ -160,6 +166,27 @@ public class FxClassGenerator {
         final ParamsMap paramsMapAnnotation = methodElement.getAnnotation(ParamsMap.class);
         if (paramsMapAnnotation != null) {
             arguments.set(0, "params");
+        }
+    }
+
+    private void initSubComponents(PrintWriter out, TypeElement componentClass) {
+        for (final Element element : componentClass.getEnclosedElements()) {
+            if (!(element instanceof VariableElement varElement)) {
+                continue;
+            }
+
+            final SubComponent subComponent = element.getAnnotation(SubComponent.class);
+            if (subComponent == null) {
+                continue;
+            }
+
+            if (varElement.asType().toString().startsWith("javax.inject.Provider")) {
+                // Provider fields are initialized on demand
+                continue;
+            }
+
+            final String fieldName = varElement.getSimpleName().toString();
+            out.printf("    this.controllerManager.init(instance.%s, params);%n", fieldName);
         }
     }
 }

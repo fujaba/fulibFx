@@ -56,7 +56,7 @@ public class ControllerManager {
     private final RefreshableCompositeDisposable cleanup = new RefreshableCompositeDisposable();
 
     private static ResourceBundle defaultResourceBundle;
-    private static final Map<Class<?>, FxSidecar<?>> sidecars = new IdentityHashMap<>();
+    private final Map<Class<?>, FxSidecar<?>> sidecars = new IdentityHashMap<>();
 
     private final Map<Object, Collection<KeyEventHolder>> keyEventHandlers = new HashMap<>();
 
@@ -153,7 +153,7 @@ public class ControllerManager {
             return null;
         }
         try {
-            return (FxSidecar<?>) sidecarClass.getDeclaredConstructor().newInstance();
+            return (FxSidecar<?>) sidecarClass.getDeclaredConstructor(ControllerManager.class).newInstance(this);
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
         }
