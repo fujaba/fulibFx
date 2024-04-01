@@ -145,6 +145,8 @@ public class FxClassGenerator {
                 String fieldName = varElement.getSimpleName().toString();
                 String fieldType = varElement.asType().toString();
                 String paramNameLiteral = stringLiteral(param.value());
+                out.printf("    if (params.containsKey(%s)) {%n", paramNameLiteral);
+
                 // TODO field must be public, package-private or protected -- add a diagnostic if it's private
                 if (processingEnv.getTypeUtils().isAssignable(varElement.asType(), writableValue)) {
                     // We use the `setValue` method to infer the actual type of the field,
@@ -154,20 +156,25 @@ public class FxClassGenerator {
                     final TypeMirror typeArg = asMemberOf.getParameterTypes().get(0);
                     final String writableType = typeArg.toString();
                     if (varElement.getModifiers().contains(Modifier.FINAL)) {
-                        out.printf("    instance.%s.setValue((%s) params.get(%s));%n", fieldName, writableType, paramNameLiteral);
-                    } else {
-                        // TODO There are 3 map reads to get to the second branch (which should be more common), maybe we can optimize this
-                        out.printf("    if (params.get(%s) instanceof javafx.beans.value.WritableValue) {%n", paramNameLiteral);
-                        out.printf("      instance.%s = (%s) params.get(%s);%n", fieldName, fieldType, paramNameLiteral);
-                        out.printf("    } else if (params.containsKey(%s)) {%n", paramNameLiteral);
                         out.printf("      instance.%s.setValue((%s) params.get(%s));%n", fieldName, writableType, paramNameLiteral);
-                        out.println("    }");
+                    } else {
+                        // final Object param = params.get(<paramNameLiteral>);
+                        // if (param instanceof <writableValue>) {
+                        //   instance.<fieldName> = (<fieldType>) param);
+                        // } else {
+                        //   instance.<fieldName>.setValue((<writableType>) param);
+                        // }
+                        out.printf("      final Object param = params.get(%s);%n", paramNameLiteral);
+                        out.printf("      if (param instanceof %s) {%n", writableValue);
+                        out.printf("        instance.%s = (%s) param;%n", fieldName, fieldType);
+                        out.println("      } else {");
+                        out.printf("        instance.%s.setValue((%s) param);%n", fieldName, writableType);
+                        out.println("      }");
                     }
                 } else {
-                    out.printf("    if (params.containsKey(%s)) {%n", paramNameLiteral);
                     out.printf("      instance.%s = (%s) params.get(%s);%n", fieldName, fieldType, paramNameLiteral);
-                    out.println("    }");
                 }
+                out.println("    }");
             }
 
             final ParamsMap paramsMap = element.getAnnotation(ParamsMap.class);
