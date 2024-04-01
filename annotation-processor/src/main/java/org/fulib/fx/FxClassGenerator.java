@@ -1,8 +1,6 @@
 package org.fulib.fx;
 
-import org.fulib.fx.annotation.controller.Component;
-import org.fulib.fx.annotation.controller.Controller;
-import org.fulib.fx.annotation.controller.SubComponent;
+import org.fulib.fx.annotation.controller.*;
 import org.fulib.fx.annotation.event.onDestroy;
 import org.fulib.fx.annotation.event.onInit;
 import org.fulib.fx.annotation.event.onRender;
@@ -90,6 +88,7 @@ public class FxClassGenerator {
         }
 
         out.println("import java.util.Map;");
+        out.println("import java.util.ResourceBundle;");
         out.println("import javafx.scene.Node;");
         out.println("import org.fulib.fx.controller.ControllerManager;");
         out.println("import org.fulib.fx.controller.internal.FxSidecar;");
@@ -111,6 +110,14 @@ public class FxClassGenerator {
         out.println("  @Override");
         out.printf("  public void destroy(%s instance) {%n", simpleClassName);
         generateSidecarDestroy(out, componentClass);
+        out.println("  }");
+        out.println("  @Override");
+        out.printf("  public ResourceBundle getResources(%s instance) {%n", simpleClassName);
+        generateSidecarResources(out, componentClass);
+        out.println("  }");
+        out.println("  @Override");
+        out.printf("  public String getTitle(%s instance) {%n", simpleClassName);
+        generateSidecarTitle(out, componentClass);
         out.println("  }");
         out.println("}");
     }
@@ -327,6 +334,41 @@ public class FxClassGenerator {
         streamAllMethods(componentClass, onRender.class)
             .sorted(Comparator.comparingInt(a -> a.getAnnotation(onRender.class).value()))
             .forEach(element -> generateInitCall(out, element));
+    }
+
+    private void generateSidecarResources(PrintWriter out, TypeElement componentClass) {
+        for (Element enclosedElement : componentClass.getEnclosedElements()) {
+            if (!(enclosedElement instanceof VariableElement variableElement)) {
+                continue;
+            }
+
+            final Resource resource = variableElement.getAnnotation(Resource.class);
+            if (resource == null) {
+                continue;
+            }
+
+            final String fieldName = variableElement.getSimpleName().toString();
+            out.printf("    return instance.%s;%n", fieldName);
+            return;
+        }
+
+        out.println("    return controllerManager.getDefaultResourceBundle();");
+    }
+
+    private void generateSidecarTitle(PrintWriter out, TypeElement componentClass) {
+        final Title title = componentClass.getAnnotation(Title.class);
+        if (title == null) {
+            out.println("    return null;");
+            return;
+        }
+
+        if (title.value().startsWith("%")) {
+            out.printf("    return getResources(instance).getString(\"%s\");%n", title.value().substring(1));
+        } else if ("$name".equals(title.value())) {
+            out.printf("    return \"%s\";%n", ControllerUtil.transform(componentClass.getSimpleName().toString()));
+        } else {
+            out.printf("    return \"%s\";%n", title.value());
+        }
     }
 
     private Stream<ExecutableElement> streamAllMethods(TypeElement componentClass, Class<? extends Annotation> annotation) {

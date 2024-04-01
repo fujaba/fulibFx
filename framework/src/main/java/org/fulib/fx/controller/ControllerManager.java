@@ -413,7 +413,11 @@ public class ControllerManager {
      * @return The resource bundle of the given instance if it has one or the default resource bundle
      * @throws RuntimeException If the instance has more than one field annotated with {@link Resource}
      */
-    private static @Nullable ResourceBundle getResourceBundle(@NotNull Object instance) {
+    private @Nullable ResourceBundle getResourceBundle(@NotNull Object instance) {
+        final FxSidecar sidecar = getSidecar(instance);
+        if (sidecar != null) {
+            return sidecar.getResources(instance);
+        }
 
         List<Field> fields = Reflection.getAllFieldsWithAnnotation(instance.getClass(), Resource.class).toList();
 
@@ -707,6 +711,10 @@ public class ControllerManager {
         }).toArray();
     }
 
+    public ResourceBundle getDefaultResourceBundle() {
+        return defaultResourceBundle;
+    }
+
     /**
      * Sets the default resource bundle for all controllers that don't have a resource bundle set.
      *
@@ -784,6 +792,11 @@ public class ControllerManager {
      * @return The title of the controller
      */
     public Optional<String> getTitle(@NotNull Object instance) {
+        final FxSidecar sidecar = getSidecar(instance);
+        if (sidecar != null) {
+            return Optional.ofNullable(sidecar.getTitle(instance));
+        }
+
         if (!instance.getClass().isAnnotationPresent(Title.class))
             return Optional.empty();
 
