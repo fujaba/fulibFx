@@ -27,18 +27,26 @@ public class FxClassGenerator {
     private final ProcessingEnvironment processingEnv;
 
     /**
-     * The `javafx.beans.value.WritableValue` interface.
+     * The (erased) `javafx.beans.value.WritableValue` type.
      */
-    private final TypeElement writableValue;
+    private final TypeMirror writableValue;
 
     /**
      * The `setValue` method of `javafx.beans.value.WritableValue`.
      */
     private final ExecutableElement genericSetValue;
 
+    /**
+     * The `javafx.scene.Parent` type.
+     */
+    private final TypeMirror parent;
+
     public FxClassGenerator(ProcessingEnvironment processingEnv) {
         this.processingEnv = processingEnv;
-        writableValue = processingEnv.getElementUtils().getTypeElement("javafx.beans.value.WritableValue");
+
+        final TypeElement writableValue = processingEnv.getElementUtils().getTypeElement("javafx.beans.value.WritableValue");
+        this.writableValue = processingEnv.getTypeUtils().erasure(writableValue.asType());
+
         genericSetValue = writableValue.getEnclosedElements()
             .stream()
             .filter(e -> e instanceof ExecutableElement)
@@ -46,6 +54,8 @@ public class FxClassGenerator {
             .filter(e -> "setValue".equals(e.getSimpleName().toString()))
             .findFirst()
             .orElseThrow();
+
+        parent = processingEnv.getElementUtils().getTypeElement("javafx.scene.Parent").asType();
     }
 
     public void generateSidecar(TypeElement componentClass) {
@@ -127,7 +137,7 @@ public class FxClassGenerator {
                 String fieldName = varElement.getSimpleName().toString();
                 String fieldType = varElement.asType().toString();
                 // TODO field must be public, package-private or protected -- add a diagnostic if it's private
-                if (processingEnv.getTypeUtils().isAssignable(varElement.asType(), processingEnv.getTypeUtils().erasure(writableValue.asType()))) {
+                if (processingEnv.getTypeUtils().isAssignable(varElement.asType(), writableValue)) {
                     // We use the `setValue` method to infer the actual type of the field,
                     // E.g. if the field is a `StringProperty` which extends `WritableValue<String>`,
                     // we can infer that the actual type is `String`.
@@ -316,7 +326,6 @@ public class FxClassGenerator {
             if (view.isEmpty()) {
                 out.println("    final Node result = instance;");
             } else {
-                final TypeMirror parent = processingEnv.getElementUtils().getTypeElement("javafx.scene.Parent").asType();
                 if (processingEnv.getTypeUtils().isAssignable(componentClass.asType(), parent)) {
                     out.println("    instance.getChildren().clear();");
                 }
