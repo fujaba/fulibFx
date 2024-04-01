@@ -144,6 +144,7 @@ public class FxClassGenerator {
             if (param != null) {
                 String fieldName = varElement.getSimpleName().toString();
                 String fieldType = varElement.asType().toString();
+                String paramNameLiteral = stringLiteral(param.value());
                 // TODO field must be public, package-private or protected -- add a diagnostic if it's private
                 if (processingEnv.getTypeUtils().isAssignable(varElement.asType(), writableValue)) {
                     // We use the `setValue` method to infer the actual type of the field,
@@ -153,18 +154,18 @@ public class FxClassGenerator {
                     final TypeMirror typeArg = asMemberOf.getParameterTypes().get(0);
                     final String writableType = typeArg.toString();
                     if (varElement.getModifiers().contains(Modifier.FINAL)) {
-                        out.printf("    instance.%s.setValue((%s) params.get(\"%s\"));%n", fieldName, writableType, param.value());
+                        out.printf("    instance.%s.setValue((%s) params.get(%s));%n", fieldName, writableType, paramNameLiteral);
                     } else {
                         // TODO There are 3 map reads to get to the second branch (which should be more common), maybe we can optimize this
-                        out.printf("    if (params.get(\"%s\") instanceof javafx.beans.value.WritableValue) {%n", param.value());
-                        out.printf("      instance.%s = (%s) params.get(\"%s\");%n", fieldName, fieldType, param.value());
-                        out.printf("    } else if (params.containsKey(\"%s\")) {%n", param.value());
-                        out.printf("      instance.%s.setValue((%s) params.get(\"%s\"));%n", fieldName, writableType, param.value());
+                        out.printf("    if (params.get(%s) instanceof javafx.beans.value.WritableValue) {%n", paramNameLiteral);
+                        out.printf("      instance.%s = (%s) params.get(%s);%n", fieldName, fieldType, paramNameLiteral);
+                        out.printf("    } else if (params.containsKey(%s)) {%n", paramNameLiteral);
+                        out.printf("      instance.%s.setValue((%s) params.get(%s));%n", fieldName, writableType, paramNameLiteral);
                         out.println("    }");
                     }
                 } else {
-                    out.printf("    if (params.containsKey(\"%s\")) {%n", param.value());
-                    out.printf("      instance.%s = (%s) params.get(\"%s\");%n", fieldName, fieldType, param.value());
+                    out.printf("    if (params.containsKey(%s)) {%n", paramNameLiteral);
+                    out.printf("      instance.%s = (%s) params.get(%s);%n", fieldName, fieldType, paramNameLiteral);
                     out.println("    }");
                 }
             }
@@ -203,7 +204,7 @@ public class FxClassGenerator {
             final VariableElement parameter = parameters.get(i);
             final Param paramAnnotation = parameter.getAnnotation(Param.class);
             if (paramAnnotation != null) {
-                arguments.set(i, "(%s) params.get(\"%s\")".formatted(parameter.asType(), paramAnnotation.value()));
+                arguments.set(i, "(%s) params.get(%s)".formatted(parameter.asType(), stringLiteral(paramAnnotation.value())));
                 continue;
             }
 
@@ -220,7 +221,7 @@ public class FxClassGenerator {
     private void fillMethodArguments(ExecutableElement methodElement, List<String> arguments, List<? extends VariableElement> parameters) {
         final Param paramAnnotation = methodElement.getAnnotation(Param.class);
         if (paramAnnotation != null) {
-            arguments.set(0, "(%s) params.get(\"%s\")".formatted(parameters.get(0).asType(), paramAnnotation.value()));
+            arguments.set(0, "(%s) params.get(%s)".formatted(parameters.get(0).asType(), stringLiteral(paramAnnotation.value())));
         }
 
         final Params paramsAnnotation = methodElement.getAnnotation(Params.class);
@@ -228,7 +229,7 @@ public class FxClassGenerator {
             final String[] paramNames = paramsAnnotation.value();
             for (int i = 0; i < paramNames.length; i++) {
                 final VariableElement parameter = parameters.get(i);
-                arguments.set(i, "(%s) params.get(\"%s\")".formatted(parameter.asType(), paramNames[i]));
+                arguments.set(i, "(%s) params.get(%s)".formatted(parameter.asType(), stringLiteral(paramNames[i])));
             }
         }
 
@@ -317,7 +318,7 @@ public class FxClassGenerator {
                 if (processingEnv.getTypeUtils().isAssignable(componentClass.asType(), parent)) {
                     out.println("    instance.getChildren().clear();");
                 }
-                out.printf("    final Node result = this.controllerManager.loadFXML(\"%s\", instance, true);%n", view);
+                out.printf("    final Node result = this.controllerManager.loadFXML(%s, instance, true);%n", stringLiteral(view));
             }
         } else if (controller != null) {
             final String view = controller.view();
@@ -325,7 +326,7 @@ public class FxClassGenerator {
                 out.printf("    final Node result = instance.%s();%n", view.substring(1));
             } else {
                 final String inferredView = view.isEmpty() ? ControllerUtil.transform(componentClass.getSimpleName().toString()) + ".fxml" : view;
-                out.printf("    final Node result = this.controllerManager.loadFXML(\"%s\", instance, false);%n", inferredView);
+                out.printf("    final Node result = this.controllerManager.loadFXML(%s, instance, false);%n", stringLiteral(inferredView));
             }
         }
     }
@@ -363,12 +364,16 @@ public class FxClassGenerator {
         }
 
         if (title.value().startsWith("%")) {
-            out.printf("    return getResources(instance).getString(\"%s\");%n", title.value().substring(1));
+            out.printf("    return getResources(instance).getString(%s);%n", stringLiteral(title.value().substring(1)));
         } else if ("$name".equals(title.value())) {
-            out.printf("    return \"%s\";%n", ControllerUtil.transform(componentClass.getSimpleName().toString()));
+            out.printf("    return %s;%n", stringLiteral(ControllerUtil.transform(componentClass.getSimpleName().toString())));
         } else {
-            out.printf("    return \"%s\";%n", title.value());
+            out.printf("    return %s;%n", stringLiteral(title.value()));
         }
+    }
+
+    private String stringLiteral(String value) {
+        return processingEnv.getElementUtils().getConstantExpression(value);
     }
 
     private Stream<ExecutableElement> streamAllMethods(TypeElement componentClass, Class<? extends Annotation> annotation) {
