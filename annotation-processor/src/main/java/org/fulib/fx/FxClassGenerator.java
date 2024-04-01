@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.annotation.Annotation;
 import java.util.*;
+import java.util.stream.Stream;
 
 public class FxClassGenerator {
     private static final String CLASS_SUFFIX = "_Fx";
@@ -175,28 +176,14 @@ public class FxClassGenerator {
     }
 
     private void callInitMethods(PrintWriter out, TypeElement componentClass) {
-        // TODO inherited methods
-        componentClass
-            .getEnclosedElements()
-            .stream()
-            .filter(element -> element.getAnnotation(onInit.class) != null && element instanceof ExecutableElement)
-            .map(element -> (ExecutableElement) element)
+        streamMethods(componentClass, onInit.class)
             .sorted(Comparator.comparingInt(a -> a.getAnnotation(onInit.class).value()))
-            .forEach(methodElement -> {
-                generateInitCall(out, methodElement);
-            });
+            .forEach(methodElement -> generateInitCall(out, methodElement));
     }
 
     private void callParamMethods(PrintWriter out, TypeElement componentClass, Class<? extends Annotation> annotation) {
-        // TODO inherited methods
-        componentClass
-            .getEnclosedElements()
-            .stream()
-            .filter(element -> element.getAnnotation(annotation) != null && element instanceof ExecutableElement)
-            .map(element -> (ExecutableElement) element)
-            .forEach(methodElement -> {
-                generateInitCall(out, methodElement);
-            });
+        streamMethods(componentClass, annotation)
+            .forEach(methodElement -> generateInitCall(out, methodElement));
     }
 
     private void generateInitCall(PrintWriter out, ExecutableElement methodElement) {
@@ -271,15 +258,9 @@ public class FxClassGenerator {
     }
 
     private void callDestroyMethods(PrintWriter out, TypeElement componentClass) {
-        // TODO inherited methods
-        componentClass
-            .getEnclosedElements()
-            .stream()
-            .filter(element -> element.getAnnotation(onDestroy.class) != null && element instanceof ExecutableElement)
+        streamMethods(componentClass, onDestroy.class)
             .sorted(Comparator.comparingInt(a -> a.getAnnotation(onDestroy.class).value()))
-            .forEach(element -> {
-                generateInitCall(out, (ExecutableElement) element);
-            });
+            .forEach(element -> generateInitCall(out, element));
     }
 
     private void destroySubComponents(PrintWriter out, TypeElement componentClass) {
@@ -343,14 +324,17 @@ public class FxClassGenerator {
     }
 
     private void callRenderMethods(PrintWriter out, TypeElement componentClass) {
+        streamMethods(componentClass, onRender.class)
+            .sorted(Comparator.comparingInt(a -> a.getAnnotation(onRender.class).value()))
+            .forEach(element -> generateInitCall(out, element));
+    }
+
+    private Stream<ExecutableElement> streamMethods(TypeElement componentClass, Class<? extends Annotation> annotation) {
         // TODO inherited methods
-        componentClass
+        return componentClass
             .getEnclosedElements()
             .stream()
-            .filter(element -> element.getAnnotation(onRender.class) != null && element instanceof ExecutableElement)
-            .sorted(Comparator.comparingInt(a -> a.getAnnotation(onRender.class).value()))
-            .forEach(element -> {
-                generateInitCall(out, (ExecutableElement) element);
-            });
+            .filter(element -> element.getAnnotation(annotation) != null && element instanceof ExecutableElement)
+            .map(element -> (ExecutableElement) element);
     }
 }
