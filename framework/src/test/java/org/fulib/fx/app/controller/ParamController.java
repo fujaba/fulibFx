@@ -10,6 +10,7 @@ import org.fulib.fx.annotation.param.Params;
 import org.fulib.fx.annotation.param.ParamsMap;
 
 import javax.inject.Inject;
+import java.util.HashMap;
 import java.util.Map;
 
 @Controller(view = "#paramView")
@@ -22,13 +23,13 @@ public class ParamController {
     int fieldParam;
     @Param("string")
     final StringProperty fieldPropertyParam = new SimpleStringProperty();
-    // TODO add a test for @Param non-final StringProperty
 
     private Map<String, Object> onInitParamsMap;
     private Map<String, Object> setterParamsMap;
     @ParamsMap
     Map<String, Object> fieldParamsMap;
-    // TODO add a test for @ParamsMap final Map<String, Object>
+    @ParamsMap
+    final Map<String, Object> finalFieldParamsMap = new HashMap<>();
 
     @Param("property")
     StringProperty stringProperty;
@@ -92,6 +93,10 @@ public class ParamController {
 
     public Map<String, Object> getFieldParamsMap() {
         return fieldParamsMap;
+    }
+
+    public Map<String, Object> getFinalFieldParamsMap() {
+        return finalFieldParamsMap;
     }
 
     public Character getSetterMultiParams1() {
