@@ -176,13 +176,13 @@ public class FxClassGenerator {
     }
 
     private void callInitMethods(PrintWriter out, TypeElement componentClass) {
-        streamMethods(componentClass, onInit.class)
+        streamAllMethods(componentClass, onInit.class)
             .sorted(Comparator.comparingInt(a -> a.getAnnotation(onInit.class).value()))
             .forEach(methodElement -> generateInitCall(out, methodElement));
     }
 
     private void callParamMethods(PrintWriter out, TypeElement componentClass, Class<? extends Annotation> annotation) {
-        streamMethods(componentClass, annotation)
+        streamAllMethods(componentClass, annotation)
             .forEach(methodElement -> generateInitCall(out, methodElement));
     }
 
@@ -258,7 +258,7 @@ public class FxClassGenerator {
     }
 
     private void callDestroyMethods(PrintWriter out, TypeElement componentClass) {
-        streamMethods(componentClass, onDestroy.class)
+        streamAllMethods(componentClass, onDestroy.class)
             .sorted(Comparator.comparingInt(a -> a.getAnnotation(onDestroy.class).value()))
             .forEach(element -> generateInitCall(out, element));
     }
@@ -324,13 +324,17 @@ public class FxClassGenerator {
     }
 
     private void callRenderMethods(PrintWriter out, TypeElement componentClass) {
-        streamMethods(componentClass, onRender.class)
+        streamAllMethods(componentClass, onRender.class)
             .sorted(Comparator.comparingInt(a -> a.getAnnotation(onRender.class).value()))
             .forEach(element -> generateInitCall(out, element));
     }
 
+    private Stream<ExecutableElement> streamAllMethods(TypeElement componentClass, Class<? extends Annotation> annotation) {
+        return Stream.iterate(componentClass, Objects::nonNull, e -> (TypeElement) processingEnv.getTypeUtils().asElement(e.getSuperclass()))
+            .flatMap(e -> streamMethods(e, annotation));
+    }
+
     private Stream<ExecutableElement> streamMethods(TypeElement componentClass, Class<? extends Annotation> annotation) {
-        // TODO inherited methods
         return componentClass
             .getEnclosedElements()
             .stream()
