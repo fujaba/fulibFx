@@ -22,6 +22,7 @@ public class ParamController {
     int fieldParam;
     @Param("string")
     final StringProperty fieldPropertyParam = new SimpleStringProperty();
+    // TODO add a test for @Param non-final StringProperty
 
     private Map<String, Object> onInitParamsMap;
     private Map<String, Object> setterParamsMap;

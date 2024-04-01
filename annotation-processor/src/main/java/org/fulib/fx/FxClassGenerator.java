@@ -13,6 +13,8 @@ import org.fulib.fx.util.ControllerUtil;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.*;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
@@ -24,8 +26,26 @@ public class FxClassGenerator {
     private static final String CLASS_SUFFIX = "_Fx";
     private final ProcessingEnvironment processingEnv;
 
+    /**
+     * The `javafx.beans.value.WritableValue` interface.
+     */
+    private final TypeElement writableValue;
+
+    /**
+     * The `setValue` method of `javafx.beans.value.WritableValue`.
+     */
+    private final ExecutableElement genericSetValue;
+
     public FxClassGenerator(ProcessingEnvironment processingEnv) {
         this.processingEnv = processingEnv;
+        writableValue = processingEnv.getElementUtils().getTypeElement("javafx.beans.value.WritableValue");
+        genericSetValue = writableValue.getEnclosedElements()
+            .stream()
+            .filter(e -> e instanceof ExecutableElement)
+            .map(e -> (ExecutableElement) e)
+            .filter(e -> "setValue".equals(e.getSimpleName().toString()))
+            .findFirst()
+            .orElseThrow();
     }
 
     public void generateSidecar(TypeElement componentClass) {
@@ -106,9 +126,29 @@ public class FxClassGenerator {
             if (param != null) {
                 String fieldName = varElement.getSimpleName().toString();
                 String fieldType = varElement.asType().toString();
-                // TODO handle primitives, not found, WritableValue
                 // TODO field must be public, package-private or protected -- add a diagnostic if it's private
-                out.printf("    instance.%s = (%s) params.get(\"%s\");%n", fieldName, fieldType, param.value());
+                if (processingEnv.getTypeUtils().isAssignable(varElement.asType(), processingEnv.getTypeUtils().erasure(writableValue.asType()))) {
+                    // We use the `setValue` method to infer the actual type of the field,
+                    // E.g. if the field is a `StringProperty` which extends `WritableValue<String>`,
+                    // we can infer that the actual type is `String`.
+                    final ExecutableType asMemberOf = (ExecutableType) processingEnv.getTypeUtils().asMemberOf((DeclaredType) varElement.asType(), genericSetValue);
+                    final TypeMirror typeArg = asMemberOf.getParameterTypes().get(0);
+                    final String writableType = typeArg.toString();
+                    if (varElement.getModifiers().contains(Modifier.FINAL)) {
+                        out.printf("    instance.%s.setValue((%s) params.get(\"%s\"));%n", fieldName, writableType, param.value());
+                    } else {
+                        // TODO There are 3 map reads to get to the second branch (which should be more common), maybe we can optimize this
+                        out.printf("    if (params.get(\"%s\") instanceof javafx.beans.value.WritableValue) {%n", param.value());
+                        out.printf("      instance.%s = (%s) params.get(\"%s\");%n", fieldName, fieldType, param.value());
+                        out.printf("    } else if (params.containsKey(\"%s\")) {%n", param.value());
+                        out.printf("      instance.%s.setValue((%s) params.get(\"%s\"));%n", fieldName, writableType, param.value());
+                        out.println("    }");
+                    }
+                } else {
+                    out.printf("    if (params.containsKey(\"%s\")) {%n", param.value());
+                    out.printf("      instance.%s = (%s) params.get(\"%s\");%n", fieldName, fieldType, param.value());
+                    out.println("    }");
+                }
             }
 
             final ParamsMap paramsMap = element.getAnnotation(ParamsMap.class);
