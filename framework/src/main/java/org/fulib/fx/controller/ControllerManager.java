@@ -309,15 +309,6 @@ public class ControllerManager {
         }
     }
 
-    /**
-     * Returns the resource bundle of the given instance if it has one.
-     * If no resource bundle is set, the default resource bundle will be used.
-     * If no default resource bundle is set, null will be returned.
-     *
-     * @param instance The instance to get the resource bundle from
-     * @return The resource bundle of the given instance if it has one or the default resource bundle
-     * @throws RuntimeException If the instance has more than one field annotated with {@link Resource}
-     */
     private @Nullable ResourceBundle getResourceBundle(@NotNull Object instance) {
         return getSidecar(instance).getResources(instance);
     }

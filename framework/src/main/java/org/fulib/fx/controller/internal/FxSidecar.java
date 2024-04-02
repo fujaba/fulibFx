@@ -25,5 +25,12 @@ public interface FxSidecar<T> {
      */
     @Nullable ResourceBundle getResources(T instance);
 
+    /**
+     * Returns the title of the given controller instance if it has one.
+     * If the title is a key, the title will be looked up in the resource bundle of the controller.
+     *
+     * @param instance The controller instance
+     * @return The title of the controller
+     */
     @Nullable String getTitle(T instance);
 }
