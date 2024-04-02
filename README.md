@@ -128,6 +128,14 @@ This can be done by calling the `refresh` method of the `FulibFxApp` class.
 
 <img width="640" height="360" src="docs/assets/hot-reload.gif" alt="GIF showing the hot reload feature">
 
+### 🏭 Annotation Processor
+
+The framework provides an annotation processor that hooks into the Java compiler.
+It can check for various errors and warnings during compilation, allowing you to find problems early on without having to run the application.
+Additionally, the annotation processor generates auxiliary classes that encapsulate some of the functionality of your controllers and components, like calling the initialization methods or providing the title.
+This can greatly improve the performance at runtime and simplifies debugging by reducing stack traces and allowing you to debug the generated code.
+The annotation processor is optional but strongly recommended.
+
 ### 🧷 Utilities
 
 The framework provides a few utility classes and data structures to simplify the creation of JavaFX applications.
@@ -166,9 +174,9 @@ behaviour. To avoid this, you should try to not modify objects passed as paramet
 of the object and modify the copy or modify the object before passing it to the controller.
 
 ### 4. The framework doesn't compile even though the view file exists
-The framework uses an annotation processor to check if the view file exists. If the view file is not found, the processor
-will throw an error. Please make sure that the view file is in the correct location and that `options.sourcepath` is set
-correctly in your `compileJava` task (see [Annotation Processor](#-installation)).
+The framework uses an [annotation processor](#-annotation-processor) to check if the view file exists.
+If the view file is not found, the processor will throw an error.
+Please make sure that the view file is in the correct location and that `options.sourcepath` is set correctly in your `compileJava` task (see [Installation](#-installation)).
 
 ### 5. The SceneBuilder doesn't recognize my controller
 When using the SceneBuilder, it might not recognize your controller's FXML file. This can happen when the FXML file contains
