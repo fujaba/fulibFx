@@ -2,41 +2,39 @@ package org.fulib.fx.controller;
 
 import dagger.Lazy;
 import io.reactivex.rxjava3.disposables.Disposable;
-import javafx.beans.value.WritableValue;
 import javafx.event.EventHandler;
 import javafx.event.EventType;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.util.Pair;
 import org.fulib.fx.FulibFxApp;
-import org.fulib.fx.annotation.controller.*;
+import org.fulib.fx.annotation.controller.Component;
+import org.fulib.fx.annotation.controller.Controller;
+import org.fulib.fx.annotation.controller.Resource;
 import org.fulib.fx.annotation.event.onDestroy;
-import org.fulib.fx.annotation.event.onInit;
 import org.fulib.fx.annotation.event.onKey;
-import org.fulib.fx.annotation.event.onRender;
-import org.fulib.fx.annotation.param.Param;
-import org.fulib.fx.annotation.param.Params;
-import org.fulib.fx.annotation.param.ParamsMap;
 import org.fulib.fx.controller.building.ControllerBuildFactory;
 import org.fulib.fx.controller.exception.IllegalControllerException;
 import org.fulib.fx.controller.internal.FxSidecar;
+import org.fulib.fx.controller.internal.ReflectionSidecar;
 import org.fulib.fx.data.disposable.RefreshableCompositeDisposable;
-import org.fulib.fx.util.*;
+import org.fulib.fx.util.ControllerUtil;
+import org.fulib.fx.util.FileUtil;
+import org.fulib.fx.util.FrameworkUtil;
+import org.fulib.fx.util.KeyEventHolder;
 import org.fulib.fx.util.reflection.Reflection;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.Unmodifiable;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.File;
 import java.io.IOException;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.*;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
@@ -67,7 +65,6 @@ public class ControllerManager {
     public ControllerManager() {
     }
 
-
     /**
      * Initializes and renders the given controller. Calls the onInit and onRender methods. See {@link #init(Object, Map)} and {@link #render(Object, Map)}.
      * <p>
@@ -85,7 +82,6 @@ public class ControllerManager {
         // Render the controller
         return render(instance, parameters);
     }
-
 
     /**
      * Initializes the given controller/component. Calls the onInit method(s) and recursively initializes all subcomponents.
@@ -125,46 +121,27 @@ public class ControllerManager {
         if (!ControllerUtil.isController(instance))
             throw new IllegalControllerException(error(1001).formatted(instance.getClass().getName()));
 
-        final FxSidecar sidecar = getSidecar(instance);
-        if (sidecar != null) {
-            sidecar.init(instance, parameters);
-            return;
-        }
-
-        // Inject parameters into the controller fields
-        fillParametersIntoFields(instance, parameters);
-
-        // Call parameter setter methods
-        callParamMethods(instance, parameters);
-        callParamsMethods(instance, parameters);
-        callParamsMapMethods(instance, parameters);
-
-        // Call the onInit method(s)
-        callMethodsWithAnnotation(instance, onInit.class, parameters);
-
-        // Initialize all subcomponents
-        Reflection.callMethodsForFieldInstances(instance, getSubComponentFields(instance), (subController) -> init(subController, parameters));
-
+        getSidecar(instance).init(instance, parameters);
     }
 
-    private @Nullable FxSidecar<?> getSidecar(@NotNull Object instance) {
+    private <T> @NotNull FxSidecar<T> getSidecar(@NotNull T instance) {
         final Class<?> instanceClass = instance.getClass();
         if (sidecars.containsKey(instanceClass)) {
-            return sidecars.get(instanceClass);
+            return (FxSidecar<T>) sidecars.get(instanceClass);
         } else {
-            final FxSidecar<?> sidecar = createSidecar(instanceClass);
+            final FxSidecar<T> sidecar = createSidecar((Class<T>) instanceClass);
             sidecars.put(instanceClass, sidecar);
             return sidecar;
         }
     }
 
-    private FxSidecar<?> createSidecar(Class<?> componentClass) {
+    private <T> @NotNull FxSidecar<T> createSidecar(Class<T> componentClass) {
         final Class<?> sidecarClass = Class.forName(componentClass.getModule(), componentClass.getName() + "_Fx");
         if (sidecarClass == null) {
-            return null;
+            return new ReflectionSidecar<>(this);
         }
         try {
-            return (FxSidecar<?>) sidecarClass.getDeclaredConstructor(ControllerManager.class).newInstance(this);
+            return (FxSidecar<T>) sidecarClass.getDeclaredConstructor(ControllerManager.class).newInstance(this);
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
         }
@@ -199,70 +176,11 @@ public class ControllerManager {
         if (!component && !instance.getClass().isAnnotationPresent(Controller.class))
             throw new IllegalArgumentException(error(1001).formatted(instance.getClass().getName()));
 
-        final Node node;
-        final FxSidecar sidecar = getSidecar(instance);
-        if (sidecar != null) {
-            node = sidecar.render(instance, parameters);
-        } else {
-            // Render all subcomponents
-            Reflection.callMethodsForFieldInstances(instance, getSubComponentFields(instance), (subController) -> render(subController, parameters));
-
-            // Get the view of the controller
-            node = renderNode(instance, component);
-
-            // Call the onRender method
-            callMethodsWithAnnotation(instance, onRender.class, parameters);
-        }
+        final Node node = getSidecar(instance).render(instance, parameters);
 
         // TODO Register key events via Sidecar
         registerKeyEvents(instance);
 
-        return node;
-    }
-
-    private Node renderNode(Object instance, boolean component) {
-        Node node;
-        String view = component ?
-                instance.getClass().getAnnotation(Component.class).view() :
-                instance.getClass().getAnnotation(Controller.class).view();
-
-        // If the controller extends from a javafx Node, render it
-        // This can be combined with the view annotation to set the controller as the root of the fxml file
-        if (component) {
-            if (view.isEmpty()) {
-                node = (Node) instance;
-            } else {
-                Node root = (Node) instance;
-                // Due to the way JavaFX works, we have to clear the children list of the old root before loading its fxml file again
-                if (root instanceof Parent parent) ReflectionUtil.getChildrenList(instance.getClass(), parent).clear();
-                node = loadFXML(view, instance, true);
-            }
-        }
-
-        // If the controller specifies a method returning a parent as its view, call it
-        else if (view.startsWith("#")) {
-            String methodName = view.substring(1);
-            try {
-                Method method = instance.getClass().getDeclaredMethod(methodName);
-                if (method.getParameterCount() != 0) {
-                    throw new RuntimeException(error(1008).formatted(methodName, instance.getClass().getName()));
-                }
-                if (!Parent.class.isAssignableFrom(method.getReturnType()))
-                    throw new RuntimeException(error(1002).formatted(methodName, instance.getClass().getName()));
-                method.setAccessible(true);
-                node = (Parent) method.invoke(instance);
-            } catch (NoSuchMethodException e) {
-                throw new RuntimeException(error(1003).formatted(methodName, instance.getClass().getName()), e);
-            } catch (InvocationTargetException | IllegalAccessException e) {
-                throw new RuntimeException(error(1004).formatted(methodName, instance.getClass().getName()), e);
-            }
-        }
-
-        // If the controller specifies a fxml file, load it. This will also load subcomponents specified in the FXML file
-        else {
-            String fxmlPath = view.isEmpty() ? ControllerUtil.transform(instance.getClass().getSimpleName()) + ".fxml" : view;
-            node = loadFXML(fxmlPath, instance, false);
-        }
         return node;
     }
 
@@ -302,20 +220,7 @@ public class ControllerManager {
         if (!ControllerUtil.isController(instance))
             throw new IllegalArgumentException(error(1001).formatted(instance.getClass().getName()));
 
-        final FxSidecar sidecar = getSidecar(instance);
-        if (sidecar != null) {
-            sidecar.destroy(instance);
-        } else {
-            // Destroying should be done in exactly the reverse order of initialization
-            List<Field> subComponentFields = new ArrayList<>(getSubComponentFields(instance));
-            Collections.reverse(subComponentFields);
-
-            // Destroy all subcomponents
-            Reflection.callMethodsForFieldInstances(instance, subComponentFields, this::destroy);
-
-            // Call destroy methods
-            callMethodsWithAnnotation(instance, onDestroy.class, Map.of());
-        }
+        getSidecar(instance).destroy(instance);
 
         // TODO Unregister key events via Sidecar
         cleanUpListeners(instance);
@@ -414,304 +319,10 @@ public class ControllerManager {
      * @throws RuntimeException If the instance has more than one field annotated with {@link Resource}
      */
     private @Nullable ResourceBundle getResourceBundle(@NotNull Object instance) {
-        final FxSidecar sidecar = getSidecar(instance);
-        if (sidecar != null) {
-            return sidecar.getResources(instance);
-        }
-
-        List<Field> fields = Reflection.getAllFieldsWithAnnotation(instance.getClass(), Resource.class).toList();
-
-        if (fields.isEmpty())
-            return defaultResourceBundle;
-
-        if (fields.size() > 1)
-            throw new RuntimeException(error(2003).formatted(instance.getClass().getName()));
-
-        return fields
-                .stream()
-                .filter(field -> {
-                    if (field.getType().isAssignableFrom(ResourceBundle.class))
-                        return true;
-                    throw new RuntimeException(error(2004).formatted(field.getName(), instance.getClass().getName()));
-                })
-                .map(field -> {
-                    try {
-                        field.setAccessible(true);
-                        return (ResourceBundle) field.get(instance);
-                    } catch (IllegalAccessException e) {
-                        throw new RuntimeException(error(2005).formatted(field.getName(), instance.getClass().getName()), e);
-                    }
-                })
-                .filter(Objects::nonNull)
-                .findFirst()
-                .orElse(defaultResourceBundle);
+        return getSidecar(instance).getResources(instance);
     }
 
-    /**
-     * Returns a list of all fields in the given instance that are annotated with {@link SubComponent}.
-     *
-     * @param instance The instance to get the fields from
-     * @return A list of all fields in the given instance that are annotated with {@link SubComponent}
-     */
-    @Unmodifiable
-    private List<Field> getSubComponentFields(Object instance) {
-        return Reflection.getAllFieldsWithAnnotation(instance.getClass(), SubComponent.class)
-                .filter(field -> {
-                    if (ControllerUtil.isComponent(field.getType())) return true;
-
-                    if (!ControllerUtil.canProvideSubComponent(field)) {
-                        FulibFxApp.LOGGER.warning(error(6005).formatted(field.getName(), instance.getClass().getName()));
-                    }
-                    return false;
-                }).toList();
-    }
-
-    /**
-     * Returns a comparator that compares methods based on the value of the given annotation.
-     * The method assumes that the annotation has a method called 'value' that returns an integer value.
-     *
-     * @param annotation The annotation to compare
-     * @return A comparator that compares methods based on the value of the given annotation
-     */
-    private static Comparator<Method> annotationComparator(@NotNull Class<? extends Annotation> annotation) {
-        return (m1, m2) -> {
-            Annotation event1 = m1.getAnnotation(annotation);
-            Annotation event2 = m2.getAnnotation(annotation);
-            try {
-                Method value = annotation.getDeclaredMethod("value");
-                return Integer.compare((int) value.invoke(event1), (int) value.invoke(event2));
-            } catch (ReflectiveOperationException e) {
-                return 0;
-            }
-        };
-    }
-
-    /**
-     * Calls all methods annotated with a certain annotation in the provided controller. The method will be called with the given parameters if they're annotated with @Param or @Params.
-     *
-     * @param annotation The annotation to look for
-     * @param parameters The parameters to pass to the methods
-     */
-    private void callMethodsWithAnnotation(@NotNull Object instance, @NotNull Class<? extends Annotation> annotation, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
-        for (Method method : Reflection.getAllMethodsWithAnnotation(instance.getClass(), annotation).sorted(annotationComparator(annotation)).toList()) {
-            try {
-                method.setAccessible(true);
-                method.invoke(instance, getApplicableParameters(method, parameters));
-            } catch (IllegalAccessException | InvocationTargetException e) {
-                throw new RuntimeException(error(1005).formatted(method.getName(), annotation.getName(), instance.getClass().getName()), e);
-            }
-        }
-    }
-
-    /**
-     * Fills the parameters map into the fields annotated with @Param and @ParamsMap in the given instance.
-     * (Parameter/Map injection into fields)
-     *
-     * @param instance   The instance to fill the parameters into
-     * @param parameters The parameters to fill into the fields
-     */
-    private void fillParametersIntoFields(@NotNull Object instance, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
-        // Fill the parameters into fields annotated with @Param
-        for (Field field : Reflection.getAllFieldsWithAnnotation(instance.getClass(), Param.class).toList()) {
-
-            Param paramAnnotation = field.getAnnotation(Param.class);
-            String param = paramAnnotation.value();
-
-            // Don't fill the parameter if it's not present (field will not be overwritten, "default value")
-            if (!parameters.containsKey(param)) continue;
-
-            Class<?> fieldType = field.getType();
-            try {
-                field.setAccessible(true);
-
-                Object value = parameters.get(param);
-                Object fieldValue = field.get(instance);
-
-                // If the field is a WriteableValue, use the setValue method
-                if (WritableValue.class.isAssignableFrom(fieldType) && !(value instanceof WritableValue)) {
-
-                    // We cannot call setValue on a non-existing property
-                    if (fieldValue == null) {
-                        throw new RuntimeException(error(4001).formatted(param, field.getName(), instance.getClass().getName()));
-                    }
-
-                    try {
-                        // noinspection unchecked
-                        ((WritableValue<Object>) field.get(instance)).setValue(value);
-                    } catch (ClassCastException e) {
-                        throw new RuntimeException(error(4007).formatted(param, field.getName(), instance.getClass().getName(), fieldType.getName(), value == null ? "null" : value.getClass().getName()));
-                    }
-                }
-
-                // If not, set the field's value directly
-                else if (value == null) {
-                    // If the value is null and the field is a primitive, throw an error
-                    if (fieldType.isPrimitive()) {
-                        throw new RuntimeException(error(4007).formatted(param, field.getName(), instance.getClass().getName(), fieldType.getName(), "null"));
-                    }
-                    field.set(instance, null); // If the value is null and the field is not a primitive, no type check is necessary
-                } else if (Reflection.canBeAssigned(fieldType, value)) {
-                    field.set(instance, value); // If the value is not null, we need a type check (respects primitive types)
-                } else {
-                    throw new RuntimeException(error(4007).formatted(param, field.getName(), instance.getClass().getName(), fieldType.getName(), value.getClass().getName()));
-                }
-
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException(error(4000).formatted(param, field.getName(), instance.getClass().getName()), e);
-            }
-        }
-
-        // Fill the parameters into fields annotated with @ParamsMap
-        for (Field field : Reflection.getFieldsWithAnnotation(instance.getClass(), ParamsMap.class).toList()) {
-
-            if (!MapUtil.isMapWithTypes(field, String.class, Object.class)) {
-                throw new RuntimeException(error(4002).formatted(field.getName(), instance.getClass().getName()));
-            }
-
-            try {
-                field.setAccessible(true);
-
-                // If the map is final, clear it and put all parameters into it
-                if (Modifier.isFinal(field.getModifiers())) {
-                    @SuppressWarnings("unchecked")
-                    Map<String, Object> map = (Map<String, Object>) field.get(instance);
-                    map.clear();
-                    map.putAll(parameters);
-                } else {
-                    field.set(instance, parameters);
-                }
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException(error(4010).formatted(field.getName(), instance.getClass().getName()), e);
-            }
-        }
-    }
-
-    /**
-     * Calls all methods annotated with @Param in the given instance with the values of the specified parameter.
-     * (Parameter injection into setters)
-     *
-     * @param instance   The instance to fill the parameters into
-     * @param parameters The parameters to fill into the methods
-     */
-    private void callParamMethods(Object instance, Map<String, Object> parameters) {
-        Reflection.getAllMethodsWithAnnotation(instance.getClass(), Param.class).forEach(method -> {
-            try {
-                method.setAccessible(true);
-                Object value = parameters.get(method.getAnnotation(Param.class).value());
-
-                if (value == null) {
-                    method.invoke(instance, (Object) null);
-                    return;
-                }
-
-                if (Reflection.canBeAssigned(method.getParameterTypes()[0], value)) {
-                    method.invoke(instance, value);
-                } else {
-                    throw new RuntimeException(error(4008).formatted(method.getAnnotation(Param.class).value(), method.getName(), instance.getClass().getName(), method.getParameterTypes()[0].getName(), value.getClass().getName()));
-                }
-            } catch (IllegalAccessException | InvocationTargetException e) {
-                throw new RuntimeException(error(4005).formatted(method.getAnnotation(Param.class).value(), method.getName(), instance.getClass().getName()), e);
-            }
-        });
-    }
-
-    /**
-     * Calls all methods annotated with @Params in the given instance with the values of the specified parameters.
-     * (Multiple parameter injection into methods)
-     *
-     * @param instance   The instance to fill the parameters into
-     * @param parameters The parameters to fill into the methods
-     */
-    private void callParamsMethods(Object instance, Map<String, Object> parameters) {
-        Reflection.getAllMethodsWithAnnotation(instance.getClass(), Params.class).forEach(method -> {
-            try {
-                method.setAccessible(true);
-
-                String[] paramNames = method.getAnnotation(Params.class).value();
-                if (method.getParameters().length != paramNames.length)
-                    throw new RuntimeException(error(4006).formatted(method.getName(), instance.getClass().getName()));
-
-                Object[] methodParams = new Object[paramNames.length];
-
-                // Fill the parameters into the method
-                for (int i = 0; i < paramNames.length; i++) {
-                    Object value = parameters.get(paramNames[i]);
-                    if (Reflection.canBeAssigned(method.getParameterTypes()[i], value)) {
-                        methodParams[i] = value;
-                    } else {
-                        throw new RuntimeException(error(4008).formatted(paramNames[i], method.getName(), instance.getClass().getName(), method.getParameterTypes()[i].getName(), value.getClass().getName()));
-                    }
-                }
-
-                method.invoke(instance, methodParams);
-            } catch (IllegalAccessException | InvocationTargetException e) {
-                throw new RuntimeException(error(4011).formatted(method.getName(), instance.getClass().getName()), e);
-            }
-        });
-    }
-
-    /**
-     * Fills the parameters map into the methods annotated with @ParamsMap in the given instance.
-     * (Map injection into setters)
-     *
-     * @param instance   The instance to fill the parameters into
-     * @param parameters The parameters to fill into the methods
-     */
-    private void callParamsMapMethods(Object instance, Map<String, Object> parameters) {
-        Reflection.getAllMethodsWithAnnotation(instance.getClass(), ParamsMap.class).forEach(method -> {
-
-            if (method.getParameterCount() != 1 || !MapUtil.isMapWithTypes(method.getParameters()[0], String.class, Object.class)) {
-                throw new RuntimeException(error(4003).formatted(method.getName(), instance.getClass().getName()));
-            }
-
-            try {
-                method.setAccessible(true);
-                method.invoke(instance, parameters);
-            } catch (IllegalAccessException | InvocationTargetException e) {
-                throw new RuntimeException(error(4010).formatted(method.getName(), instance.getClass().getName()), e);
-            }
-        });
-    }
-
-    /**
-     * Returns an array with all parameters that are applicable to the given method in the correct order.
-     * <p>
-     * If the method has a parameter annotated with @Param, the value of the parameter with the same key as the annotation will be used.
-     * <p>
-     * If the method has a parameter annotated with @ParamsMap, the whole parameters map will be used.
-     *
-     * @param method     The method to check
-     * @param parameters The values of the parameters
-     * @return An array with all applicable parameters
-     */
-    private @Nullable Object @NotNull [] getApplicableParameters(@NotNull Method method, @NotNull Map<String, Object> parameters) {
-        return Arrays.stream(method.getParameters()).map(parameter -> {
-            Param param = parameter.getAnnotation(Param.class);
-            ParamsMap paramsMap = parameter.getAnnotation(ParamsMap.class);
-
-            if (param != null && paramsMap != null)
-                throw new RuntimeException(error(4009).formatted(parameter.getName(), method.getName(), method.getDeclaringClass().getName()));
-
-            // Check if the parameter is annotated with @Param and if the parameter is of the correct type
-            if (param != null) {
-                if (parameters.containsKey(param.value()) && !Reflection.canBeAssigned(parameter.getType(), parameters.get(param.value()))) {
-                    throw new RuntimeException(error(4008).formatted(param.value(), method.getName(), method.getDeclaringClass().getName(), parameter.getType().getName(), parameters.get(param.value()).getClass().getName()));
-                }
-                return parameters.get(param.value());
-            }
-
-            // Check if the parameter is annotated with @Params and if the parameter is of the type Map<String, Object>
-            if (paramsMap != null) {
-                if (!MapUtil.isMapWithTypes(parameter, String.class, Object.class)) {
-                    throw new RuntimeException(error(4004).formatted(parameter.getName(), method.getName(), method.getDeclaringClass().getName()));
-                }
-                return parameters;
-            }
-            return null;
-        }).toArray();
-    }
-
-    public ResourceBundle getDefaultResourceBundle() {
+    public @Nullable ResourceBundle getDefaultResourceBundle() {
         return defaultResourceBundle;
     }
 
@@ -792,27 +403,6 @@ public class ControllerManager {
      * @return The title of the controller
      */
     public Optional<String> getTitle(@NotNull Object instance) {
-        final FxSidecar sidecar = getSidecar(instance);
-        if (sidecar != null) {
-            return Optional.ofNullable(sidecar.getTitle(instance));
-        }
-
-        if (!instance.getClass().isAnnotationPresent(Title.class))
-            return Optional.empty();
-
-        String title = instance.getClass().getAnnotation(Title.class).value();
-
-        if (title.startsWith("%")) {
-            title = title.substring(1);
-            ResourceBundle resourceBundle = getResourceBundle(instance);
-            if (resourceBundle != null) {
-                return Optional.of(resourceBundle.getString(title));
-            }
-            throw new RuntimeException(error(2006).formatted(title, instance.getClass().getName()));
-        } else if (title.equals("$name")) {
-            return Optional.of(ControllerUtil.transform(instance.getClass().getSimpleName()));
-        }
-
-        return Optional.of(title);
+        return Optional.ofNullable(getSidecar(instance).getTitle(instance));
     }
 }

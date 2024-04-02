@@ -1,7 +1,7 @@
 package org.fulib.fx.controller.internal;
 
 import javafx.scene.Node;
-import org.jetbrains.annotations.NotNull;
+import org.fulib.fx.annotation.controller.Resource;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
@@ -14,7 +14,16 @@ public interface FxSidecar<T> {
 
     void destroy(T instance);
 
-    @NotNull ResourceBundle getResources(T instance);
+    /**
+     * Returns the resource bundle of the given instance if it has one.
+     * If no resource bundle is set, the default resource bundle will be used.
+     * If no default resource bundle is set, null will be returned.
+     *
+     * @param instance The instance to get the resource bundle from
+     * @return The resource bundle of the given instance if it has one or the default resource bundle
+     * @throws RuntimeException If the instance has more than one field annotated with {@link Resource}
+     */
+    @Nullable ResourceBundle getResources(T instance);
 
     @Nullable String getTitle(T instance);
 }
