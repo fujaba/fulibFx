@@ -31,9 +31,15 @@ import static org.fulib.fx.util.FrameworkUtil.error;
 
 public class ReflectionSidecar<T> implements FxSidecar<T> {
     private final ControllerManager controllerManager;
+    private final Class<T> componentClass;
 
-    public ReflectionSidecar(ControllerManager controllerManager) {
+    private final String title;
+
+    public ReflectionSidecar(ControllerManager controllerManager, Class<T> componentClass) {
         this.controllerManager = controllerManager;
+        this.componentClass = componentClass;
+
+        this.title = loadTitle(componentClass);
     }
 
     @Override
@@ -434,22 +440,28 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
             .orElse(controllerManager.getDefaultResourceBundle());
     }
 
-    @Override
-    public @Nullable String getTitle(T instance) {
-        if (!instance.getClass().isAnnotationPresent(Title.class)) {
+    private String loadTitle(Class<T> componentClass) {
+        if (!componentClass.isAnnotationPresent(Title.class)) {
             return null;
         }
+        final String title = componentClass.getAnnotation(Title.class).value();
+        if ("$name".equals(title)) {
+            return ControllerUtil.transform(componentClass.getSimpleName());
+        }
+        return title;
+    }
 
-        String title = instance.getClass().getAnnotation(Title.class).value();
-
-        if (title.startsWith("%")) {
-            title = title.substring(1);
-            ResourceBundle resourceBundle = getResources(instance);
-            return resourceBundle.getString(title);
-        } else if ("$name".equals(title)) {
-            return ControllerUtil.transform(instance.getClass().getSimpleName());
+    @Override
+    public @Nullable String getTitle(T instance) {
+        if (title == null || !title.startsWith("%")) {
+            return title;
         }
 
-        return title;
+        // This is done at runtime, because the resource bundle might be modified.
+        final ResourceBundle resourceBundle = getResources(instance);
+        if (resourceBundle == null) {
+            throw new RuntimeException(error(2006).formatted(title, instance.getClass().getName()));
+        }
+        return resourceBundle.getString(title.substring(1));
     }
 }

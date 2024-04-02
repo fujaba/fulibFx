@@ -138,7 +138,7 @@ public class ControllerManager {
     private <T> @NotNull FxSidecar<T> createSidecar(Class<T> componentClass) {
         final Class<?> sidecarClass = Class.forName(componentClass.getModule(), componentClass.getName() + "_Fx");
         if (sidecarClass == null) {
-            return new ReflectionSidecar<>(this);
+            return new ReflectionSidecar<>(this, componentClass);
         }
         try {
             return (FxSidecar<T>) sidecarClass.getDeclaredConstructor(ControllerManager.class).newInstance(this);
