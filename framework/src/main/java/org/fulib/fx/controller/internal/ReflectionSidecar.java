@@ -36,12 +36,15 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
     private final String title;
     private final Field resourceField;
 
+    private final List<Field> subComponentFields;
+
     public ReflectionSidecar(ControllerManager controllerManager, Class<T> componentClass) {
         this.controllerManager = controllerManager;
         this.componentClass = componentClass;
 
         this.title = loadTitle(componentClass);
         this.resourceField = loadResourceField(componentClass);
+        this.subComponentFields = loadSubComponentFields(componentClass);
     }
 
     @Override
@@ -58,7 +61,7 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
         callMethodsWithAnnotation(instance, onInit.class, params);
 
         // Initialize all subcomponents
-        Reflection.callMethodsForFieldInstances(instance, getSubComponentFields(instance), (subController) -> controllerManager.init(subController, params));
+        Reflection.callMethodsForFieldInstances(instance, subComponentFields, (subController) -> controllerManager.init(subController, params));
     }
 
     /**
@@ -312,21 +315,21 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
 
 
     /**
-     * Returns a list of all fields in the given instance that are annotated with {@link SubComponent}.
+     * Returns a list of all fields in the given class that are annotated with {@link SubComponent}.
      *
-     * @param instance The instance to get the fields from
-     * @return A list of all fields in the given instance that are annotated with {@link SubComponent}
+     * @param componentClass The class to get the fields from
+     * @return A list of all fields in the given class that are annotated with {@link SubComponent}
      */
     @Unmodifiable
-    private List<Field> getSubComponentFields(Object instance) {
-        return Reflection.getAllFieldsWithAnnotation(instance.getClass(), SubComponent.class)
+    private List<Field> loadSubComponentFields(Class<T> componentClass) {
+        return Reflection.getAllFieldsWithAnnotation(componentClass, SubComponent.class)
             .filter(field -> {
                 if (ControllerUtil.isComponent(field.getType())) {
                     return true;
                 }
 
                 if (!ControllerUtil.canProvideSubComponent(field)) {
-                    FulibFxApp.LOGGER.warning(error(6005).formatted(field.getName(), instance.getClass().getName()));
+                    FulibFxApp.LOGGER.warning(error(6005).formatted(field.getName(), componentClass.getName()));
                 }
                 return false;
             }).toList();
@@ -335,7 +338,7 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
     @Override
     public Node render(T instance, Map<String, Object> params) {
         // Render all subcomponents
-        Reflection.callMethodsForFieldInstances(instance, getSubComponentFields(instance), (subController) -> controllerManager.render(subController, params));
+        Reflection.callMethodsForFieldInstances(instance, subComponentFields, (subController) -> controllerManager.render(subController, params));
 
         // Get the view of the controller
         final boolean component = ControllerUtil.isComponent(instance);
@@ -399,7 +402,7 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
     @Override
     public void destroy(T instance) {
         // Destroying should be done in exactly the reverse order of initialization
-        List<Field> subComponentFields = new ArrayList<>(getSubComponentFields(instance));
+        List<Field> subComponentFields = new ArrayList<>(this.subComponentFields);
         Collections.reverse(subComponentFields);
 
         // Destroy all subcomponents
