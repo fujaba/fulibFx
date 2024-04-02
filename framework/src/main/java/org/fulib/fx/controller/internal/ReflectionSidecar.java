@@ -34,12 +34,14 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
     private final Class<T> componentClass;
 
     private final String title;
+    private final Field resourceField;
 
     public ReflectionSidecar(ControllerManager controllerManager, Class<T> componentClass) {
         this.controllerManager = controllerManager;
         this.componentClass = componentClass;
 
         this.title = loadTitle(componentClass);
+        this.resourceField = loadResourceField(componentClass);
     }
 
     @Override
@@ -407,37 +409,37 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
         callMethodsWithAnnotation(instance, onDestroy.class, Map.of());
     }
 
-    @Override
-    public @Nullable ResourceBundle getResources(T instance) {
-        List<Field> fields = Reflection.getAllFieldsWithAnnotation(instance.getClass(), Resource.class).toList();
+    private @Nullable Field loadResourceField(Class<T> componentClass) {
+        List<Field> fields = Reflection.getAllFieldsWithAnnotation(componentClass, Resource.class).toList();
 
         if (fields.isEmpty()) {
-            return controllerManager.getDefaultResourceBundle();
+            return null;
         }
 
         if (fields.size() > 1) {
-            throw new RuntimeException(error(2003).formatted(instance.getClass().getName()));
+            throw new RuntimeException(error(2003).formatted(componentClass.getName()));
         }
 
-        return fields
-            .stream()
-            .filter(field -> {
-                if (field.getType().isAssignableFrom(ResourceBundle.class)) {
-                    return true;
-                }
-                throw new RuntimeException(error(2004).formatted(field.getName(), instance.getClass().getName()));
-            })
-            .map(field -> {
-                try {
-                    field.setAccessible(true);
-                    return (ResourceBundle) field.get(instance);
-                } catch (IllegalAccessException e) {
-                    throw new RuntimeException(error(2005).formatted(field.getName(), instance.getClass().getName()), e);
-                }
-            })
-            .filter(Objects::nonNull)
-            .findFirst()
-            .orElse(controllerManager.getDefaultResourceBundle());
+        final Field field = fields.get(0);
+        if (!field.getType().isAssignableFrom(ResourceBundle.class)) {
+            throw new RuntimeException(error(2004).formatted(field.getName(), componentClass.getName()));
+        }
+
+        field.setAccessible(true);
+        return field;
+    }
+
+    @Override
+    public @Nullable ResourceBundle getResources(T instance) {
+        if (resourceField == null) {
+            return controllerManager.getDefaultResourceBundle();
+        }
+
+        try {
+            return (ResourceBundle) resourceField.get(instance);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(error(2005).formatted(resourceField.getName(), instance.getClass().getName()), e);
+        }
     }
 
     private String loadTitle(Class<T> componentClass) {
