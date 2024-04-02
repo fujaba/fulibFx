@@ -37,6 +37,9 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
     private final Field resourceField;
 
     private final List<Field> subComponentFields;
+    private final List<Method> initMethods;
+    private final List<Method> renderMethods;
+    private final List<Method> destroyMethods;
 
     public ReflectionSidecar(ControllerManager controllerManager, Class<T> componentClass) {
         this.controllerManager = controllerManager;
@@ -45,6 +48,15 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
         this.title = loadTitle(componentClass);
         this.resourceField = loadResourceField(componentClass);
         this.subComponentFields = loadSubComponentFields(componentClass);
+        this.initMethods = Reflection.getAllMethodsWithAnnotation(componentClass, onInit.class)
+            .sorted(Comparator.comparingInt(m -> m.getAnnotation(onInit.class).value()))
+            .toList();
+        this.renderMethods = Reflection.getAllMethodsWithAnnotation(componentClass, onRender.class)
+            .sorted(Comparator.comparingInt(m -> m.getAnnotation(onRender.class).value()))
+            .toList();
+        this.destroyMethods = Reflection.getAllMethodsWithAnnotation(componentClass, onDestroy.class)
+            .sorted(Comparator.comparingInt(m -> m.getAnnotation(onDestroy.class).value()))
+            .toList();
     }
 
     @Override
@@ -58,20 +70,19 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
         callParamsMapMethods(instance, params);
 
         // Call the onInit method(s)
-        callMethodsWithAnnotation(instance, onInit.class, params);
+        callMethodsWithAnnotation(instance, params, initMethods, onInit.class);
 
         // Initialize all subcomponents
         Reflection.callMethodsForFieldInstances(instance, subComponentFields, (subController) -> controllerManager.init(subController, params));
     }
 
-    /**
-     * Calls all methods annotated with a certain annotation in the provided controller. The method will be called with the given parameters if they're annotated with @Param or @Params.
-     *
-     * @param annotation The annotation to look for
-     * @param parameters The parameters to pass to the methods
-     */
-    private void callMethodsWithAnnotation(@NotNull Object instance, @NotNull Class<? extends Annotation> annotation, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
-        for (Method method : Reflection.getAllMethodsWithAnnotation(instance.getClass(), annotation).sorted(annotationComparator(annotation)).toList()) {
+    private void callMethodsWithAnnotation(
+        @NotNull Object instance,
+        @NotNull Map<@NotNull String, @Nullable Object> parameters,
+        List<Method> methods,
+        @NotNull Class<? extends Annotation> annotation
+    ) {
+        for (Method method : methods) {
             try {
                 method.setAccessible(true);
                 method.invoke(instance, getApplicableParameters(method, parameters));
@@ -79,26 +90,6 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
                 throw new RuntimeException(error(1005).formatted(method.getName(), annotation.getName(), instance.getClass().getName()), e);
             }
         }
-    }
-
-    /**
-     * Returns a comparator that compares methods based on the value of the given annotation.
-     * The method assumes that the annotation has a method called 'value' that returns an integer value.
-     *
-     * @param annotation The annotation to compare
-     * @return A comparator that compares methods based on the value of the given annotation
-     */
-    private static Comparator<Method> annotationComparator(@NotNull Class<? extends Annotation> annotation) {
-        return (m1, m2) -> {
-            Annotation event1 = m1.getAnnotation(annotation);
-            Annotation event2 = m2.getAnnotation(annotation);
-            try {
-                Method value = annotation.getDeclaredMethod("value");
-                return Integer.compare((int) value.invoke(event1), (int) value.invoke(event2));
-            } catch (ReflectiveOperationException e) {
-                return 0;
-            }
-        };
     }
 
     /**
@@ -345,7 +336,7 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
         final Node node = renderNode(instance, component);
 
         // Call the onRender method
-        callMethodsWithAnnotation(instance, onRender.class, params);
+        callMethodsWithAnnotation(instance, params, renderMethods, onRender.class);
 
         return node;
     }
@@ -409,7 +400,7 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
         Reflection.callMethodsForFieldInstances(instance, subComponentFields, controllerManager::destroy);
 
         // Call destroy methods
-        callMethodsWithAnnotation(instance, onDestroy.class, Map.of());
+        callMethodsWithAnnotation(instance, Map.of(), destroyMethods, onDestroy.class);
     }
 
     private @Nullable Field loadResourceField(Class<T> componentClass) {
