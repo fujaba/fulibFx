@@ -14,7 +14,7 @@ public class MethodController {
         // The view is rendered by the render() method
     }
 
-    private VBox render() {
+    VBox render() {
         return new VBox(new Label("Method Controller"));
     }
 }

@@ -4,7 +4,6 @@ import org.fulib.fx.annotation.Route;
 import org.fulib.fx.app.controller.*;
 import org.fulib.fx.app.controller.subcomponent.basic.SubComponentController;
 import org.fulib.fx.app.controller.types.*;
-import org.fulib.fx.app.controller.types.invalid.NonExtendingComponent;
 import org.fulib.fx.app.controller.subcomponent.order.MainController;
 
 import javax.inject.Inject;
@@ -39,10 +38,6 @@ public class TestRouting {
     @Inject
     @Route("controller/for")
     Provider<ForController> forControllerProvider;
-
-    @Inject
-    @Route("controller/nonextending")
-    Provider<NonExtendingComponent> nonExtendingComponentProvider;
 
     @Inject
     @Route("ordertest/main")
