@@ -7,7 +7,7 @@ The framework has a general rule of **initialization before rendering**, meaning
 elements (for example nodes defined in an FXML file) in the init methods as the elements aren't loaded before the
 rendering.
 
-When using subcomponents or [For-Loops](../features/2-for), the order of operations is a bit more complex. At first the main controller
+When using subcomponents or [For-Loops](../features/2-for.md), the order of operations is a bit more complex. At first the main controller
 will be initialized. After the controller has been initialized, all subcomponents will be loaded and therefore
 initialized. This will happen recursively until a subcomponent doesn't have any subcomponents. After that, the
 subcomponents will be rendered, going back up to the main controller. The main controller will be rendered, after all
