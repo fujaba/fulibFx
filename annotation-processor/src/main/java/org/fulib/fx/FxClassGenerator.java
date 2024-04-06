@@ -123,18 +123,18 @@ public class FxClassGenerator {
     }
 
     private void generateSidecarInit(PrintWriter out, TypeElement componentClass) {
-        fillParametersInfoFields(out, componentClass);
+        generateParametersIntoFields(out, componentClass);
 
-        callParamMethods(out, componentClass, Param.class);
-        callParamMethods(out, componentClass, Params.class);
-        callParamMethods(out, componentClass, ParamsMap.class);
+        generateCallParamMethods(out, componentClass, Param.class);
+        generateCallParamMethods(out, componentClass, Params.class);
+        generateCallParamMethods(out, componentClass, ParamsMap.class);
 
-        callInitMethods(out, componentClass);
+        generateCallInitMethods(out, componentClass);
 
-        initSubComponents(out, componentClass, "init");
+        generateCallSubComponents(out, componentClass, "init");
     }
 
-    private void fillParametersInfoFields(PrintWriter out, TypeElement componentClass) {
+    private void generateParametersIntoFields(PrintWriter out, TypeElement componentClass) {
         for (Element element : componentClass.getEnclosedElements()) {
             if (!(element instanceof VariableElement varElement)) {
                 continue;
@@ -190,18 +190,18 @@ public class FxClassGenerator {
         }
     }
 
-    private void callInitMethods(PrintWriter out, TypeElement componentClass) {
+    private void generateCallInitMethods(PrintWriter out, TypeElement componentClass) {
         streamAllMethods(componentClass, onInit.class)
             .sorted(Comparator.comparingInt(a -> a.getAnnotation(onInit.class).value()))
-            .forEach(methodElement -> generateInitCall(out, methodElement));
+            .forEach(methodElement -> generateCall(out, methodElement));
     }
 
-    private void callParamMethods(PrintWriter out, TypeElement componentClass, Class<? extends Annotation> annotation) {
+    private void generateCallParamMethods(PrintWriter out, TypeElement componentClass, Class<? extends Annotation> annotation) {
         streamAllMethods(componentClass, annotation)
-            .forEach(methodElement -> generateInitCall(out, methodElement));
+            .forEach(methodElement -> generateCall(out, methodElement));
     }
 
-    private void generateInitCall(PrintWriter out, ExecutableElement methodElement) {
+    private void generateCall(PrintWriter out, ExecutableElement methodElement) {
         final List<? extends VariableElement> parameters = methodElement.getParameters();
         final List<String> arguments = Arrays.asList(new String[parameters.size()]);
 
@@ -246,7 +246,7 @@ public class FxClassGenerator {
         }
     }
 
-    private void initSubComponents(PrintWriter out, TypeElement componentClass, String method) {
+    private void generateCallSubComponents(PrintWriter out, TypeElement componentClass, String method) {
         for (final Element element : componentClass.getEnclosedElements()) {
             if (!(element instanceof VariableElement varElement)) {
                 continue;
@@ -268,17 +268,17 @@ public class FxClassGenerator {
     }
 
     private void generateSidecarDestroy(PrintWriter out, TypeElement componentClass) {
-        destroySubComponents(out, componentClass);
-        callDestroyMethods(out, componentClass);
+        generateDestroySubComponents(out, componentClass);
+        generateCallDestroyMethods(out, componentClass);
     }
 
-    private void callDestroyMethods(PrintWriter out, TypeElement componentClass) {
+    private void generateCallDestroyMethods(PrintWriter out, TypeElement componentClass) {
         streamAllMethods(componentClass, onDestroy.class)
             .sorted(Comparator.comparingInt(a -> a.getAnnotation(onDestroy.class).value()))
-            .forEach(element -> generateInitCall(out, element));
+            .forEach(element -> generateCall(out, element));
     }
 
-    private void destroySubComponents(PrintWriter out, TypeElement componentClass) {
+    private void generateDestroySubComponents(PrintWriter out, TypeElement componentClass) {
         final List<String> fieldNames = new ArrayList<>();
         for (final Element element : componentClass.getEnclosedElements()) {
             if (!(element instanceof VariableElement varElement)) {
@@ -306,9 +306,9 @@ public class FxClassGenerator {
     }
 
     private void generateSidecarRender(PrintWriter out, TypeElement componentClass) {
-        initSubComponents(out, componentClass, "render");
+        generateCallSubComponents(out, componentClass, "render");
         generateRenderResult(out, componentClass);
-        callRenderMethods(out, componentClass);
+        generateCallRenderMethods(out, componentClass);
         // TODO Register key events
         out.println("    return result;");
     }
@@ -338,10 +338,10 @@ public class FxClassGenerator {
         }
     }
 
-    private void callRenderMethods(PrintWriter out, TypeElement componentClass) {
+    private void generateCallRenderMethods(PrintWriter out, TypeElement componentClass) {
         streamAllMethods(componentClass, onRender.class)
             .sorted(Comparator.comparingInt(a -> a.getAnnotation(onRender.class).value()))
-            .forEach(element -> generateInitCall(out, element));
+            .forEach(element -> generateCall(out, element));
     }
 
     private void generateSidecarResources(PrintWriter out, TypeElement componentClass) {
