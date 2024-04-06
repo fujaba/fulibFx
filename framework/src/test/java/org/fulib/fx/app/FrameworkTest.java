@@ -93,9 +93,6 @@ public class FrameworkTest extends ApplicationTest {
         sleep(200);
 
         assertThrows(ControllerInvalidRouteException.class, () -> app.show("/controller/invalid"));
-
-        // TODO assertThrows(IllegalControllerException.class, () -> app.show("/controller/nonextending"));
-
     }
 
     /**
