@@ -4,3 +4,4 @@ rootProject.name = projectName
 include "framework"
 include "annotation-processor"
 include "ludo"
+include "example"

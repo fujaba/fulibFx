@@ -1,0 +1,78 @@
+plugins {
+    id "java"
+    id "org.openjfx.javafxplugin" version "$javaFxPluginVersion"
+    id "com.github.johnrengelman.shadow" version "$shadowPluginVersion"
+    id 'org.fulib.fulibGradle' version "$fulibGradlePluginVersion"
+}
+
+// JavaFX dependencies
+javafx {
+    version = javaFxVersion
+    modules = ['javafx.controls', 'javafx.graphics', 'javafx.fxml', 'javafx.media']
+}
+
+// Project dependencies
+dependencies {
+    implementation group: 'org.jetbrains', name: 'annotations', version: jetbrainsAnnotationsVersion
+    implementation group: 'io.reactivex.rxjava3', name: 'rxjava', version: rxJavaVersion
+
+    implementation group: 'com.google.dagger', name: 'dagger', version: daggerVersion
+    annotationProcessor group: 'com.google.dagger', name: 'dagger-compiler', version: daggerVersion
+
+    implementation project(':framework')
+    annotationProcessor project(':annotation-processor')
+}
+
+// ------------------- Tests -------------------
+
+// Test dependencies
+dependencies {
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: junitJupiterVersion
+    testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: junitJupiterVersion
+    testImplementation group: 'org.testfx', name: 'testfx-junit5', version: testFxVersion
+    testImplementation group: 'org.testfx', name: 'openjfx-monocle', version: monocleVersion
+    testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: mockitoVersion
+    testAnnotationProcessor group: 'com.google.dagger', name: 'dagger-compiler', version: daggerVersion
+}
+
+java {
+    sourceCompatibility = getVersionForMajor(javaSourceVersion)
+    targetCompatibility = getVersionForMajor(javaTargetVersion)
+}
+
+test {
+    useJUnitPlatform()
+}
+
+jar {
+    manifest {
+        attributes(
+                "Manifest-Version": 1.0,
+                "Class-Path": ".",
+                "Main-Class": "io.github.sekassel.person.Main"
+        )
+    }
+
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+compileJava {
+    options.encoding = "UTF-8"
+    options.sourcepath = sourceSets.main.resources.getSourceDirectories()
+}
+javadoc { options.encoding = "UTF-8" }
+
+repositories {
+    mavenCentral()
+    maven {
+        name = "jitpack"
+        url = "https://jitpack.io"
+    }
+}
+
+group projectGroup
+version projectVersion
+
+static JavaVersion getVersionForMajor(String version) {
+    return JavaVersion.values().find { (it.majorVersion == version) }
+}
