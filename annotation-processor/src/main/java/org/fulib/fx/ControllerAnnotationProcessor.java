@@ -2,11 +2,7 @@ package org.fulib.fx;
 
 import com.google.auto.service.AutoService;
 import org.fulib.fx.annotation.Route;
-import org.fulib.fx.annotation.controller.Component;
-import org.fulib.fx.annotation.controller.Controller;
-import org.fulib.fx.annotation.controller.Resource;
-import org.fulib.fx.annotation.controller.SubComponent;
-import org.fulib.fx.annotation.controller.Title;
+import org.fulib.fx.annotation.controller.*;
 import org.fulib.fx.annotation.event.onKey;
 import org.fulib.fx.annotation.param.Params;
 import org.fulib.fx.annotation.param.ParamsMap;
@@ -212,6 +208,7 @@ public class ControllerAnnotationProcessor extends AbstractProcessor {
         try {
             // Check if the specified view file exists in the source path
             final FileObject resource = processingEnv.getFiler().getResource(StandardLocation.SOURCE_PATH, packageName, view);
+            generator.setFxmlFile(element, resource);
         } catch (IOException e) {
             final String viewPath = packageName.replace('.', '/') + "/" + view;
             processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error(2000).formatted(viewPath), element);

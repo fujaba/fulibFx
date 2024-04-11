@@ -12,6 +12,16 @@ public interface FxSidecar<T> {
 
     Node render(T instance, Map<String, Object> params);
 
+    /**
+     * Hook for precompiled FXML files.
+     * @param controller The controller
+     * @param root The root node of the FXML file, if using fx:root. Can be null otherwise.
+     * @return The root node of the FXML file, or null if the FXML file is not precompiled
+     */
+    default @Nullable Node renderFxml(T controller, Node root) {
+        return null;
+    }
+
     void destroy(T instance);
 
     /**

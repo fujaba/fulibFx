@@ -14,6 +14,7 @@ import javax.lang.model.element.*;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
+import javax.tools.FileObject;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -40,8 +41,12 @@ public class FxClassGenerator {
      */
     private final TypeMirror parent;
 
+    private final FxmlGenerator fxmlGenerator;
+    private final Map<Element, FileObject> fxmlFiles = new HashMap<>();
+
     public FxClassGenerator(ProcessingEnvironment processingEnv) {
         this.processingEnv = processingEnv;
+        this.fxmlGenerator = new FxmlGenerator(processingEnv);
 
         final TypeElement writableValue = processingEnv.getElementUtils().getTypeElement("javafx.beans.value.WritableValue");
         this.writableValue = processingEnv.getTypeUtils().erasure(writableValue.asType());
@@ -55,6 +60,10 @@ public class FxClassGenerator {
             .orElseThrow();
 
         parent = processingEnv.getElementUtils().getTypeElement("javafx.scene.Parent").asType();
+    }
+
+    public void setFxmlFile(Element element, FileObject fxmlFile) {
+        fxmlFiles.put(element, fxmlFile);
     }
 
     public void generateSidecar(TypeElement componentClass) {
@@ -93,6 +102,11 @@ public class FxClassGenerator {
         out.println("import org.fulib.fx.controller.internal.FxSidecar;");
         out.println();
 
+        final FileObject fxmlFile = fxmlFiles.get(componentClass);
+        if (fxmlFile != null) {
+            fxmlGenerator.generateFxmlImports(out, fxmlFile);
+        }
+
         out.printf("public class %s implements FxSidecar<%s> {%n", builderSimpleClassName, simpleClassName);
         out.println("  private final ControllerManager controllerManager;");
         out.printf("  public %s(ControllerManager cm) {%n", builderSimpleClassName);
@@ -106,6 +120,12 @@ public class FxClassGenerator {
         out.printf("  public Node render(%s instance, Map<String, Object> params) {%n", simpleClassName);
         generateSidecarRender(out, componentClass);
         out.println("  }");
+        if (fxmlFile != null) {
+            out.println("  @Override");
+            out.printf("  public Node renderFxml(%s controller, Node root) {%n", simpleClassName);
+            fxmlGenerator.generateRenderFxml(out, fxmlFile);
+            out.println("  }");
+        }
         out.println("  @Override");
         out.printf("  public void destroy(%s instance) {%n", simpleClassName);
         generateSidecarDestroy(out, componentClass);
