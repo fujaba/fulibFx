@@ -118,7 +118,7 @@ public class IngameController extends BaseController {
     }
 
     @onRender
-    private void displayCurrentTurn() {
+    void displayCurrentTurn() {
         if (eyes.get() != 0) {
             this.diceSubComponent.setLabel(eyes.get());
         }
