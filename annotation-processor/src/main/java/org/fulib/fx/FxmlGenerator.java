@@ -5,6 +5,9 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.PackageElement;
+import javax.lang.model.element.TypeElement;
 import javax.tools.FileObject;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -18,6 +21,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.util.HashMap;
+import java.util.Map;
 
 public class FxmlGenerator {
     private final ProcessingEnvironment processingEnv;
@@ -64,16 +69,39 @@ public class FxmlGenerator {
 
     class FxmlVisitor extends DefaultHandler {
         private final PrintWriter out;
+
         private int varCounter;
+        private final Map<String, TypeElement> imports = new HashMap<>();
 
         FxmlVisitor(PrintWriter out) {
             this.out = out;
         }
 
         @Override
-        public void startElement(String uri, String localName, String qName, Attributes attributes) {
-            System.out.println("startElement: " + qName + " " + attributes);
+        public void processingInstruction(String target, String data) {
+            if (!"import".equals(target)) {
+                return;
+            }
 
+            if (data.endsWith(".*")) {
+                final PackageElement packageElement = processingEnv.getElementUtils().getPackageElement(data.substring(0, data.length() - 2));
+                for (Element enclosedElement : packageElement.getEnclosedElements()) {
+                    if (enclosedElement instanceof TypeElement typeElement) {
+                        imports.put(typeElement.getSimpleName().toString(), typeElement);
+                    }
+                }
+            } else {
+                final TypeElement typeElement = processingEnv.getElementUtils().getTypeElement(data);
+                if (typeElement != null) {
+                    imports.put(typeElement.getSimpleName().toString(), typeElement);
+                } else {
+                    // TODO warning
+                }
+            }
+        }
+
+        @Override
+        public void startElement(String uri, String localName, String qName, Attributes attributes) {
             if ("fx:root".equals(qName)) {
                 final String rootType = attributes.getValue("type");
                 out.printf("    final %1$s _%2$d = (%1$s) root;%n", rootType, varCounter++);
