@@ -6,8 +6,11 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.tools.FileObject;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -23,6 +26,7 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
 public class FxmlGenerator {
     private final ProcessingEnvironment processingEnv;
@@ -102,13 +106,82 @@ public class FxmlGenerator {
 
         @Override
         public void startElement(String uri, String localName, String qName, Attributes attributes) {
+            final String type;
+            final String varName = "_" + varCounter++;
             if ("fx:root".equals(qName)) {
-                final String rootType = attributes.getValue("type");
-                out.printf("    final %1$s _%2$d = (%1$s) root;%n", rootType, varCounter++);
+                type = attributes.getValue("type");
+                out.printf("    final %1$s %2$s = (%1$s) root;%n", type, varName);
             } else {
-                final String rootType = qName;
-                out.printf("    final %1$s _%2$d = new %1$s();%n", rootType, varCounter++);
+                type = qName;
+                out.printf("    final %1$s %2$s = new %1$s();%n", type, varName);
             }
+
+            final TypeElement typeElement = imports.get(type);
+
+            for (int i = 0; i < attributes.getLength(); i++) {
+                final String value = attributes.getValue(i);
+                final String name = attributes.getLocalName(i);
+                switch (name) {
+                    case "fx:id" -> {
+                        out.printf("    %1$s.setId(\"%2$s\");%n", varName, value);
+                        out.printf("    controller.%1$s = %2$s;%n", value, varName);
+                    }
+                    case "fx:controller" -> {}
+                    case "xmlns" -> {}
+                    case "xmlns:fx" -> {}
+                    default -> {
+                        final ExecutableElement setter = findSetter(typeElement, name);
+                        if (setter != null) {
+                            final TypeMirror parameterType = setter.getParameters().get(0).asType();
+                            final String literalValue = literalValue(value, parameterType);
+                            out.printf("    %1$s.%2$s(%3$s);%n", varName, setter.getSimpleName(), literalValue);
+                        } else {
+                            // TODO warning
+                        }
+                    }
+                }
+            }
+        }
+
+        private String literalValue(String value, TypeMirror parameterType) {
+            return processingEnv.getElementUtils().getConstantExpression(coercePrimitiveValue(value, parameterType));
+        }
+
+        private Object coercePrimitiveValue(String value, TypeMirror parameterType) {
+            switch (parameterType.getKind()) {
+                case BOOLEAN:
+                    return value;
+                case BYTE:
+                    return Byte.parseByte(value);
+                case SHORT:
+                    return Short.parseShort(value);
+                case CHAR:
+                    return value.charAt(0);
+                case INT:
+                    return Integer.parseInt(value);
+                case LONG:
+                    return Long.parseLong(value);
+                case FLOAT:
+                    return Float.parseFloat(value);
+                case DOUBLE:
+                    return Double.parseDouble(value);
+                case DECLARED:
+                    if ("java.lang.String".equals(parameterType.toString())) {
+                        return value;
+                    }
+            }
+            return null;
+        }
+
+        private ExecutableElement findSetter(TypeElement typeElement, String name) {
+            final String setterName = "set" + name.substring(0, 1).toUpperCase() + name.substring(1);
+            return Stream.iterate(typeElement, f -> f.getSuperclass().getKind() != TypeKind.NONE,f -> (TypeElement) processingEnv.getTypeUtils().asElement(f.getSuperclass()))
+                .flatMap(element -> element.getEnclosedElements().stream())
+                .filter(element -> element instanceof ExecutableElement)
+                .map(element -> (ExecutableElement) element)
+                .filter(element -> setterName.equals(element.getSimpleName().toString()) && element.getParameters().size() == 1)
+                .findFirst()
+                .orElse(null);
         }
 
         @Override
