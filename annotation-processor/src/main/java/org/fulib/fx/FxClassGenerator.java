@@ -10,7 +10,10 @@ import org.fulib.fx.annotation.param.ParamsMap;
 import org.fulib.fx.util.ControllerUtil;
 
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.*;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
@@ -134,59 +137,52 @@ public class FxClassGenerator {
     }
 
     private void generateParametersIntoFields(PrintWriter out, TypeElement componentClass) {
-        for (Element element : componentClass.getEnclosedElements()) {
-            if (!(element instanceof VariableElement varElement)) {
-                continue;
-            }
+        streamAllFields(componentClass, Param.class).forEach(field -> {
+            final Param param = field.getAnnotation(Param.class);
+            final String fieldName = field.getSimpleName().toString();
+            final String fieldType = field.asType().toString();
+            final String paramNameLiteral = stringLiteral(param.value());
+            out.printf("    if (params.containsKey(%s)) {%n", paramNameLiteral);
 
-            final Param param = element.getAnnotation(Param.class);
-            if (param != null) {
-                String fieldName = varElement.getSimpleName().toString();
-                String fieldType = varElement.asType().toString();
-                String paramNameLiteral = stringLiteral(param.value());
-                out.printf("    if (params.containsKey(%s)) {%n", paramNameLiteral);
-
-                // TODO field must be public, package-private or protected -- add a diagnostic if it's private
-                if (processingEnv.getTypeUtils().isAssignable(varElement.asType(), writableValue)) {
-                    // We use the `setValue` method to infer the actual type of the field,
-                    // E.g. if the field is a `StringProperty` which extends `WritableValue<String>`,
-                    // we can infer that the actual type is `String`.
-                    final ExecutableType asMemberOf = (ExecutableType) processingEnv.getTypeUtils().asMemberOf((DeclaredType) varElement.asType(), genericSetValue);
-                    final TypeMirror typeArg = asMemberOf.getParameterTypes().get(0);
-                    final String writableType = typeArg.toString();
-                    if (varElement.getModifiers().contains(Modifier.FINAL)) {
-                        out.printf("      instance.%s.setValue((%s) params.get(%s));%n", fieldName, writableType, paramNameLiteral);
-                    } else {
-                        // final Object param = params.get(<paramNameLiteral>);
-                        // if (param instanceof <writableValue>) {
-                        //   instance.<fieldName> = (<fieldType>) param);
-                        // } else {
-                        //   instance.<fieldName>.setValue((<writableType>) param);
-                        // }
-                        out.printf("      final Object param = params.get(%s);%n", paramNameLiteral);
-                        out.printf("      if (param instanceof %s) {%n", writableValue);
-                        out.printf("        instance.%s = (%s) param;%n", fieldName, fieldType);
-                        out.println("      } else {");
-                        out.printf("        instance.%s.setValue((%s) param);%n", fieldName, writableType);
-                        out.println("      }");
-                    }
+            // TODO field must be public, package-private or protected -- add a diagnostic if it's private
+            if (processingEnv.getTypeUtils().isAssignable(field.asType(), writableValue)) {
+                // We use the `setValue` method to infer the actual type of the field,
+                // E.g. if the field is a `StringProperty` which extends `WritableValue<String>`,
+                // we can infer that the actual type is `String`.
+                final ExecutableType asMemberOf = (ExecutableType) processingEnv.getTypeUtils().asMemberOf((DeclaredType) field.asType(), genericSetValue);
+                final TypeMirror typeArg = asMemberOf.getParameterTypes().get(0);
+                final String writableType = typeArg.toString();
+                if (field.getModifiers().contains(Modifier.FINAL)) {
+                    out.printf("      instance.%s.setValue((%s) params.get(%s));%n", fieldName, writableType, paramNameLiteral);
                 } else {
-                    out.printf("      instance.%s = (%s) params.get(%s);%n", fieldName, fieldType, paramNameLiteral);
+                    // final Object param = params.get(<paramNameLiteral>);
+                    // if (param instanceof <writableValue>) {
+                    //   instance.<fieldName> = (<fieldType>) param);
+                    // } else {
+                    //   instance.<fieldName>.setValue((<writableType>) param);
+                    // }
+                    out.printf("      final Object param = params.get(%s);%n", paramNameLiteral);
+                    out.printf("      if (param instanceof %s) {%n", writableValue);
+                    out.printf("        instance.%s = (%s) param;%n", fieldName, fieldType);
+                    out.println("      } else {");
+                    out.printf("        instance.%s.setValue((%s) param);%n", fieldName, writableType);
+                    out.println("      }");
                 }
-                out.println("    }");
+            } else {
+                out.printf("      instance.%s = (%s) params.get(%s);%n", fieldName, fieldType, paramNameLiteral);
             }
+            out.println("    }");
+        });
 
-            final ParamsMap paramsMap = element.getAnnotation(ParamsMap.class);
-            if (paramsMap != null) {
-                String fieldName = varElement.getSimpleName().toString();
-                if (varElement.getModifiers().contains(Modifier.FINAL)) {
-                    out.printf("    instance.%s.clear();%n", fieldName);
-                    out.printf("    instance.%s.putAll(params);%n", fieldName);
-                } else {
-                    out.printf("    instance.%s = params;%n", fieldName);
-                }
+        streamAllFields(componentClass, ParamsMap.class).forEach(field -> {
+            final String fieldName = field.getSimpleName().toString();
+            if (field.getModifiers().contains(Modifier.FINAL)) {
+                out.printf("    instance.%s.clear();%n", fieldName);
+                out.printf("    instance.%s.putAll(params);%n", fieldName);
+            } else {
+                out.printf("    instance.%s = params;%n", fieldName);
             }
-        }
+        });
     }
 
     private void generateCallInitMethods(PrintWriter out, TypeElement componentClass) {
@@ -246,24 +242,15 @@ public class FxClassGenerator {
     }
 
     private void generateCallSubComponents(PrintWriter out, TypeElement componentClass, String method) {
-        for (final Element element : componentClass.getEnclosedElements()) {
-            if (!(element instanceof VariableElement varElement)) {
-                continue;
-            }
-
-            final SubComponent subComponent = element.getAnnotation(SubComponent.class);
-            if (subComponent == null) {
-                continue;
-            }
-
-            if (varElement.asType().toString().startsWith("javax.inject.Provider")) {
+        streamAllFields(componentClass, SubComponent.class).forEach(field -> {
+            if (field.asType().toString().startsWith("javax.inject.Provider")) {
                 // Provider fields are initialized on demand
-                continue;
+                return;
             }
 
-            final String fieldName = varElement.getSimpleName().toString();
+            final String fieldName = field.getSimpleName().toString();
             out.printf("    this.controllerManager.%s(instance.%s, params);%n", method, fieldName);
-        }
+        });
     }
 
     private void generateSidecarDestroy(PrintWriter out, TypeElement componentClass) {
@@ -279,24 +266,15 @@ public class FxClassGenerator {
 
     private void generateDestroySubComponents(PrintWriter out, TypeElement componentClass) {
         final List<String> fieldNames = new ArrayList<>();
-        for (final Element element : componentClass.getEnclosedElements()) {
-            if (!(element instanceof VariableElement varElement)) {
-                continue;
-            }
-
-            final SubComponent subComponent = element.getAnnotation(SubComponent.class);
-            if (subComponent == null) {
-                continue;
-            }
-
-            if (varElement.asType().toString().startsWith("javax.inject.Provider")) {
+        streamAllFields(componentClass, SubComponent.class).forEach(field -> {
+            if (field.asType().toString().startsWith("javax.inject.Provider")) {
                 // Provider fields are destroyed on demand
-                continue;
+                return;
             }
 
-            final String fieldName = varElement.getSimpleName().toString();
+            final String fieldName = field.getSimpleName().toString();
             fieldNames.add(fieldName);
-        }
+        });
 
         Collections.reverse(fieldNames);
         for (String fieldName : fieldNames) {
@@ -344,22 +322,12 @@ public class FxClassGenerator {
     }
 
     private void generateSidecarResources(PrintWriter out, TypeElement componentClass) {
-        for (Element enclosedElement : componentClass.getEnclosedElements()) {
-            if (!(enclosedElement instanceof VariableElement variableElement)) {
-                continue;
-            }
-
-            final Resource resource = variableElement.getAnnotation(Resource.class);
-            if (resource == null) {
-                continue;
-            }
-
-            final String fieldName = variableElement.getSimpleName().toString();
-            out.printf("    return instance.%s;%n", fieldName);
-            return;
-        }
-
-        out.println("    return controllerManager.getDefaultResourceBundle();");
+        streamAllFields(componentClass, Resource.class)
+            .findFirst()
+            .ifPresentOrElse(
+                field -> out.printf("    return instance.%s;%n", field.getSimpleName()),
+                () -> out.println("    return controllerManager.getDefaultResourceBundle();")
+            );
     }
 
     private void generateSidecarTitle(PrintWriter out, TypeElement componentClass) {
@@ -383,15 +351,30 @@ public class FxClassGenerator {
     }
 
     private Stream<ExecutableElement> streamAllMethods(TypeElement componentClass, Class<? extends Annotation> annotation) {
-        return Stream.iterate(componentClass, Objects::nonNull, e -> (TypeElement) processingEnv.getTypeUtils().asElement(e.getSuperclass()))
-            .flatMap(e -> streamMethods(e, annotation));
+        return streamSuperClasses(componentClass).flatMap(e -> streamMethods(e, annotation));
     }
 
     private Stream<ExecutableElement> streamMethods(TypeElement componentClass, Class<? extends Annotation> annotation) {
         return componentClass
             .getEnclosedElements()
             .stream()
-            .filter(element -> element.getAnnotation(annotation) != null && element instanceof ExecutableElement)
+            .filter(element -> element instanceof ExecutableElement && element.getAnnotation(annotation) != null)
             .map(element -> (ExecutableElement) element);
+    }
+
+    private Stream<VariableElement> streamAllFields(TypeElement componentClass, Class<? extends Annotation> annotation) {
+        return streamSuperClasses(componentClass).flatMap(e -> streamFields(e, annotation));
+    }
+
+    private Stream<VariableElement> streamFields(TypeElement componentClass, Class<? extends Annotation> annotation) {
+        return componentClass
+            .getEnclosedElements()
+            .stream()
+            .filter(element -> element instanceof VariableElement && element.getAnnotation(annotation) != null)
+            .map(element -> (VariableElement) element);
+    }
+
+    private Stream<TypeElement> streamSuperClasses(TypeElement componentClass) {
+        return Stream.iterate(componentClass, Objects::nonNull, e -> (TypeElement) processingEnv.getTypeUtils().asElement(e.getSuperclass()));
     }
 }
