@@ -48,13 +48,13 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
         this.title = loadTitle(componentClass);
         this.resourceField = loadResourceField(componentClass);
         this.subComponentFields = loadSubComponentFields(componentClass);
-        this.initMethods = Reflection.getAllMethodsWithAnnotation(componentClass, onInit.class)
+        this.initMethods = ReflectionUtil.getAllNonPrivateMethodsOrThrow(componentClass, onInit.class)
             .sorted(Comparator.comparingInt(m -> m.getAnnotation(onInit.class).value()))
             .toList();
-        this.renderMethods = Reflection.getAllMethodsWithAnnotation(componentClass, onRender.class)
+        this.renderMethods = ReflectionUtil.getAllNonPrivateMethodsOrThrow(componentClass, onRender.class)
             .sorted(Comparator.comparingInt(m -> m.getAnnotation(onRender.class).value()))
             .toList();
-        this.destroyMethods = Reflection.getAllMethodsWithAnnotation(componentClass, onDestroy.class)
+        this.destroyMethods = ReflectionUtil.getAllNonPrivateMethodsOrThrow(componentClass, onDestroy.class)
             .sorted(Comparator.comparingInt(m -> m.getAnnotation(onDestroy.class).value()))
             .toList();
     }
@@ -101,7 +101,7 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
      */
     private void fillParametersIntoFields(@NotNull Object instance, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
         // Fill the parameters into fields annotated with @Param
-        for (Field field : Reflection.getAllFieldsWithAnnotation(instance.getClass(), Param.class).toList()) {
+        for (Field field : ReflectionUtil.getAllNonPrivateFieldsOrThrow(instance.getClass(), Param.class).toList()) {
 
             Param paramAnnotation = field.getAnnotation(Param.class);
             String param = paramAnnotation.value();
@@ -153,7 +153,7 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
         }
 
         // Fill the parameters into fields annotated with @ParamsMap
-        for (Field field : Reflection.getFieldsWithAnnotation(instance.getClass(), ParamsMap.class).toList()) {
+        for (Field field : ReflectionUtil.getAllNonPrivateFieldsOrThrow(instance.getClass(), ParamsMap.class).toList()) {
 
             if (!MapUtil.isMapWithTypes(field, String.class, Object.class)) {
                 throw new RuntimeException(error(4002).formatted(field.getName(), instance.getClass().getName()));
@@ -185,7 +185,7 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
      * @param parameters The parameters to fill into the methods
      */
     private void callParamMethods(Object instance, Map<String, Object> parameters) {
-        Reflection.getAllMethodsWithAnnotation(instance.getClass(), Param.class).forEach(method -> {
+        ReflectionUtil.getAllNonPrivateMethodsOrThrow(instance.getClass(), Param.class).forEach(method -> {
             try {
                 method.setAccessible(true);
                 Object value = parameters.get(method.getAnnotation(Param.class).value());
@@ -214,7 +214,7 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
      * @param parameters The parameters to fill into the methods
      */
     private void callParamsMethods(Object instance, Map<String, Object> parameters) {
-        Reflection.getAllMethodsWithAnnotation(instance.getClass(), Params.class).forEach(method -> {
+        ReflectionUtil.getAllNonPrivateMethodsOrThrow(instance.getClass(), Params.class).forEach(method -> {
             try {
                 method.setAccessible(true);
 
@@ -250,7 +250,7 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
      * @param parameters The parameters to fill into the methods
      */
     private void callParamsMapMethods(Object instance, Map<String, Object> parameters) {
-        Reflection.getAllMethodsWithAnnotation(instance.getClass(), ParamsMap.class).forEach(method -> {
+        ReflectionUtil.getAllNonPrivateMethodsOrThrow(instance.getClass(), ParamsMap.class).forEach(method -> {
 
             if (method.getParameterCount() != 1 || !MapUtil.isMapWithTypes(method.getParameters()[0], String.class, Object.class)) {
                 throw new RuntimeException(error(4003).formatted(method.getName(), instance.getClass().getName()));
@@ -313,7 +313,7 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
      */
     @Unmodifiable
     private List<Field> loadSubComponentFields(Class<T> componentClass) {
-        return Reflection.getAllFieldsWithAnnotation(componentClass, SubComponent.class)
+        return ReflectionUtil.getAllNonPrivateFieldsOrThrow(componentClass, SubComponent.class)
             .filter(field -> {
                 if (ControllerUtil.isComponent(field.getType())) {
                     return true;
@@ -404,7 +404,7 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
     }
 
     private @Nullable Field loadResourceField(Class<T> componentClass) {
-        List<Field> fields = Reflection.getAllFieldsWithAnnotation(componentClass, Resource.class).toList();
+        List<Field> fields = ReflectionUtil.getAllNonPrivateFieldsOrThrow(componentClass, Resource.class).toList();
 
         if (fields.isEmpty()) {
             return null;

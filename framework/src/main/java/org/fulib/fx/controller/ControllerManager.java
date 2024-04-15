@@ -12,7 +12,6 @@ import javafx.util.Pair;
 import org.fulib.fx.FulibFxApp;
 import org.fulib.fx.annotation.controller.Component;
 import org.fulib.fx.annotation.controller.Controller;
-import org.fulib.fx.annotation.controller.Resource;
 import org.fulib.fx.annotation.event.onDestroy;
 import org.fulib.fx.annotation.event.onKey;
 import org.fulib.fx.controller.building.ControllerBuildFactory;
@@ -20,10 +19,7 @@ import org.fulib.fx.controller.exception.IllegalControllerException;
 import org.fulib.fx.controller.internal.FxSidecar;
 import org.fulib.fx.controller.internal.ReflectionSidecar;
 import org.fulib.fx.data.disposable.RefreshableCompositeDisposable;
-import org.fulib.fx.util.ControllerUtil;
-import org.fulib.fx.util.FileUtil;
-import org.fulib.fx.util.FrameworkUtil;
-import org.fulib.fx.util.KeyEventHolder;
+import org.fulib.fx.util.*;
 import org.fulib.fx.util.reflection.Reflection;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -190,7 +186,7 @@ public class ControllerManager {
      * @param instance The controller instance
      */
     private void registerKeyEvents(Object instance) {
-        Reflection.getMethodsWithAnnotation(instance.getClass(), onKey.class).forEach(method -> {
+        ReflectionUtil.getAllNonPrivateMethodsOrThrow(instance.getClass(), onKey.class).forEach(method -> {
 
             onKey annotation = method.getAnnotation(onKey.class);
             EventType<KeyEvent> type = annotation.type().asEventType();

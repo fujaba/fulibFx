@@ -1,5 +1,8 @@
 package org.fulib.fx.util.reflection;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.lang.annotation.Annotation;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
@@ -27,9 +30,9 @@ public class Reflection {
      *
      * @param clazz      The class to get the fields from
      * @param annotation The annotation to filter the fields by
-     * @return A list of fields that are annotated with the given annotation
+     * @return A stream of fields that are annotated with the given annotation
      */
-    public static Stream<Field> getFieldsWithAnnotation(Class<?> clazz, Class<? extends Annotation> annotation) {
+    public static Stream<Field> getFieldsWithAnnotation(@NotNull Class<?> clazz, @NotNull Class<? extends @NotNull Annotation> annotation) {
         return Arrays.stream(clazz.getDeclaredFields()).filter(field -> field.isAnnotationPresent(annotation));
     }
 
@@ -38,9 +41,9 @@ public class Reflection {
      *
      * @param clazz      The class to get the fields from
      * @param annotation The annotation to filter the fields by
-     * @return A list of fields that are annotated with the given annotation
+     * @return A stream of fields that are annotated with the given annotation
      */
-    public static Stream<Field> getAllFieldsWithAnnotation(Class<?> clazz, Class<? extends Annotation> annotation) {
+    public static Stream<Field> getAllFieldsWithAnnotation(@NotNull Class<?> clazz, @NotNull Class<? extends @NotNull Annotation> annotation) {
         return getAllFields(clazz).stream().filter(field -> field.isAnnotationPresent(annotation));
     }
 
@@ -51,7 +54,7 @@ public class Reflection {
      * @param fields   The fields to call the methods for
      * @param method   The method to call
      */
-    public static void callMethodsForFieldInstances(Object instance, Collection<Field> fields, Consumer<Object> method) {
+    public static void callMethodsForFieldInstances(@NotNull Object instance, @NotNull Collection<@NotNull Field> fields, @NotNull Consumer<@NotNull Object> method) {
         for (Field field : fields) {
             try {
                 field.setAccessible(true);
@@ -68,9 +71,9 @@ public class Reflection {
      *
      * @param clazz The class to get the fields from
      * @param type  The type to filter the fields by
-     * @return A list of fields that are of the given type
+     * @return A stream of fields that are of the given type
      */
-    public static Stream<Field> getFieldsOfType(Class<?> clazz, Class<?> type) {
+    public static Stream<Field> getFieldsOfType(@NotNull Class<?> clazz, @NotNull Class<?> type) {
         return Arrays.stream(clazz.getDeclaredFields()).filter(field -> field.getType().equals(type));
     }
 
@@ -79,9 +82,9 @@ public class Reflection {
      *
      * @param clazz      The class to get the methods from
      * @param annotation The annotation to filter the methods by
-     * @return A list of methods that are annotated with the given annotation
+     * @return A stream of methods that are annotated with the given annotation
      */
-    public static Stream<Method> getMethodsWithAnnotation(Class<?> clazz, Class<? extends Annotation> annotation) {
+    public static Stream<Method> getMethodsWithAnnotation(@NotNull Class<?> clazz, @NotNull Class<? extends @NotNull Annotation> annotation) {
         return Arrays.stream(clazz.getDeclaredMethods()).filter(method -> method.isAnnotationPresent(annotation));
     }
 
@@ -90,9 +93,9 @@ public class Reflection {
      *
      * @param clazz      The class to get the methods from
      * @param annotation The annotation to filter the methods by
-     * @return A list of methods that are annotated with the given annotation
+     * @return A stream of methods that are annotated with the given annotation
      */
-    public static Stream<Method> getAllMethodsWithAnnotation(Class<?> clazz, Class<? extends Annotation> annotation) {
+    public static Stream<Method> getAllMethodsWithAnnotation(@NotNull Class<?> clazz, @NotNull Class<? extends @NotNull Annotation> annotation) {
         return getAllMethods(clazz, false).stream().filter(method -> method.isAnnotationPresent(annotation));
     }
 
@@ -103,7 +106,7 @@ public class Reflection {
      * @param value The value to check
      * @return True if the value can be assigned to the type, false otherwise
      */
-    public static boolean canBeAssigned(Class<?> type, Object value) {
+    public static boolean canBeAssigned(@NotNull Class<?> type, @Nullable Object value) {
         if (value == null) {
             return !type.isPrimitive();
         }
@@ -112,18 +115,18 @@ public class Reflection {
         return getWrapperType(type).isAssignableFrom(valueType);
     }
 
-    public static Class<?> getWrapperType(Class<?> type) {
+    public static Class<?> getWrapperType(@NotNull Class<?> type) {
         return type.isPrimitive() ? wrap(type) : type;
     }
 
     // https://stackoverflow.com/questions/1704634/simple-way-to-get-wrapper-class-type-in-java/62219759#62219759
     @SuppressWarnings("unchecked")
-    public static <T> Class<T> wrap(Class<T> unwrapped) {
+    public static <T> Class<T> wrap(@NotNull Class<T> unwrapped) {
         return (Class<T>) MethodType.methodType(unwrapped).wrap().returnType();
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> Class<T> unwrap(Class<T> wrapped) {
+    public static <T> Class<T> unwrap(@NotNull Class<T> wrapped) {
         return (Class<T>) MethodType.methodType(wrapped).unwrap().returnType();
     }
 
@@ -133,7 +136,7 @@ public class Reflection {
      * @param clazz The class to get the fields from
      * @return A list of all fields of the given class
      */
-    public static List<Field> getAllFields(Class<?> clazz) {
+    public static List<Field> getAllFields(@NotNull Class<?> clazz) {
         List<Field> fields = new ArrayList<>(Arrays.asList(clazz.getDeclaredFields()));
         while (clazz.getSuperclass() != null) {
             clazz = clazz.getSuperclass();
@@ -148,7 +151,7 @@ public class Reflection {
      * @param clazz The class to get the methods from
      * @return A list of all methods of the given class
      */
-    public static List<Method> getAllMethods(Class<?> clazz, boolean includeObjectMethods) {
+    public static List<Method> getAllMethods(@NotNull Class<?> clazz, boolean includeObjectMethods) {
         List<Method> methods = new ArrayList<>(Arrays.asList(clazz.getDeclaredMethods()));
         while (clazz.getSuperclass() != null && (includeObjectMethods || clazz.getSuperclass() != Object.class)) {
             clazz = clazz.getSuperclass();

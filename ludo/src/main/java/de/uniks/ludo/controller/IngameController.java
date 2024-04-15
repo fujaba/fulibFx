@@ -101,7 +101,7 @@ public class IngameController extends BaseController {
     }
 
     @onKey(code = KeyCode.R)
-    private void rollDice() {
+    public void rollDice() {
         if (!this.diceSubComponent.isEnabled()) return;
         LudoUtil.playSound(Constants.SOUND_ROLL_DICES);
         this.subscriber.subscribe(this.diceSubComponent.roll(), Schedulers.computation(),
@@ -118,7 +118,7 @@ public class IngameController extends BaseController {
     }
 
     @onRender
-    void displayCurrentTurn() {
+    public void displayCurrentTurn() {
         if (eyes.get() != 0) {
             this.diceSubComponent.setLabel(eyes.get());
         }
