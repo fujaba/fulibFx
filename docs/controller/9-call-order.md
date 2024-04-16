@@ -1,7 +1,7 @@
 # Call order
 
 Since the framework differentiates between initialization and rendering, different methods annotated
-with `@onInit` or `@onRender` are called at different times.
+with `@OnInit` or `@OnRender` are called at different times.
 
 The framework has a general rule of **initialization before rendering**, meaning you cannot access most JavaFX
 elements (for example nodes defined in an FXML file) in the init methods as the elements aren't loaded before the
@@ -13,8 +13,8 @@ initialized. This will happen recursively until a subcomponent doesn't have any 
 subcomponents will be rendered, going back up to the main controller. The main controller will be rendered, after all
 the subcomponents have been rendered.
 
-If a For-Loop is defined in a method annotated with `onRender` in any (sub-)controller,
-the `onRender` will (obviously) be called first. After that, the initializer (`BiConsumer`) of the
+If a For-Loop is defined in a method annotated with `@OnRender` in any (sub-)controller,
+the `@OnRender` will (obviously) be called first. After that, the initializer (`BiConsumer`) of the
 for-Controller will be called and then the for-controller will be initialized and then rendered.
 
 #### Example
@@ -27,14 +27,14 @@ public class ExampleController {
     // Constructor, elements etc.
     // This controller has a subcomponent defined in the FXML file
 
-    @onInit
-    public void onInit() {
-        System.out.println("onInit Controller");
+    @OnInit
+    public void init() {
+        System.out.println("Init Controller");
     }
 
-    @onRender
-    public void onRender() {
-        System.out.println("onRender Controller");
+    @OnRender
+    public void render() {
+        System.out.println("Render Controller");
         fxFor.create(container, items, forControllerProvider, (controller, item) -> System.out.println("Initializer ForController"));
     }
 
@@ -49,14 +49,14 @@ public class SubController extends VBox {
     // Constructor, elements etc.
     // This controller has another subcomponent defined in the FXML file
 
-    @onInit
-    public void onInit() {
-        System.out.println("onInit SubController");
+    @OnInit
+    public void init() {
+        System.out.println("Init SubController");
     }
 
-    @onRender
-    public void onRender() {
-        System.out.println("onRender SubController");
+    @OnRender
+    public void render() {
+        System.out.println("Render SubController");
     }
 
 }
@@ -69,14 +69,14 @@ public class ForController extends VBox {
 
     // Constructor, elements etc.
 
-    @onInit
-    public void onInit() {
-        System.out.println("onInit ForController");
+    @OnInit
+    public void init() {
+        System.out.println("Init ForController");
     }
 
-    @onRender
-    public void onRender() {
-        System.out.println("onRender ForController");
+    @OnRender
+    public void render() {
+        System.out.println("Render ForController");
     }
 
 }
@@ -86,18 +86,18 @@ This setup results in the following outputs:
 
 ```
 Constructor ExampleController
-onInit ExampleController
+Init ExampleController
 Constructor SubController
-onInit SubController
+Init SubController
 Constructor SubSubController
-onInit SubSubController
-onRender SubSubController
-onRender SubController
-onRender ExampleController
+Init SubSubController
+Render SubSubController
+Render SubController
+Render ExampleController
 Constructor ForController
 Initializer ForController
-onInit ForController
-onRender ForController
+Init ForController
+Render ForController
 ```
 
 The destruction happens in the reverse order of the rendering.

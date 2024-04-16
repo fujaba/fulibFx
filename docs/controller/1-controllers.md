@@ -14,8 +14,8 @@ public class TodoController {
 ### Events [![Javadocs](https://javadoc.io/badge2/org.fulib/fulibFx/Javadocs.svg?color=green)](https://javadoc.io/doc/org.fulib/fulibFx/latest/org/fulib/fx/annotation/event/package-summary.html)
 
 Within your controller class, you have the ability to define methods that are automatically triggered when the
-controller is initialized, rendered or destroyed. These methods should be annotated with either `@onInit`, `@onRender`
-or `@onDestroy` to specify their respective execution points. The annotations have an optional parameter to specify the
+controller is initialized, rendered or destroyed. These methods should be annotated with either `@OnInit`, `@OnRender`
+or `@OnDestroy` to specify their respective execution points. The annotations have an optional parameter to specify the
 order in which the methods should be called. The default order is 0 if no value is provided.
 
 ```java
@@ -25,23 +25,23 @@ public class TodoController {
     
     // ...
 
-    @onInit
+    @OnInit
     public void thisMethodWillBeCalledOnInit() {
         // Called when the controller is initialized
     }
 
-    @onRender(0)
+    @OnRender(0)
     public void thisMethodWillBeCalledOnRender() {
         // Called when the controller has been loaded and is ready to be displayed
     }
     
-    @onRender(1)
+    @OnRender(1)
     public void thisMethodWillBeCalledOnRenderButLater() {
         // Called when the controller has been loaded and is ready to be displayed
         // This method will be called after the previous one
     }
 
-    @onDestroy
+    @OnDestroy
     public void thisMethodWillBeCalledOnDestroy() {
         // Called when the controller is being cleaned up
     }
@@ -67,7 +67,7 @@ will not clear them up them automatically. You should therefore save the disposa
 when the controller is destroyed.
 
 This can be done by creating a `CompositeDisposable`, adding all disposables to it and then calling `compositeDisposable.dispose()`
-in a `@onDestroy` annotated method.
+in a `@OnDestroy` annotated method.
 
 The framework also provides utility classes for dealing with subscriptions and other mechanisms requiring cleanup.
 One example for this is the [`Subscriber` class](../features/1-subscriber.md).

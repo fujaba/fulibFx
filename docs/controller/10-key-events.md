@@ -1,6 +1,6 @@
-# Keyboard Listener [![Javadocs](https://javadoc.io/badge2/org.fulib/fulibFx/Javadocs.svg?color=green)](https://javadoc.io/doc/org.fulib/fulibFx/latest/org/fulib/fx/annotation/event/onKey.html)
+# Keyboard Listener [![Javadocs](https://javadoc.io/badge2/org.fulib/fulibFx/Javadocs.svg?color=green)](https://javadoc.io/doc/org.fulib/fulibFx/latest/org/fulib/fx/annotation/event/OnKey.html)
 
-The framework provides an easy way of registering keybinds for a controller. By using the `@onKey` annotation, you can
+The framework provides an easy way of registering keybinds for a controller. By using the `@OnKey` annotation, you can
 define methods that will be called when a key is pressed.
 
 The annotation has multiple parameters for specifying the key or additional keys that have to be pressed.
@@ -10,19 +10,19 @@ the key is pressed.
 ```java
 import java.security.Key;
 
-@onKey()
-public void onKeyPressed(KeyEvent event) {
+@OnKey()
+public void keyPressed(KeyEvent event) {
     // This method will be called when any key is pressed
     // The KeyEvent can be used to get information about the key that was pressed
 }
 
-@onKey(code = KeyCode.ENTER)
+@OnKey(code = KeyCode.ENTER)
 public void onEnterPressed() {
     // This method will be called when the enter key is pressed
     // It doesn't matter if shift, ctrl or alt are pressed
 }
 
-@onKey(code = KeyCode.P, shift = true)
+@OnKey(code = KeyCode.P, shift = true)
 public void onShiftP() {
     // This method will be called when the shift and p key are pressed
     // Also works with ctrl, alt and meta (e.g. windows key)
@@ -38,7 +38,7 @@ would result by pressing the key(s) (e.g. SHIFT + 'a' --> 'A') and `text` will b
 See below for an example in action.
 
 ```java
-@onKey(code = KeyCode.R)
+@OnKey(code = KeyCode.R)
 public void rollDice() {
     // ...
 }

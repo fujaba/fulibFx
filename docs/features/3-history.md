@@ -9,8 +9,8 @@ The history can be navigated using the `back()` and `forward()` methods of the `
 
 Using the `refresh()` method of the `FulibFxApp` class, you can refresh the currently displayed controller. This will
 destroy the controller and reload it with the same parameters as before. This can be used to update the view of a
-controller whilst being in dev mode. Refreshing a controller will run the `onDestroy` method of the controller and then
-run the `onInit` and `onRender` methods again.
+controller whilst being in dev mode. Refreshing a controller will run the `@OnDestroy` methods of the controller and then
+run the `@OnInit` and `@OnRender` methods again.
 
 <img width="640" height="360" src="../assets/hot-reload.gif" alt="Hot reloading">
 
