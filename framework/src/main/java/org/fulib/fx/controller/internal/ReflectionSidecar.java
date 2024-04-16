@@ -37,6 +37,11 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
     private final Field resourceField;
 
     private final List<Field> subComponentFields;
+    private final List<Field> paramFields;
+    private final List<Field> paramsMapFields;
+    private final List<Method> paramMethods;
+    private final List<Method> paramsMethods;
+    private final List<Method> paramsMapMethods;
     private final List<Method> initMethods;
     private final List<Method> renderMethods;
     private final List<Method> destroyMethods;
@@ -56,6 +61,25 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
             .toList();
         this.destroyMethods = ReflectionUtil.getAllNonPrivateMethodsOrThrow(componentClass, onDestroy.class)
             .sorted(Comparator.comparingInt(m -> m.getAnnotation(onDestroy.class).value()))
+            .toList();
+
+        this.paramFields = ReflectionUtil.getAllNonPrivateFieldsOrThrow(componentClass, Param.class).toList();
+        this.paramsMapFields = ReflectionUtil.getAllNonPrivateFieldsOrThrow(componentClass, ParamsMap.class)
+            .peek(field -> {
+                if (!MapUtil.isMapWithTypes(field, String.class, Object.class)) {
+                    throw new RuntimeException(error(4002).formatted(field.getName(), componentClass.getName()));
+                }
+            })
+            .toList();
+
+        this.paramMethods = ReflectionUtil.getAllNonPrivateMethodsOrThrow(componentClass, Param.class).toList();
+        this.paramsMethods = ReflectionUtil.getAllNonPrivateMethodsOrThrow(componentClass, Params.class).toList();
+        this.paramsMapMethods = ReflectionUtil.getAllNonPrivateMethodsOrThrow(componentClass, ParamsMap.class)
+            .peek(method -> {
+                if (method.getParameterCount() != 1 || !MapUtil.isMapWithTypes(method.getParameters()[0], String.class, Object.class)) {
+                    throw new RuntimeException(error(4003).formatted(method.getName(), componentClass.getName()));
+                }
+            })
             .toList();
     }
 
@@ -101,14 +125,13 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
      */
     private void fillParametersIntoFields(@NotNull Object instance, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
         // Fill the parameters into fields annotated with @Param
-        ReflectionUtil.getAllNonPrivateFieldsOrThrow(instance.getClass(), Param.class).forEach(field -> {
-
+        for (Field field : paramFields) {
             Param paramAnnotation = field.getAnnotation(Param.class);
             String param = paramAnnotation.value();
 
             // Don't fill the parameter if it's not present (field will not be overwritten, "default value")
             if (!parameters.containsKey(param)) {
-                return;
+                continue;
             }
 
             Class<?> fieldType = field.getType();
@@ -149,15 +172,10 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
             } catch (IllegalAccessException e) {
                 throw new RuntimeException(error(4000).formatted(param, field.getName(), instance.getClass().getName()), e);
             }
-        });
+        }
 
         // Fill the parameters into fields annotated with @ParamsMap
-        ReflectionUtil.getAllNonPrivateFieldsOrThrow(instance.getClass(), ParamsMap.class).forEach(field -> {
-
-            if (!MapUtil.isMapWithTypes(field, String.class, Object.class)) {
-                throw new RuntimeException(error(4002).formatted(field.getName(), instance.getClass().getName()));
-            }
-
+        for (Field field : paramsMapFields) {
             try {
                 field.setAccessible(true);
 
@@ -172,7 +190,7 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
             } catch (IllegalAccessException e) {
                 throw new RuntimeException(error(4010).formatted(field.getName(), instance.getClass().getName()), e);
             }
-        });
+        }
     }
 
     /**
@@ -183,14 +201,14 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
      * @param parameters The parameters to fill into the methods
      */
     private void callParamMethods(Object instance, Map<String, Object> parameters) {
-        ReflectionUtil.getAllNonPrivateMethodsOrThrow(instance.getClass(), Param.class).forEach(method -> {
+        for (Method method : paramMethods) {
             try {
                 method.setAccessible(true);
                 Object value = parameters.get(method.getAnnotation(Param.class).value());
 
                 if (value == null) {
                     method.invoke(instance, (Object) null);
-                    return;
+                    continue;
                 }
 
                 if (Reflection.canBeAssigned(method.getParameterTypes()[0], value)) {
@@ -201,7 +219,7 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
             } catch (IllegalAccessException | InvocationTargetException e) {
                 throw new RuntimeException(error(4005).formatted(method.getAnnotation(Param.class).value(), method.getName(), instance.getClass().getName()), e);
             }
-        });
+        }
     }
 
     /**
@@ -212,7 +230,7 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
      * @param parameters The parameters to fill into the methods
      */
     private void callParamsMethods(Object instance, Map<String, Object> parameters) {
-        ReflectionUtil.getAllNonPrivateMethodsOrThrow(instance.getClass(), Params.class).forEach(method -> {
+        for (Method method : paramsMethods) {
             try {
                 method.setAccessible(true);
 
@@ -237,7 +255,7 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
             } catch (IllegalAccessException | InvocationTargetException e) {
                 throw new RuntimeException(error(4011).formatted(method.getName(), instance.getClass().getName()), e);
             }
-        });
+        }
     }
 
     /**
@@ -248,19 +266,14 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
      * @param parameters The parameters to fill into the methods
      */
     private void callParamsMapMethods(Object instance, Map<String, Object> parameters) {
-        ReflectionUtil.getAllNonPrivateMethodsOrThrow(instance.getClass(), ParamsMap.class).forEach(method -> {
-
-            if (method.getParameterCount() != 1 || !MapUtil.isMapWithTypes(method.getParameters()[0], String.class, Object.class)) {
-                throw new RuntimeException(error(4003).formatted(method.getName(), instance.getClass().getName()));
-            }
-
+        for (Method method : paramsMapMethods) {
             try {
                 method.setAccessible(true);
                 method.invoke(instance, parameters);
             } catch (IllegalAccessException | InvocationTargetException e) {
                 throw new RuntimeException(error(4010).formatted(method.getName(), instance.getClass().getName()), e);
             }
-        });
+        }
     }
 
     /**
