@@ -7,7 +7,7 @@ import org.fulib.fx.annotation.controller.Controller;
 import org.fulib.fx.annotation.controller.Resource;
 import org.fulib.fx.annotation.controller.SubComponent;
 import org.fulib.fx.annotation.controller.Title;
-import org.fulib.fx.annotation.event.onKey;
+import org.fulib.fx.annotation.event.OnKey;
 import org.fulib.fx.annotation.param.Params;
 import org.fulib.fx.annotation.param.ParamsMap;
 import org.fulib.fx.util.ControllerUtil;
@@ -94,7 +94,7 @@ public class ControllerAnnotationProcessor extends AbstractProcessor {
             checkTitle(element);
         }
 
-        for (Element element : roundEnv.getElementsAnnotatedWith(onKey.class)) {
+        for (Element element : roundEnv.getElementsAnnotatedWith(OnKey.class)) {
             checkOnKey(element);
         }
 

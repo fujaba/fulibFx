@@ -9,8 +9,8 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import org.fulib.fx.annotation.controller.Component;
-import org.fulib.fx.annotation.event.onDestroy;
-import org.fulib.fx.annotation.event.onRender;
+import org.fulib.fx.annotation.event.OnDestroy;
+import org.fulib.fx.annotation.event.OnRender;
 
 import javax.inject.Inject;
 import java.util.concurrent.CompletableFuture;
@@ -35,7 +35,7 @@ public class DiceSubComponent extends VBox {
         super();
     }
 
-    @onRender
+    @OnRender
     public void onRender() {
         this.rollAnimation = new Timeline();
         this.rollAnimation.setCycleCount(10);
@@ -46,7 +46,7 @@ public class DiceSubComponent extends VBox {
         this.rollAnimation.setOnFinished(event -> this.rollFuture.complete(Integer.parseInt(eyesLabel.getText())));
     }
 
-    @onDestroy
+    @OnDestroy
     public void stopRolling() {
         rollAnimation.stop();
     }

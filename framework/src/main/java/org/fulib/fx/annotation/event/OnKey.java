@@ -15,7 +15,7 @@ import java.lang.annotation.Target;
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface onKey {
+public @interface OnKey {
 
     /**
      * The code of the key event.

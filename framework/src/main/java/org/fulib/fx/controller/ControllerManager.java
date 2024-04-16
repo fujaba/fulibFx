@@ -12,8 +12,8 @@ import javafx.util.Pair;
 import org.fulib.fx.FulibFxApp;
 import org.fulib.fx.annotation.controller.Component;
 import org.fulib.fx.annotation.controller.Controller;
-import org.fulib.fx.annotation.event.onDestroy;
-import org.fulib.fx.annotation.event.onKey;
+import org.fulib.fx.annotation.event.OnDestroy;
+import org.fulib.fx.annotation.event.OnKey;
 import org.fulib.fx.controller.building.ControllerBuildFactory;
 import org.fulib.fx.controller.exception.IllegalControllerException;
 import org.fulib.fx.controller.internal.FxSidecar;
@@ -186,9 +186,9 @@ public class ControllerManager {
      * @param instance The controller instance
      */
     private void registerKeyEvents(Object instance) {
-        ReflectionUtil.getAllNonPrivateMethodsOrThrow(instance.getClass(), onKey.class).forEach(method -> {
+        ReflectionUtil.getAllNonPrivateMethodsOrThrow(instance.getClass(), OnKey.class).forEach(method -> {
 
-            onKey annotation = method.getAnnotation(onKey.class);
+            OnKey annotation = method.getAnnotation(OnKey.class);
             EventType<KeyEvent> type = annotation.type().asEventType();
             EventHandler<KeyEvent> handler = createKeyEventHandler(method, instance, annotation);
 
@@ -202,7 +202,7 @@ public class ControllerManager {
     }
 
     /**
-     * Destroys the given controller/component by calling all methods annotated with {@link onDestroy}.
+     * Destroys the given controller/component by calling all methods annotated with {@link OnDestroy}.
      * <p>
      * <b>Important:</b> Do not use this method on a controller's view but on the controller itself.
      * <p>
@@ -330,7 +330,7 @@ public class ControllerManager {
      * @param annotation The annotation with the key event information
      * @return An event handler for the given method and instance
      */
-    private EventHandler<KeyEvent> createKeyEventHandler(Method method, Object instance, onKey annotation) {
+    private EventHandler<KeyEvent> createKeyEventHandler(Method method, Object instance, OnKey annotation) {
         boolean hasEventParameter = method.getParameterCount() == 1 && method.getParameterTypes()[0].isAssignableFrom(KeyEvent.class);
 
         if (!hasEventParameter && method.getParameterCount() != 0) {
@@ -354,7 +354,7 @@ public class ControllerManager {
         };
     }
 
-    private boolean keyEventMatchesAnnotation(KeyEvent event, onKey annotation) {
+    private boolean keyEventMatchesAnnotation(KeyEvent event, OnKey annotation) {
         return (annotation.code() == KeyCode.UNDEFINED || event.getCode() == annotation.code()) &&
                 (annotation.character().isEmpty() || event.getCharacter().equals(annotation.character())) &&
                 (annotation.text().isEmpty() || event.getText().equals(annotation.text())) &&

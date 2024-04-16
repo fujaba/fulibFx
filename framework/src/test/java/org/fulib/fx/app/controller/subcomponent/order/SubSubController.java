@@ -1,9 +1,9 @@
 package org.fulib.fx.app.controller.subcomponent.order;
 
 import org.fulib.fx.annotation.controller.Component;
-import org.fulib.fx.annotation.event.onDestroy;
-import org.fulib.fx.annotation.event.onInit;
-import org.fulib.fx.annotation.event.onRender;
+import org.fulib.fx.annotation.event.OnDestroy;
+import org.fulib.fx.annotation.event.OnInit;
+import org.fulib.fx.annotation.event.OnRender;
 import org.fulib.fx.annotation.param.Param;
 import javafx.scene.layout.VBox;
 
@@ -20,17 +20,17 @@ public class SubSubController extends VBox {
     public SubSubController() {
     }
 
-    @onInit()
+    @OnInit()
     public void init(@Param("initList") List<String> initList) {
         initList.add("subsub");
     }
 
-    @onRender()
+    @OnRender()
     public void render(@Param("renderList") List<String> renderList) {
         renderList.add("subsub");
     }
 
-    @onDestroy()
+    @OnDestroy()
     public void destroy() {
         destroyList.add("subsub");
     }

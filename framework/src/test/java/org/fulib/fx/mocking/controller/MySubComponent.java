@@ -3,7 +3,7 @@ package org.fulib.fx.mocking.controller;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import org.fulib.fx.annotation.controller.Component;
-import org.fulib.fx.annotation.event.onRender;
+import org.fulib.fx.annotation.event.OnRender;
 
 import javax.inject.Inject;
 
@@ -14,7 +14,7 @@ public class MySubComponent extends VBox {
     public MySubComponent() {
     }
 
-    @onRender
+    @OnRender
     public void onRender() {
         this.getChildren().add(new Label("This is a subcomponent string."));
     }

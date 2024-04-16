@@ -1,8 +1,7 @@
 package org.fulib.fx.annotation.param;
 
-import org.fulib.fx.annotation.event.onInit;
-import org.fulib.fx.annotation.event.onRender;
-import org.fulib.fx.controller.Router;
+import org.fulib.fx.annotation.event.OnInit;
+import org.fulib.fx.annotation.event.OnRender;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -19,7 +18,7 @@ import java.util.Map;
  * <p>
  * If the annotation is used on a method, the method will be called with the specified parameter's value initializing the controller/component.
  * <p>
- * If the annotation is used on a method argument, the argument will be injected with the specified parameter's value (method has to be annotated with {@link onRender} or {@link onInit}).
+ * If the annotation is used on a method argument, the argument will be injected with the specified parameter's value (method has to be annotated with {@link OnRender} or {@link OnInit}).
  */
 @Target({ElementType.PARAMETER, ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
