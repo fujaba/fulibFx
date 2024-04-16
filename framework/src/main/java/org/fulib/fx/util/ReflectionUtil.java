@@ -137,11 +137,10 @@ public class ReflectionUtil {
      * @return A stream of fields that are annotated with the given annotation and are not private
      */
     public static Stream<Field> getAllNonPrivateFieldsOrThrow(@NotNull Class<?> clazz, @NotNull Class<? extends @NotNull Annotation> annotation) {
-        return Reflection.getAllFieldsWithAnnotation(clazz, annotation).filter(field -> {
+        return Reflection.getAllFieldsWithAnnotation(clazz, annotation).peek(field -> {
             if (Modifier.isPrivate(field.getModifiers())) {
                 throw new RuntimeException(error(1012).formatted(Field.class.getSimpleName(), field.getName(), field.getDeclaringClass().getName(), annotation.getSimpleName()));
             }
-            return true;
         });
     }
 
@@ -156,11 +155,10 @@ public class ReflectionUtil {
      * @return A stream of methods that are annotated with the given annotation and are not private
      */
     public static Stream<Method> getAllNonPrivateMethodsOrThrow(@NotNull Class<?> clazz, @NotNull Class<? extends @NotNull Annotation> annotation) {
-        return Reflection.getAllMethodsWithAnnotation(clazz, annotation).filter(method -> {
+        return Reflection.getAllMethodsWithAnnotation(clazz, annotation).peek(method -> {
             if (Modifier.isPrivate(method.getModifiers())) {
                 throw new RuntimeException(error(1012).formatted(Method.class.getSimpleName(), method.getName(), method.getDeclaringClass().getName(), annotation.getSimpleName()));
             }
-            return true;
         });
     }
 

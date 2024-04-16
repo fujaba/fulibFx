@@ -101,14 +101,14 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
      */
     private void fillParametersIntoFields(@NotNull Object instance, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
         // Fill the parameters into fields annotated with @Param
-        for (Field field : ReflectionUtil.getAllNonPrivateFieldsOrThrow(instance.getClass(), Param.class).toList()) {
+        ReflectionUtil.getAllNonPrivateFieldsOrThrow(instance.getClass(), Param.class).forEach(field -> {
 
             Param paramAnnotation = field.getAnnotation(Param.class);
             String param = paramAnnotation.value();
 
             // Don't fill the parameter if it's not present (field will not be overwritten, "default value")
             if (!parameters.containsKey(param)) {
-                continue;
+                return;
             }
 
             Class<?> fieldType = field.getType();
@@ -127,7 +127,6 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
                     }
 
                     try {
-                        // noinspection unchecked
                         ((WritableValue<Object>) field.get(instance)).setValue(value);
                     } catch (ClassCastException e) {
                         throw new RuntimeException(error(4007).formatted(param, field.getName(), instance.getClass().getName(), fieldType.getName(), value == null ? "null" : value.getClass().getName()));
@@ -150,10 +149,10 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
             } catch (IllegalAccessException e) {
                 throw new RuntimeException(error(4000).formatted(param, field.getName(), instance.getClass().getName()), e);
             }
-        }
+        });
 
         // Fill the parameters into fields annotated with @ParamsMap
-        for (Field field : ReflectionUtil.getAllNonPrivateFieldsOrThrow(instance.getClass(), ParamsMap.class).toList()) {
+        ReflectionUtil.getAllNonPrivateFieldsOrThrow(instance.getClass(), ParamsMap.class).forEach(field -> {
 
             if (!MapUtil.isMapWithTypes(field, String.class, Object.class)) {
                 throw new RuntimeException(error(4002).formatted(field.getName(), instance.getClass().getName()));
@@ -164,7 +163,6 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
 
                 // If the map is final, clear it and put all parameters into it
                 if (Modifier.isFinal(field.getModifiers())) {
-                    @SuppressWarnings("unchecked")
                     Map<String, Object> map = (Map<String, Object>) field.get(instance);
                     map.clear();
                     map.putAll(parameters);
@@ -174,7 +172,7 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
             } catch (IllegalAccessException e) {
                 throw new RuntimeException(error(4010).formatted(field.getName(), instance.getClass().getName()), e);
             }
-        }
+        });
     }
 
     /**

@@ -61,13 +61,13 @@ public class IngameController extends BaseController {
     }
 
     @onInit
-    public void setup(@Param("playerAmount") int playerAmount) {
+    void setup(@Param("playerAmount") int playerAmount) {
         if (this.game == null) this.game = this.gameService.createGame(playerAmount);
         this.currentPlayer.set(this.game.getCurrentPlayer());
     }
 
     @onRender
-    public void drawBoard() {
+    void drawBoard() {
         for (Field field : this.game.getBoard().getFields()) {
             Circle circle = createFieldCircle(field);
             this.boardPane.getChildren().add(circle);
@@ -76,7 +76,7 @@ public class IngameController extends BaseController {
     }
 
     @onRender(1)
-    public void drawPieces() {
+    void drawPieces() {
         for (Player player : this.game.getPlayers()) {
             for (int i = 0; i < player.getPieces().size(); i++) {
                 Piece piece = player.getPieces().get(i);
@@ -93,7 +93,7 @@ public class IngameController extends BaseController {
     }
 
     @onRender
-    public void setupDice() {
+    void setupDice() {
         this.diceSubComponent.setOnMouseClicked(event -> {
             rollDice();
         });
@@ -101,7 +101,7 @@ public class IngameController extends BaseController {
     }
 
     @onKey(code = KeyCode.R)
-    public void rollDice() {
+    void rollDice() {
         if (!this.diceSubComponent.isEnabled()) return;
         LudoUtil.playSound(Constants.SOUND_ROLL_DICES);
         this.subscriber.subscribe(this.diceSubComponent.roll(), Schedulers.computation(),
@@ -118,14 +118,14 @@ public class IngameController extends BaseController {
     }
 
     @onRender
-    public void displayCurrentTurn() {
+    void displayCurrentTurn() {
         if (eyes.get() != 0) {
             this.diceSubComponent.setLabel(eyes.get());
         }
     }
 
     @onRender
-    public void setupTexts() {
+    void setupTexts() {
         this.subscriber.listen(
                 game.listeners(),
                 Game.PROPERTY_CURRENT_PLAYER,
@@ -135,7 +135,7 @@ public class IngameController extends BaseController {
     }
 
     @onRender(2)
-    public void setupPieceMovements() {
+    void setupPieceMovements() {
         this.game.getPlayers().forEach(player ->
                 player.getPieces().forEach(piece ->
                         this.subscriber.listen(
@@ -224,7 +224,7 @@ public class IngameController extends BaseController {
     }
 
     @onDestroy
-    public void onDestroy() {
+    void onDestroy() {
         this.boardPane.getChildren().forEach(node -> {
             node.setOnMouseClicked(null);
             node.setOnMouseEntered(null);
