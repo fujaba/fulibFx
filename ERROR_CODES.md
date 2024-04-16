@@ -178,10 +178,10 @@ public class MyComponent extends ImageView { // Wrong, should extend Parent (or 
 show(new MyComponent()); // Wrong, should not be able to show a controller that does not provide a parent as its view
 ```
 
-### 1012: `* '*' in class '*' annotated with '*' cannot be accessed as it is private.`
+### 1012: `Cannot access private * '*' in class '*' annotated with '*'.`
 
 - Runtime: ✅
-- Annotation Processor: ❌(Caught by the compiler)
+- Annotation Processor: ❌Caught by the compiler)
 
 This error is thrown when the framework tries to access a private field or method.
 
