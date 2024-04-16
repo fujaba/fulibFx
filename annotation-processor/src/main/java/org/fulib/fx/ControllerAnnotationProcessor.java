@@ -39,6 +39,17 @@ import static org.fulib.fx.util.FrameworkUtil.note;
 @SuppressWarnings("unused")
 public class ControllerAnnotationProcessor extends AbstractProcessor {
 
+    private FxClassGenerator generator;
+
+    public ControllerAnnotationProcessor() {
+    }
+
+    @Override
+    public synchronized void init(ProcessingEnvironment processingEnv) {
+        super.init(processingEnv);
+        this.generator = new FxClassGenerator(processingEnv);
+    }
+
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
 
@@ -46,11 +57,17 @@ public class ControllerAnnotationProcessor extends AbstractProcessor {
         for (Element element : roundEnv.getElementsAnnotatedWith(Component.class)) {
             checkComponent(element);
             checkDoubleAnnotation(element); // Check if a class is annotated with both @Controller and @Component
+            if (element instanceof TypeElement typeElement) {
+                generator.generateSidecar(typeElement);
+            }
         }
 
         // Check if the element is a valid controller
         for (Element element : roundEnv.getElementsAnnotatedWith(Controller.class)) {
             checkController(element);
+            if (element instanceof TypeElement typeElement) {
+                generator.generateSidecar(typeElement);
+            }
         }
 
         for (Element element : roundEnv.getElementsAnnotatedWith(SubComponent.class)) {
@@ -176,12 +193,27 @@ public class ControllerAnnotationProcessor extends AbstractProcessor {
     }
 
     private void checkViewResource(Element element, String view) {
+        String packageName = processingEnv.getElementUtils().getPackageOf(element).getQualifiedName().toString();
+
+        // relativize the view path -- while it starts with ../, remove the last package segment
+        // this is necessary to avoid an IllegalArgumentException when calling getResource,
+        // because it does not allow relative paths
+        while (view.startsWith("../")) {
+            int index = packageName.lastIndexOf('.');
+            if (index == -1) {
+                final String viewPath = packageName + "/" + view; // no replace needed, packageName has no more '.'s
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error(2000).formatted(viewPath), element);
+                return;
+            }
+            packageName = packageName.substring(0, index);
+            view = view.substring(3);
+        }
+
         try {
             // Check if the specified view file exists in the source path
-            final FileObject resource = processingEnv.getFiler().getResource(StandardLocation.SOURCE_PATH,
-                    processingEnv.getElementUtils().getPackageOf(element).getQualifiedName().toString(), view);
+            final FileObject resource = processingEnv.getFiler().getResource(StandardLocation.SOURCE_PATH, packageName, view);
         } catch (IOException e) {
-            String viewPath = processingEnv.getElementUtils().getPackageOf(element).getQualifiedName().toString().replace('.', '/') + "/" + view;
+            final String viewPath = packageName.replace('.', '/') + "/" + view;
             processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error(2000).formatted(viewPath), element);
             processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, note(2000));
         }

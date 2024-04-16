@@ -1,16 +1,18 @@
 package org.fulib.fx.controller.building;
 
+import javafx.util.Builder;
+import javafx.util.BuilderFactory;
 import org.fulib.fx.annotation.controller.Component;
 import org.fulib.fx.annotation.controller.SubComponent;
 import org.fulib.fx.util.ReflectionUtil;
-import org.fulib.fx.util.reflection.Reflection;
-import javafx.util.Builder;
-import javafx.util.BuilderFactory;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import javax.inject.Provider;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.fulib.fx.util.FrameworkUtil.error;
 
@@ -38,7 +40,7 @@ public class ControllerBuildFactory implements BuilderFactory {
      * Searches the controller class for fields annotated with @SubController and stores the instances.
      */
     private void initSubControllers() {
-        Reflection.getAllFieldsWithAnnotation(instance.getClass(), SubComponent.class).forEach(field -> {
+        ReflectionUtil.getAllNonPrivateFieldsOrThrow(instance.getClass(), SubComponent.class).forEach(field -> {
 
             // If the field is a provider, store it in the provider map
             if (field.getType() == Provider.class) {

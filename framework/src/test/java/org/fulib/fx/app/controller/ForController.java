@@ -32,7 +32,7 @@ public class ForController {
     public ForController() {
     }
 
-    private VBox render() {
+    VBox render() {
         this.container = new VBox();
         this.container.setId("container");
 

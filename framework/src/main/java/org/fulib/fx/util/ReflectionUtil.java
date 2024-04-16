@@ -6,11 +6,14 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import org.fulib.fx.FulibFxApp;
+import org.fulib.fx.util.reflection.Reflection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.inject.Provider;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
+import java.util.stream.Stream;
 
 import static org.fulib.fx.util.FrameworkUtil.error;
 
@@ -122,4 +125,41 @@ public class ReflectionUtil {
             FulibFxApp.LOGGER.warning("Could not reset mouse handler. This may cause problems with mouse drag events after refreshing the scene.");
         }
     }
+
+    /**
+     * Returns all non-private fields of the given class that are annotated with the given annotation.
+     * If a field is private, a RuntimeException is thrown.
+     * <p>
+     * Utility method for not having to specify an error message every time.
+     *
+     * @param clazz      The class to get the fields from
+     * @param annotation The annotation to filter the fields by
+     * @return A stream of fields that are annotated with the given annotation and are not private
+     */
+    public static Stream<Field> getAllNonPrivateFieldsOrThrow(@NotNull Class<?> clazz, @NotNull Class<? extends @NotNull Annotation> annotation) {
+        return Reflection.getAllFieldsWithAnnotation(clazz, annotation).peek(field -> {
+            if (Modifier.isPrivate(field.getModifiers())) {
+                throw new RuntimeException(error(1012).formatted(Field.class.getSimpleName(), field.getName(), field.getDeclaringClass().getName(), annotation.getSimpleName()));
+            }
+        });
+    }
+
+    /**
+     * Returns all non-private methods of the given class that are annotated with the given annotation.
+     * If a method is private, a RuntimeException is thrown.
+     * <p>
+     * Utility method for not having to specify an error message every time.
+     *
+     * @param clazz      The class to get the methods from
+     * @param annotation The annotation to filter the methods by
+     * @return A stream of methods that are annotated with the given annotation and are not private
+     */
+    public static Stream<Method> getAllNonPrivateMethodsOrThrow(@NotNull Class<?> clazz, @NotNull Class<? extends @NotNull Annotation> annotation) {
+        return Reflection.getAllMethodsWithAnnotation(clazz, annotation).peek(method -> {
+            if (Modifier.isPrivate(method.getModifiers())) {
+                throw new RuntimeException(error(1012).formatted(Method.class.getSimpleName(), method.getName(), method.getDeclaringClass().getName(), annotation.getSimpleName()));
+            }
+        });
+    }
+
 }

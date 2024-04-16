@@ -47,6 +47,13 @@ dependencies {
     testImplementation group: 'org.hamcrest', name: 'hamcrest', version: hamcrestVersion
 
     testAnnotationProcessor group: 'com.google.dagger', name: 'dagger-compiler', version: daggerVersion
+    testAnnotationProcessor project(':annotation-processor')
+}
+
+compileTestJava {
+    // Required for the annotation processor
+    options.sourcepath = sourceSets.main.resources.getSourceDirectories() +
+            sourceSets.test.resources.getSourceDirectories()
 }
 
 test {

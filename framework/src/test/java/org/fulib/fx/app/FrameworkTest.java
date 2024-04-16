@@ -93,9 +93,6 @@ public class FrameworkTest extends ApplicationTest {
         sleep(200);
 
         assertThrows(ControllerInvalidRouteException.class, () -> app.show("/controller/invalid"));
-
-        assertThrows(IllegalControllerException.class, () -> app.show("/controller/nonextending"));
-
     }
 
     /**
@@ -205,9 +202,10 @@ public class FrameworkTest extends ApplicationTest {
 
         assertEquals("string", controller.fieldPropertyParamProperty().get());
 
-        assertEquals(Map.of("integer", 1, "string", "string", "character", 'a', "bool", true, "property", property), controller.getOnInitParamsMap());
-        assertEquals(Map.of("integer", 1, "string", "string", "character", 'a', "bool", true, "property", property), controller.getSetterParamsMap());
-        assertEquals(Map.of("integer", 1, "string", "string", "character", 'a', "bool", true, "property", property), controller.getFieldParamsMap());
+        assertEquals(params, controller.getOnInitParamsMap());
+        assertEquals(params, controller.getSetterParamsMap());
+        assertEquals(params, controller.getFieldParamsMap());
+        assertEquals(params, controller.getFinalFieldParamsMap());
 
         assertEquals('a', controller.getSetterMultiParams1());
         assertEquals(true, controller.getSetterMultiParams2());
