@@ -398,7 +398,7 @@ public class IngameController {
     }
 
     @OnDestroy
-    public void onDestroy() {
+    public void destroy() {
         // ...
         this.subscriber.dispose();
     }
@@ -424,7 +424,7 @@ public class DiceSubComponent extends VBox {
     public Label eyesLabel;
     
     @OnRender
-    public void onRender() {
+    public void render() {
         // ...
     }
 }

@@ -91,10 +91,8 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
         callParamsMethods(instance, params);
         callParamsMapMethods(instance, params);
 
-        // Call the onInit method(s)
         callMethodsWithAnnotation(instance, params, initMethods, OnInit.class);
 
-        // Initialize all subcomponents
         Reflection.callMethodsForFieldInstances(instance, subComponentFields, (subController) -> controllerManager.init(subController, params));
     }
 
@@ -344,7 +342,6 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
         final boolean component = ControllerUtil.isComponent(instance);
         final Node node = renderNode(instance, component);
 
-        // Call the onRender method
         callMethodsWithAnnotation(instance, params, renderMethods, OnRender.class);
 
         return node;

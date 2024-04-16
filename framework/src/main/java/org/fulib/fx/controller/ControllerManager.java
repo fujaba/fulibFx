@@ -13,7 +13,9 @@ import org.fulib.fx.FulibFxApp;
 import org.fulib.fx.annotation.controller.Component;
 import org.fulib.fx.annotation.controller.Controller;
 import org.fulib.fx.annotation.event.OnDestroy;
+import org.fulib.fx.annotation.event.OnInit;
 import org.fulib.fx.annotation.event.OnKey;
+import org.fulib.fx.annotation.event.OnRender;
 import org.fulib.fx.controller.building.ControllerBuildFactory;
 import org.fulib.fx.controller.exception.IllegalControllerException;
 import org.fulib.fx.controller.internal.FxSidecar;
@@ -62,7 +64,9 @@ public class ControllerManager {
     }
 
     /**
-     * Initializes and renders the given controller. Calls the onInit and onRender methods. See {@link #init(Object, Map)} and {@link #render(Object, Map)}.
+     * Initializes and renders the given controller.
+     * Calls the {@link OnInit} and {@link OnRender} methods.
+     * See {@link #init(Object, Map)} and {@link #render(Object, Map)}.
      * <p>
      * The controller/component instance(s) will be added to the set of initialized controllers and will be destroyed when a new main controller is set.
      *
@@ -80,7 +84,8 @@ public class ControllerManager {
     }
 
     /**
-     * Initializes the given controller/component. Calls the onInit method(s) and recursively initializes all subcomponents.
+     * Initializes the given controller/component.
+     * Calls the {@link OnInit} method(s) and recursively initializes all subcomponents.
      * <p>
      * <b>Order:</b> Controller -> Subcomponents -> Subcomponents of subcomponents -> ...
      *
@@ -103,7 +108,7 @@ public class ControllerManager {
 
     /**
      * Initializes the given controller/component.
-     * Calls the onInit method(s) and recursively initializes all subcomponents.
+     * Calls the {@link OnInit} method(s) and recursively initializes all subcomponents.
      * <p>
      * All initialized controllers will be added to the list of initialized controllers.
      * If a controller/component is added to the list, all its subcomponents will follow right after it.
@@ -144,7 +149,8 @@ public class ControllerManager {
     }
 
     /**
-     * Renders the given controller/component instance. Renders all subcomponents recursively and then calls the onRender method(s) before returning the rendered controller.
+     * Renders the given controller/component instance.
+     * Renders all subcomponents recursively and then calls the {@link OnRender} method(s) before returning the rendered controller.
      * <p>
      * <b>Important:</b> This method assumes that the controller has already been initialized.
      * The controller will <u>not automatically be destroyed</u> when using only this method.
