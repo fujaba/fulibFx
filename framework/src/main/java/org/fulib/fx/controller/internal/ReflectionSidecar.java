@@ -31,7 +31,6 @@ import static org.fulib.fx.util.FrameworkUtil.error;
 
 public class ReflectionSidecar<T> implements FxSidecar<T> {
     private final ControllerManager controllerManager;
-    private final Class<T> componentClass;
 
     private final String title;
     private final Field resourceField;
@@ -48,7 +47,6 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
 
     public ReflectionSidecar(ControllerManager controllerManager, Class<T> componentClass) {
         this.controllerManager = controllerManager;
-        this.componentClass = componentClass;
 
         this.title = loadTitle(componentClass);
         this.resourceField = loadResourceField(componentClass);
