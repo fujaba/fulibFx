@@ -69,7 +69,7 @@ This can happen if the method throws an exception.
 - Runtime: ✅
 - Annotation Processor: ❌
 
-This error is thrown if a method annotated with an event annotation (onInit, onRender, onDestroy, etc.) cannot be called
+This error is thrown if a method annotated with an event annotation (`@OnInit`, `@OnRender`, `@OnDestroy`, etc.) cannot be called
 successfully.
 This can happen if the method throws an exception.
 
@@ -138,21 +138,21 @@ public class NotAController { // Wrong, should be a controller or component
 }
 ```
 
-### 1010: `Method '*' annotated with @onKey in class '*' must either take no or exactly one parameter of type KeyEvent.`
+### 1010: `Method '*' annotated with @OnKey in class '*' must either take no or exactly one parameter of type KeyEvent.`
 
 - Runtime: ✅
 - Annotation Processor: ✅
 
-This error is thrown when a method annotated with `@onKey` has more than one parameter or a parameter that is not of type `KeyEvent`.
+This error is thrown when a method annotated with `@OnKey` has more than one parameter or a parameter that is not of type `KeyEvent`.
 
 ```java
 
-@onKey
+@OnKey
 public void onKey(String key) { // Wrong, should not have a parameter or have a parameter of type KeyEvent
     // ...
 }
 
-@onKey
+@OnKey
 public void onKey(KeyEvent event, String other) { // Wrong, should not have more than one parameter
     // ...
 }
@@ -191,7 +191,7 @@ public class MyController {
     @Param("key") // Wrong, should not be private
     private String string;
 
-    @onInit() // Wrong, should not be private
+    @OnInit() // Wrong, should not be private
     private void init() {
         // ...
     }

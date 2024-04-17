@@ -4,8 +4,8 @@ import javafx.collections.ObservableList;
 import javafx.scene.control.Labeled;
 import javafx.scene.layout.VBox;
 import org.fulib.fx.annotation.controller.Controller;
-import org.fulib.fx.annotation.event.onDestroy;
-import org.fulib.fx.annotation.event.onRender;
+import org.fulib.fx.annotation.event.OnDestroy;
+import org.fulib.fx.annotation.event.OnRender;
 import org.fulib.fx.annotation.param.Param;
 import org.fulib.fx.app.controller.subcomponent.basic.ButtonSubComponent;
 import org.fulib.fx.constructs.forloop.FxFor;
@@ -39,12 +39,12 @@ public class ForController {
         return new VBox(container);
     }
 
-    @onRender
+    @OnRender
     public void onRender(@Param("list") ObservableList<String> list) {
         subscriber.subscribe(fxFor.of(container, list, subComponentProvider, Labeled::setText).disposable());
     }
 
-    @onDestroy
+    @OnDestroy
     public void onDestroy() {
         subscriber.dispose();
     }

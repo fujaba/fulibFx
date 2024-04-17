@@ -21,8 +21,8 @@ public class TodoController {
 
     // ...
 
-    @onRender
-    public void onRender() {
+    @OnRender
+    public void render() {
         this.subscriber.subscribe(this.todoService.getTodos(), todos -> {
             // Do something with the todos
         }); 
@@ -31,8 +31,8 @@ public class TodoController {
         });
     }
     
-    @onDestroy
-    public void onDestroy() {
+    @OnDestroy
+    public void destroy() {
         this.subscriber.dispose();
     }
     

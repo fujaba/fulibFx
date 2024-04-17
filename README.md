@@ -37,7 +37,7 @@ provides an overview of the most important features:
 
 [Controllers](docs/controller/README.md) can be created by annotating a class with [`@Controller`](docs/controller/1-controllers.md).
 To specify methods which should be executed during the lifetime of the controller, they should be annotated with either 
-[`@onInit`, `@onRender` or `@onDestroy`](docs/controller/1-controllers.md) to specify their respective execution points.
+[`@OnInit`, `@OnRender` or `@OnDestroy`](docs/controller/1-controllers.md) to specify their respective execution points.
 
 A special type of controller is the [component](docs/controller/2-components.md). They can be used to create controller which can be used inside other
 controllers. Components have to extend from a JavaFX Parent (or any class extending from Parent) and have to be annotated
@@ -46,7 +46,7 @@ component along with the parent controller.
 
 The framework also provides a way to pass [parameters](docs/controller/4-parameters.md) to a controller using `@Param` 
 or utilities like setting a [title](docs/controller/6-titles.md) using `@Title` or registering 
-[key events](docs/controller/10-key-events.md) `@onKey`.
+[key events](docs/controller/10-key-events.md) `@OnKey`.
 
 ```java
 
@@ -61,22 +61,22 @@ public class TodoController {
     @Inject
     TodoListComponent todoListComponent;
     
-    @onInit
+    @OnInit
     public void initialize() {
         // Called when the controller is initialized
     }
     
-    @onRender
+    @OnRender
     public void render() {
         this.container.getChildren().add(todoListComponent);
     }
     
-    @onDestroy
+    @OnDestroy
     public void destroy() {
         // Called when the controller is being cleaned up
     }
     
-    @onKey(KeyCode.ENTER)
+    @OnKey(KeyCode.ENTER)
     public void onEnterPressed() {
         // Called when the enter key is pressed
     }

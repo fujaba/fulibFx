@@ -4,7 +4,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.scene.layout.VBox;
 import org.fulib.fx.annotation.controller.Controller;
-import org.fulib.fx.annotation.event.onInit;
+import org.fulib.fx.annotation.event.OnInit;
 import org.fulib.fx.annotation.param.Param;
 import org.fulib.fx.annotation.param.Params;
 import org.fulib.fx.annotation.param.ParamsMap;
@@ -57,7 +57,7 @@ public class ParamController {
         this.setterParamsMap = map;
     }
 
-    @onInit
+    @OnInit
     public void init(@Param("integer") Integer integer, @ParamsMap Map<String, Object> map) {
         this.onInitParam = integer;
         this.onInitParamsMap = map;

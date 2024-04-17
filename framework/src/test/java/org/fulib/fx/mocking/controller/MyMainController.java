@@ -5,7 +5,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import org.fulib.fx.annotation.controller.Controller;
 import org.fulib.fx.annotation.controller.SubComponent;
-import org.fulib.fx.annotation.event.onRender;
+import org.fulib.fx.annotation.event.OnRender;
 import org.fulib.fx.mocking.service.MyService;
 import org.fulib.fx.controller.Subscriber;
 
@@ -31,7 +31,7 @@ public class MyMainController {
     public MyMainController() {
     }
 
-    @onRender
+    @OnRender
     public void onRender() {
         subscriber.subscribe(service.getObservable(), string -> render.getChildren().add(new Label(string)));
         render.getChildren().add(mySubComponent);

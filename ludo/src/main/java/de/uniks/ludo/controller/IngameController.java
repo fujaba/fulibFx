@@ -21,10 +21,10 @@ import javafx.scene.shape.StrokeType;
 import org.fulib.fx.annotation.controller.Controller;
 import org.fulib.fx.annotation.controller.SubComponent;
 import org.fulib.fx.annotation.controller.Title;
-import org.fulib.fx.annotation.event.onDestroy;
-import org.fulib.fx.annotation.event.onInit;
-import org.fulib.fx.annotation.event.onKey;
-import org.fulib.fx.annotation.event.onRender;
+import org.fulib.fx.annotation.event.OnDestroy;
+import org.fulib.fx.annotation.event.OnInit;
+import org.fulib.fx.annotation.event.OnKey;
+import org.fulib.fx.annotation.event.OnRender;
 import org.fulib.fx.annotation.param.Param;
 
 import javax.inject.Inject;
@@ -60,13 +60,13 @@ public class IngameController extends BaseController {
         this.eyes = new SimpleIntegerProperty();
     }
 
-    @onInit
+    @OnInit
     void setup(@Param("playerAmount") int playerAmount) {
         if (this.game == null) this.game = this.gameService.createGame(playerAmount);
         this.currentPlayer.set(this.game.getCurrentPlayer());
     }
 
-    @onRender
+    @OnRender
     void drawBoard() {
         for (Field field : this.game.getBoard().getFields()) {
             Circle circle = createFieldCircle(field);
@@ -75,7 +75,7 @@ public class IngameController extends BaseController {
         }
     }
 
-    @onRender(1)
+    @OnRender(1)
     void drawPieces() {
         for (Player player : this.game.getPlayers()) {
             for (int i = 0; i < player.getPieces().size(); i++) {
@@ -92,7 +92,7 @@ public class IngameController extends BaseController {
         }
     }
 
-    @onRender
+    @OnRender
     void setupDice() {
         this.diceSubComponent.setOnMouseClicked(event -> {
             rollDice();
@@ -100,7 +100,7 @@ public class IngameController extends BaseController {
         this.subscriber.bind(this.diceSubComponent.eyesLabel.textFillProperty(), this.currentPlayer.map(player -> Color.web(Constants.COLORS.get(player.getId()))));
     }
 
-    @onKey(code = KeyCode.R)
+    @OnKey(code = KeyCode.R)
     void rollDice() {
         if (!this.diceSubComponent.isEnabled()) return;
         LudoUtil.playSound(Constants.SOUND_ROLL_DICES);
@@ -117,14 +117,14 @@ public class IngameController extends BaseController {
         );
     }
 
-    @onRender
+    @OnRender
     void displayCurrentTurn() {
         if (eyes.get() != 0) {
             this.diceSubComponent.setLabel(eyes.get());
         }
     }
 
-    @onRender
+    @OnRender
     void setupTexts() {
         this.subscriber.listen(
                 game.listeners(),
@@ -134,7 +134,7 @@ public class IngameController extends BaseController {
         this.subscriber.bind(this.playerLabel.textProperty(), this.currentPlayer.map(Player::getId).map(id -> this.bundle.getString("ingame.current.player").formatted(id)));
     }
 
-    @onRender(2)
+    @OnRender(2)
     void setupPieceMovements() {
         this.game.getPlayers().forEach(player ->
                 player.getPieces().forEach(piece ->
@@ -223,7 +223,7 @@ public class IngameController extends BaseController {
         return circle;
     }
 
-    @onDestroy
+    @OnDestroy
     void onDestroy() {
         this.boardPane.getChildren().forEach(node -> {
             node.setOnMouseClicked(null);

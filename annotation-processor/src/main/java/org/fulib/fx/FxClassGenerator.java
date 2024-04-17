@@ -1,9 +1,9 @@
 package org.fulib.fx;
 
 import org.fulib.fx.annotation.controller.*;
-import org.fulib.fx.annotation.event.onDestroy;
-import org.fulib.fx.annotation.event.onInit;
-import org.fulib.fx.annotation.event.onRender;
+import org.fulib.fx.annotation.event.OnDestroy;
+import org.fulib.fx.annotation.event.OnInit;
+import org.fulib.fx.annotation.event.OnRender;
 import org.fulib.fx.annotation.param.Param;
 import org.fulib.fx.annotation.param.Params;
 import org.fulib.fx.annotation.param.ParamsMap;
@@ -186,8 +186,8 @@ public class FxClassGenerator {
     }
 
     private void generateCallInitMethods(PrintWriter out, TypeElement componentClass) {
-        streamAllMethods(componentClass, onInit.class)
-            .sorted(Comparator.comparingInt(a -> a.getAnnotation(onInit.class).value()))
+        streamAllMethods(componentClass, OnInit.class)
+            .sorted(Comparator.comparingInt(a -> a.getAnnotation(OnInit.class).value()))
             .forEach(methodElement -> generateCall(out, methodElement));
     }
 
@@ -259,8 +259,8 @@ public class FxClassGenerator {
     }
 
     private void generateCallDestroyMethods(PrintWriter out, TypeElement componentClass) {
-        streamAllMethods(componentClass, onDestroy.class)
-            .sorted(Comparator.comparingInt(a -> a.getAnnotation(onDestroy.class).value()))
+        streamAllMethods(componentClass, OnDestroy.class)
+            .sorted(Comparator.comparingInt(a -> a.getAnnotation(OnDestroy.class).value()))
             .forEach(element -> generateCall(out, element));
     }
 
@@ -316,8 +316,8 @@ public class FxClassGenerator {
     }
 
     private void generateCallRenderMethods(PrintWriter out, TypeElement componentClass) {
-        streamAllMethods(componentClass, onRender.class)
-            .sorted(Comparator.comparingInt(a -> a.getAnnotation(onRender.class).value()))
+        streamAllMethods(componentClass, OnRender.class)
+            .sorted(Comparator.comparingInt(a -> a.getAnnotation(OnRender.class).value()))
             .forEach(element -> generateCall(out, element));
     }
 

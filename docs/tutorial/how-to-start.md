@@ -240,7 +240,7 @@ displayed.
 The destruction phase is used to clean up the controller and remove any references to the view.
 This phase is called after the view has been removed and the controller is no longer needed.
 
-In order to add custom behavior to the lifecycle of a controller, the `@onInit`, `@onRender` and `@onDestroy`
+In order to add custom behavior to the lifecycle of a controller, the `@OnInit`, `@OnRender` and `@OnDestroy`
 annotations
 can be used to mark methods which should be called during the respective phase.
 If these methods have to be executed in a specific order, an additional integer parameter can be used to specify the
@@ -250,7 +250,7 @@ The following method will be called after the controller's view has been loaded 
 
 ```java
 
-@onRender
+@OnRender
 public void drawBoard() {
     for (Field field : this.game.getBoard().getFields()) {
         Circle circle = createFieldCircle(field);
@@ -287,7 +287,7 @@ These parameters can be injected into the controller using the `@Param` annotati
 public class IngameController {
     // ...
 
-    @onInit
+    @OnInit
     public void setup(@Param("playerAmount") int playerAmount) {
         if (this.game == null) this.game = this.gameService.createGame(playerAmount);
         this.currentPlayer.set(this.game.getCurrentPlayer());
@@ -376,7 +376,7 @@ JavaFX and RxJava offer many convenient ways to do this, but all of them have to
 In `FulibFx`, a `Subscriber` can be used to listen to changes in a property and automatically clean up the subscription
 when the controller is destroyed.
 Instead of having to dispose every subscription manually, the `Subscriber` will take care of it for you when calling its
-`dispose` method in the `onDestroy` phase.
+`dispose` method in the `@OnDestroy` phase.
 The Subscriber contains many different methods to listen to changes in a property, bind properties together, subscribe to
 an observable and more.
 
@@ -387,7 +387,7 @@ public class IngameController {
     @Inject // Injected by Dagger for convenience
     Subscriber subscriber;
 
-    @onRender
+    @OnRender
     public void setupTexts() {
         this.subscriber.listen(
                 game.listeners(),
@@ -397,8 +397,8 @@ public class IngameController {
         this.subscriber.bind(this.playerLabel.textProperty(), this.currentPlayer.map(Player::getId).map(id -> this.bundle.getString("ingame.current.player").formatted(id)));
     }
 
-    @onDestroy
-    public void onDestroy() {
+    @OnDestroy
+    public void destroy() {
         // ...
         this.subscriber.dispose();
     }
@@ -423,8 +423,8 @@ public class DiceSubComponent extends VBox {
     @FXML
     public Label eyesLabel;
     
-    @onRender
-    public void onRender() {
+    @OnRender
+    public void render() {
         // ...
     }
 }
@@ -476,7 +476,7 @@ public class IngameController {
     @SubComponent
     DiceSubComponent diceSubComponent;
 
-    @onRender
+    @OnRender
     public void setupDice() {
         this.diceSubComponent.setOnMouseClicked(event -> {
             // ...

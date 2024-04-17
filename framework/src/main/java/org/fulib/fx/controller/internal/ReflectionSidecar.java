@@ -5,9 +5,9 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import org.fulib.fx.FulibFxApp;
 import org.fulib.fx.annotation.controller.*;
-import org.fulib.fx.annotation.event.onDestroy;
-import org.fulib.fx.annotation.event.onInit;
-import org.fulib.fx.annotation.event.onRender;
+import org.fulib.fx.annotation.event.OnDestroy;
+import org.fulib.fx.annotation.event.OnInit;
+import org.fulib.fx.annotation.event.OnRender;
 import org.fulib.fx.annotation.param.Param;
 import org.fulib.fx.annotation.param.Params;
 import org.fulib.fx.annotation.param.ParamsMap;
@@ -51,14 +51,14 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
         this.title = loadTitle(componentClass);
         this.resourceField = loadResourceField(componentClass);
         this.subComponentFields = loadSubComponentFields(componentClass);
-        this.initMethods = ReflectionUtil.getAllNonPrivateMethodsOrThrow(componentClass, onInit.class)
-            .sorted(Comparator.comparingInt(m -> m.getAnnotation(onInit.class).value()))
+        this.initMethods = ReflectionUtil.getAllNonPrivateMethodsOrThrow(componentClass, OnInit.class)
+            .sorted(Comparator.comparingInt(m -> m.getAnnotation(OnInit.class).value()))
             .toList();
-        this.renderMethods = ReflectionUtil.getAllNonPrivateMethodsOrThrow(componentClass, onRender.class)
-            .sorted(Comparator.comparingInt(m -> m.getAnnotation(onRender.class).value()))
+        this.renderMethods = ReflectionUtil.getAllNonPrivateMethodsOrThrow(componentClass, OnRender.class)
+            .sorted(Comparator.comparingInt(m -> m.getAnnotation(OnRender.class).value()))
             .toList();
-        this.destroyMethods = ReflectionUtil.getAllNonPrivateMethodsOrThrow(componentClass, onDestroy.class)
-            .sorted(Comparator.comparingInt(m -> m.getAnnotation(onDestroy.class).value()))
+        this.destroyMethods = ReflectionUtil.getAllNonPrivateMethodsOrThrow(componentClass, OnDestroy.class)
+            .sorted(Comparator.comparingInt(m -> m.getAnnotation(OnDestroy.class).value()))
             .toList();
 
         this.paramFields = ReflectionUtil.getAllNonPrivateFieldsOrThrow(componentClass, Param.class).toList();
@@ -91,10 +91,8 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
         callParamsMethods(instance, params);
         callParamsMapMethods(instance, params);
 
-        // Call the onInit method(s)
-        callMethodsWithAnnotation(instance, params, initMethods, onInit.class);
+        callMethodsWithAnnotation(instance, params, initMethods, OnInit.class);
 
-        // Initialize all subcomponents
         Reflection.callMethodsForFieldInstances(instance, subComponentFields, (subController) -> controllerManager.init(subController, params));
     }
 
@@ -344,8 +342,7 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
         final boolean component = ControllerUtil.isComponent(instance);
         final Node node = renderNode(instance, component);
 
-        // Call the onRender method
-        callMethodsWithAnnotation(instance, params, renderMethods, onRender.class);
+        callMethodsWithAnnotation(instance, params, renderMethods, OnRender.class);
 
         return node;
     }
@@ -409,7 +406,7 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
         Reflection.callMethodsForFieldInstances(instance, subComponentFields, controllerManager::destroy);
 
         // Call destroy methods
-        callMethodsWithAnnotation(instance, Map.of(), destroyMethods, onDestroy.class);
+        callMethodsWithAnnotation(instance, Map.of(), destroyMethods, OnDestroy.class);
     }
 
     private @Nullable Field loadResourceField(Class<T> componentClass) {

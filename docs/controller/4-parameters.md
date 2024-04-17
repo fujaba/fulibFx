@@ -47,7 +47,7 @@ public class FooController {
         // This method will be called with the parameter 'fofo' and 'baba' before the controller is initialized
     }
 
-    @onRender
+    @OnRender
     public void render(@Param("fofo") Foo foo, @ParamsMap Map<String, Object> params) {
         // This method will be called with the parameter 'fofo' and a map of all parameters upon rendering
     }
@@ -66,8 +66,8 @@ The order of injection is as follows:
 2. Methods annotated with `@Param` will be called
 3. Methods annotated with `@Params` will be called
 4. Methods annotated with `@ParamsMap` will be called
-5. The controller will be initialized (`@onInit`)
-6. The controller will be rendered (`@onRender`)
+5. The controller will be initialized (`@OnInit`)
+6. The controller will be rendered (`@OnRender`)
 
 ---
 

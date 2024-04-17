@@ -16,13 +16,13 @@ public class MainController {
     @Inject
     MyComponentProvider componentProvider;
     
-    @onRender
-    public void onRender(@ParamsMap Map<String, Object> params) {
+    @OnRender
+    public void render(@ParamsMap Map<String, Object> params) {
         listView.setCellFactory(param -> new ComponentListCell<>(app, componentProvider, params));
     }
     
-    @onDestroy
-    public void onDestroy() {
+    @OnDestroy
+    public void destroy() {
         listView.getItems().clear(); // Clear the listview to dispose the components
     }
 }

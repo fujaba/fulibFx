@@ -20,8 +20,8 @@ public class TodoController {
     
     // ...
     
-    @onRender
-    public void onRender() {
+    @OnRender
+    public void render() {
         container.getChildren().add(todoListComponent); // Add the subcomponent to the view
     }
     
@@ -125,8 +125,8 @@ public class TodoController {
     
     // ... 
 
-    @onRender
-    public void onRender() {
+    @OnRender
+    public void render() {
         TodoListComponent result = app.initAndRender(todoListComponentProvider.get(), Map.of("param", value), subscriber); // This subcomponent has to be cleaned up manually by disposing the subscriber
         container.getChildren().add(result); // Add the subcomponent to the view
         

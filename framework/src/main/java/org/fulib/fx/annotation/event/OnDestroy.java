@@ -6,11 +6,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Methods annotated with this annotation will be upon rendering of the controller/component.
+ * Methods annotated with this annotation will be upon the destruction the controller/component.
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface onRender {
+public @interface OnDestroy {
 
     /**
      * The order in which the method should be called. Lower values are called first.

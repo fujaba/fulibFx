@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface onInit {
+public @interface OnInit {
 
     /**
      * The order in which the method should be called. Lower values are called first.
