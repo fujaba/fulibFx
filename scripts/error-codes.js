@@ -22,7 +22,7 @@ for (const property of errorCodesProperties.getKeys()) {
 await scanCodes('../framework/src/main/java', 'runtime');
 await scanCodes('../annotation-processor/src/main/java', 'annotationProcessor');
 
-const newErrorCodesMd = errorCodesMd.replace(/^### (\d+).*(?:\r?\n)+- Runtime: ..?\r?\n- Annotation Processor: ..?/gm, (match, code) => {
+const newErrorCodesMd = errorCodesMd.replace(/^### (\d+).*(?:\r?\n)+- Runtime: .\r?\n- Annotation Processor: ./gmu, (match, code) => {
     const error = errorCodes[code];
     if (error) {
         error.matched = true;
