@@ -52,7 +52,7 @@ jar {
         attributes(
                 "Manifest-Version": 1.0,
                 "Class-Path": ".",
-                "Main-Class": "io.github.sekassel.person.Main"
+                "Main-Class": "de.uniks.ludo.LudoMain"
         )
     }
 
