@@ -86,12 +86,7 @@ public class ControllerUtil {
      * @return True if the field is a field that can provide a component
      */
     public static boolean canProvideSubComponent(Field field) {
-        if (field.getType().isAnnotationPresent(Component.class) && Node.class.isAssignableFrom(field.getType())) {
-            return true; // Field is a component
-        }
-        Class<?> providedClass = getProvidedClass(field);
-
-        return providedClass != null && providedClass.isAnnotationPresent(Component.class) && Node.class.isAssignableFrom(providedClass); // Field is a provider of a component
+        return isComponent(field.getType()) || isComponent(getProvidedClass(field));
     }
 
     /**
@@ -117,8 +112,7 @@ public class ControllerUtil {
      * @throws InvalidRouteFieldException If the field is not a valid route field
      */
     public static void requireControllerProvider(@NotNull Field field) {
-        Class<?> providedClass = getProvidedClass(field);
-        if (providedClass == null || (!providedClass.isAnnotationPresent(Controller.class) && !providedClass.isAnnotationPresent(Component.class))) {
+        if (isControllerOrComponent(getProvidedClass(field))) {
             throw new InvalidRouteFieldException(field);
         }
     }
