@@ -119,8 +119,9 @@ public class ControllerManager {
     public void init(@NotNull Object instance, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
 
         // Check if the instance is a controller
-        if (!ControllerUtil.isController(instance))
+        if (!ControllerUtil.isController(instance)) {
             throw new IllegalControllerException(error(1001).formatted(instance.getClass().getName()));
+        }
 
         getSidecar(instance).init(instance, parameters);
     }
@@ -175,9 +176,9 @@ public class ControllerManager {
         // Check if the instance is a controller/component
         boolean component = instance.getClass().isAnnotationPresent(Component.class) && ControllerUtil.isComponent(instance);
 
-        if (!component && !instance.getClass().isAnnotationPresent(Controller.class))
+        if (!component && !instance.getClass().isAnnotationPresent(Controller.class)) {
             throw new IllegalArgumentException(error(1001).formatted(instance.getClass().getName()));
-
+        }
         final Node node = getSidecar(instance).render(instance, parameters);
 
         // TODO Register key events via Sidecar
@@ -219,9 +220,9 @@ public class ControllerManager {
      * @param instance The controller/component instance to destroy
      */
     public void destroy(@NotNull Object instance) {
-        if (!ControllerUtil.isController(instance))
+        if (!ControllerUtil.isController(instance)) {
             throw new IllegalArgumentException(error(1001).formatted(instance.getClass().getName()));
-
+        }
         getSidecar(instance).destroy(instance);
 
         // TODO Unregister key events via Sidecar

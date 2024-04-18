@@ -50,8 +50,9 @@ public class Router {
      * @param routes The class to register the routes from
      */
     public void registerRoutes(@NotNull Object routes) {
-        if (this.routerObject != null)
+        if (this.routerObject != null) {
             throw new IllegalStateException(error(3000).formatted(this.routerObject.getClass().getName()));
+        }
 
         this.routerObject = routes;
 
@@ -67,8 +68,9 @@ public class Router {
      * @param field The controller to register
      */
     private void registerRoute(@NotNull Field field) {
-        if (!field.isAnnotationPresent(Route.class))
+        if (!field.isAnnotationPresent(Route.class)) {
             throw new RuntimeException(error(3001).formatted(field.getName()));
+        }
 
         // Check if the field is of type Provider<T> where T is annotated with @Controller
         ControllerUtil.requireControllerProvider(field);
@@ -79,9 +81,9 @@ public class Router {
         // Make sure the route starts with a slash to prevent issues with the traversal
         route = route.startsWith("/") ? route : "/" + route;
 
-        if (this.routes.containsPath(route))
+        if (this.routes.containsPath(route)) {
             throw new ControllerDuplicatedRouteException(route, field.getType(), this.routes.get(route).getType());
-
+        }
         this.routes.insert(route, field);
     }
 
@@ -97,8 +99,9 @@ public class Router {
     public @NotNull Pair<Object, Parent> renderRoute(@NotNull String route, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
         // Check if the route exists and has a valid controller
         if (!this.routes.containsPath(route)) {
-            if (FrameworkUtil.runningInDev() && this.routes.containsPath("/" + route))
+            if (FrameworkUtil.runningInDev() && this.routes.containsPath("/" + route)) {
                 FulibFxApp.LOGGER.warning("This route doesn't exist. Did you mean '/%s'?".formatted(route));
+            }
             throw new ControllerInvalidRouteException(route);
         }
 
@@ -111,12 +114,12 @@ public class Router {
         Class<?> controllerClass = ReflectionUtil.getProvidedClass(Objects.requireNonNull(provider));
 
         // Check if the provider is providing a valid controller/component
-        if (controllerClass == null)
+        if (controllerClass == null) {
             throw new RuntimeException(error(3004).formatted(provider.getName(), routerObject.getClass().getName()));
-
-        if (!controllerClass.isAnnotationPresent(Controller.class) && !controllerClass.isAnnotationPresent(Component.class))
+        }
+        if (!controllerClass.isAnnotationPresent(Controller.class) && !controllerClass.isAnnotationPresent(Component.class)) {
             throw new RuntimeException(error(1001).formatted(controllerClass.getName()));
-
+        }
         // Get the instance of the controller
         Object controllerInstance = ReflectionUtil.getInstanceOfProviderField(provider, this.routerObject);
         Node renderedNode = this.manager.get().initAndRender(controllerInstance, parameters);

@@ -53,8 +53,9 @@ public class ControllerUtil {
     public static boolean isController(@Nullable Object instance) {
         if (instance == null) return false;
 
-        if (instance.getClass().isAnnotationPresent(Controller.class) && instance.getClass().isAnnotationPresent(Component.class))
+        if (instance.getClass().isAnnotationPresent(Controller.class) && instance.getClass().isAnnotationPresent(Component.class)) {
             return false;
+        }
         return instance.getClass().isAnnotationPresent(Controller.class) || isComponent(instance);
     }
 
@@ -65,9 +66,9 @@ public class ControllerUtil {
      * @return True if the field is a field that can provide a component
      */
     public static boolean canProvideSubComponent(Field field) {
-        if (field.getType().isAnnotationPresent(Component.class) && Node.class.isAssignableFrom(field.getType()))
+        if (field.getType().isAnnotationPresent(Component.class) && Node.class.isAssignableFrom(field.getType())) {
             return true; // Field is a component
-
+    }
         Class<?> providedClass = getProvidedClass(field);
 
         return providedClass != null && providedClass.isAnnotationPresent(Component.class) && Node.class.isAssignableFrom(providedClass); // Field is a provider of a component
@@ -97,7 +98,8 @@ public class ControllerUtil {
      */
     public static void requireControllerProvider(@NotNull Field field) {
         Class<?> providedClass = getProvidedClass(field);
-        if (providedClass == null || (!providedClass.isAnnotationPresent(Controller.class) && !providedClass.isAnnotationPresent(Component.class)))
+        if (providedClass == null || (!providedClass.isAnnotationPresent(Controller.class) && !providedClass.isAnnotationPresent(Component.class))) {
             throw new InvalidRouteFieldException(field);
+        }
     }
 }

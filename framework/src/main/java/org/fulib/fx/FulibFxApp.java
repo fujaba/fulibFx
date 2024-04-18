@@ -143,8 +143,9 @@ public abstract class FulibFxApp extends Application {
     @SuppressWarnings("unchecked")
     public @NotNull <T extends Node> T initAndRender(@NotNull String route, @NotNull Map<@NotNull String, @Nullable Object> params, @Nullable DisposableContainer onDestroy) {
         Object component = this.frameworkComponent.router().getController(route);
-        if (!ControllerUtil.isComponent(component))
+        if (!ControllerUtil.isComponent(component)) {
             throw new IllegalArgumentException(error(1000).formatted(component.getClass().getName()));
+        }
         return initAndRender((T) component, params, onDestroy);
     }
 
@@ -162,9 +163,9 @@ public abstract class FulibFxApp extends Application {
      * @return The rendered component
      */
     public @NotNull <T extends Node> T initAndRender(@NotNull T component, @NotNull Map<@NotNull String, @Nullable Object> params, @Nullable DisposableContainer onDestroy) {
-        if (!ControllerUtil.isComponent(component))
+        if (!ControllerUtil.isComponent(component)) {
             throw new IllegalArgumentException(error(1000).formatted(component.getClass().getName()));
-
+        }
         Disposable disposable = this.frameworkComponent.controllerManager().init(component, params, false);
         if (onDestroy != null) {
             onDestroy.add(disposable);
@@ -237,15 +238,15 @@ public abstract class FulibFxApp extends Application {
      */
     public @NotNull Parent show(@NotNull Object controller, @NotNull Map<String, Object> params) {
         // Check if the given instance is a controller
-        if (!ControllerUtil.isController(controller))
+        if (!ControllerUtil.isController(controller)) {
             throw new IllegalArgumentException(error(1001).formatted(controller.getClass().getName()));
-
+        }
         // Render the new controller and check if it's a parent
         cleanup();
         Node renderedNode = this.frameworkComponent().controllerManager().initAndRender(controller, params);
-        if (!(renderedNode instanceof Parent renderedParent))
+        if (!(renderedNode instanceof Parent renderedParent)) {
             throw new IllegalArgumentException(error(1011).formatted(controller.getClass().getName()));
-
+        }
         // Add the new controller to the history and display it
         this.frameworkComponent.router().addToHistory(new Pair<>(Either.right(controller), params));
         prepareDisplay(null, renderedParent, controller, params);
@@ -378,8 +379,9 @@ public abstract class FulibFxApp extends Application {
         if (to != null) {
 
             // Check if the controller is a parent (should always be the case except if provoked by the user)
-            if (!(to.getValue() instanceof Parent parent))
+            if (!(to.getValue() instanceof Parent parent)) {
                 throw new IllegalArgumentException(error(1011).formatted(to.getKey().getClass().getName()));
+            }
 
             this.currentMainController = to.getKey(); // Set the current controller instance
             display(parent); // Display the controller (already rendered)
@@ -400,8 +402,9 @@ public abstract class FulibFxApp extends Application {
         Map<String, Object> params = this.frameworkComponent.router().current().getValue(); // Use the same parameters as before
         this.frameworkComponent.controllerManager().init(controller, params, true); // Re-initialize the controller
         Node node = this.frameworkComponent.controllerManager().render(controller, params); // Re-render the controller
-        if (!(node instanceof Parent parent))
+        if (!(node instanceof Parent parent)) {
             throw new IllegalArgumentException(error(1011).formatted(controller.getClass().getName()));
+        }
         ReflectionUtil.resetMouseHandler(stage());
         display(parent);
     }

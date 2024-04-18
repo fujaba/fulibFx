@@ -100,9 +100,9 @@ public class EvictingQueue<T> implements SizeableTraversableQueue<T> {
     public void setSize(int size) {
         if (size < 1) throw new IllegalArgumentException("Size must be at least 1");
         if (size == this.size) return;
-        if (currentIndex < list.size() - size)
+        if (currentIndex < list.size() - size) {
             throw new IllegalArgumentException("Cannot update size while the current index is outside the new bounds");
-
+        }
         this.size = size;
         if (list.size() > size) {
             list.subList(0, list.size() - size).clear();
