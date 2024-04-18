@@ -17,12 +17,17 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
+import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.Stream;
+
+import static org.fulib.fx.util.FrameworkUtil.error;
 
 public class FxClassGenerator {
     private static final String CLASS_SUFFIX = "_Fx";
@@ -350,8 +355,13 @@ public class FxClassGenerator {
         return processingEnv.getElementUtils().getConstantExpression(value);
     }
 
+    // This will throw an error if the methods are private
     private Stream<ExecutableElement> streamAllMethods(TypeElement componentClass, Class<? extends Annotation> annotation) {
-        return streamSuperClasses(componentClass).flatMap(e -> streamMethods(e, annotation));
+        return streamSuperClasses(componentClass).flatMap(e -> streamMethods(e, annotation)).peek(field -> {
+            if (field.getModifiers().contains(Modifier.PRIVATE)) {
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error(1012).formatted(Method.class.getSimpleName(), field.getSimpleName(), componentClass.getQualifiedName(), annotation.getSimpleName(), field));
+            }
+        });
     }
 
     private Stream<ExecutableElement> streamMethods(TypeElement componentClass, Class<? extends Annotation> annotation) {
@@ -362,8 +372,13 @@ public class FxClassGenerator {
             .map(element -> (ExecutableElement) element);
     }
 
+    // This will throw an error if the fields are private
     private Stream<VariableElement> streamAllFields(TypeElement componentClass, Class<? extends Annotation> annotation) {
-        return streamSuperClasses(componentClass).flatMap(e -> streamFields(e, annotation));
+        return streamSuperClasses(componentClass).flatMap(e -> streamFields(e, annotation)).peek(field -> {
+            if (field.getModifiers().contains(Modifier.PRIVATE)) {
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error(1012).formatted(Field.class.getSimpleName(), field.getSimpleName(), componentClass.getQualifiedName(), annotation.getSimpleName(), field));
+            }
+        });
     }
 
     private Stream<VariableElement> streamFields(TypeElement componentClass, Class<? extends Annotation> annotation) {
