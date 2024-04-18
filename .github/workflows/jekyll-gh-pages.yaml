@@ -5,7 +5,7 @@ on:
     branches:
       - master
     paths:
-      - 'docs/'
+      - 'docs/**'
       - '.github/workflows/jekyll-gh-pages.yaml' # this workflow file
   workflow_dispatch:
 
