@@ -30,6 +30,7 @@ public class ControllerUtil {
     public static boolean isComponent(@Nullable Object instance) {
         return instance != null && isComponent(instance.getClass());
     }
+
     /**
      * Checks if a class is a component (controller extending a Node).
      * <p>
@@ -87,7 +88,7 @@ public class ControllerUtil {
     public static boolean canProvideSubComponent(Field field) {
         if (field.getType().isAnnotationPresent(Component.class) && Node.class.isAssignableFrom(field.getType())) {
             return true; // Field is a component
-    }
+        }
         Class<?> providedClass = getProvidedClass(field);
 
         return providedClass != null && providedClass.isAnnotationPresent(Component.class) && Node.class.isAssignableFrom(providedClass); // Field is a provider of a component
