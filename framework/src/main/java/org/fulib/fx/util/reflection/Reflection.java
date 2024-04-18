@@ -78,6 +78,17 @@ public class Reflection {
     }
 
     /**
+     * Returns all fields of the given class (or a super class) that are of the given type.
+     *
+     * @param clazz The class to get the fields from
+     * @param type  The type to filter the fields by
+     * @return A stream of fields that are of the given type
+     */
+    public static Stream<Field> getAllFieldsOfType(@NotNull Class<?> clazz, @NotNull Class<?> type) {
+        return getAllFields(clazz).stream().filter(field -> field.getType().equals(type));
+    }
+
+    /**
      * Returns all methods of the given class that are annotated with the given annotation.
      *
      * @param clazz      The class to get the methods from
@@ -89,7 +100,7 @@ public class Reflection {
     }
 
     /**
-     * Returns all methods of the given class (or a subclass) that are annotated with the given annotation.
+     * Returns all methods of the given class (or a super class) that are annotated with the given annotation.
      *
      * @param clazz      The class to get the methods from
      * @param annotation The annotation to filter the methods by

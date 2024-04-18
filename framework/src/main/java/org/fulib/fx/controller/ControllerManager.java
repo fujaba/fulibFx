@@ -8,7 +8,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.util.Pair;
 import org.fulib.fx.FulibFxApp;
 import org.fulib.fx.annotation.controller.Component;
 import org.fulib.fx.annotation.controller.Controller;
@@ -230,21 +229,20 @@ public class ControllerManager {
 
         // In development mode, check for undestroyed subscribers
         if (FrameworkUtil.runningInDev()) {
-            Reflection.getFieldsOfType(instance.getClass(), Subscriber.class) // Get all Subscriber fields
-                    .map(field -> {
-                        try {
-                            field.setAccessible(true);
-                            return new Pair<>(field, (Subscriber) field.get(instance)); // Get the Subscriber instance, if it exists
-                        } catch (IllegalAccessException e) {
-                            return null;
-                        }
-                    })
-                    .filter(Objects::nonNull)
-                    .filter(pair -> pair.getKey() != null)
-                    .filter(pair -> !pair.getValue().isDisposed()) // Filter out disposed subscribers
-                    .forEach(pair ->
-                            FulibFxApp.LOGGER.warning("Found undestroyed subscriber '%s' in class '%s'.".formatted(pair.getKey().getName(), instance.getClass().getName()))
-                    );
+            Reflection.getAllFieldsOfType(instance.getClass(), Subscriber.class).forEach(field -> {  // Get all Subscriber fields
+                try {
+                    field.setAccessible(true);
+                    Subscriber subscriber = (Subscriber) field.get(instance); // Get the Subscriber instance, if it exists
+
+                    if (subscriber == null || subscriber.isDisposed() || subscriber.isFresh()) {
+                        return; // Check if the subscriber is disposed or non-existing
+                    }
+                    FulibFxApp.LOGGER.warning("Found undestroyed subscriber '%s' in class '%s'.".formatted(field.getName(), instance.getClass().getName()));
+
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException(error(9001).formatted(field.getName(), field.getDeclaringClass().getName()), e);
+                }
+            });
         }
     }
 
