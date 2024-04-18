@@ -8,7 +8,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.util.Pair;
 import org.fulib.fx.FulibFxApp;
 import org.fulib.fx.annotation.controller.Component;
 import org.fulib.fx.annotation.controller.Controller;
@@ -119,8 +118,9 @@ public class ControllerManager {
     public void init(@NotNull Object instance, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
 
         // Check if the instance is a controller
-        if (!ControllerUtil.isController(instance))
+        if (!ControllerUtil.isControllerOrComponent(instance)) {
             throw new IllegalControllerException(error(1001).formatted(instance.getClass().getName()));
+        }
 
         getSidecar(instance).init(instance, parameters);
     }
@@ -172,12 +172,9 @@ public class ControllerManager {
      */
     public Node render(Object instance, Map<String, Object> parameters) {
 
-        // Check if the instance is a controller/component
-        boolean component = instance.getClass().isAnnotationPresent(Component.class) && ControllerUtil.isComponent(instance);
-
-        if (!component && !instance.getClass().isAnnotationPresent(Controller.class))
+        if (!ControllerUtil.isControllerOrComponent(instance)) {
             throw new IllegalArgumentException(error(1001).formatted(instance.getClass().getName()));
-
+        }
         final Node node = getSidecar(instance).render(instance, parameters);
 
         // TODO Register key events via Sidecar
@@ -219,9 +216,9 @@ public class ControllerManager {
      * @param instance The controller/component instance to destroy
      */
     public void destroy(@NotNull Object instance) {
-        if (!ControllerUtil.isController(instance))
+        if (!ControllerUtil.isControllerOrComponent(instance)) {
             throw new IllegalArgumentException(error(1001).formatted(instance.getClass().getName()));
-
+        }
         getSidecar(instance).destroy(instance);
 
         // TODO Unregister key events via Sidecar
@@ -229,21 +226,20 @@ public class ControllerManager {
 
         // In development mode, check for undestroyed subscribers
         if (FrameworkUtil.runningInDev()) {
-            Reflection.getFieldsOfType(instance.getClass(), Subscriber.class) // Get all Subscriber fields
-                    .map(field -> {
-                        try {
-                            field.setAccessible(true);
-                            return new Pair<>(field, (Subscriber) field.get(instance)); // Get the Subscriber instance, if it exists
-                        } catch (IllegalAccessException e) {
-                            return null;
-                        }
-                    })
-                    .filter(Objects::nonNull)
-                    .filter(pair -> pair.getKey() != null)
-                    .filter(pair -> !pair.getValue().isDisposed()) // Filter out disposed subscribers
-                    .forEach(pair ->
-                            FulibFxApp.LOGGER.warning("Found undestroyed subscriber '%s' in class '%s'.".formatted(pair.getKey().getName(), instance.getClass().getName()))
-                    );
+            Reflection.getAllFieldsOfType(instance.getClass(), Subscriber.class).forEach(field -> {  // Get all Subscriber fields
+                try {
+                    field.setAccessible(true);
+                    Subscriber subscriber = (Subscriber) field.get(instance); // Get the Subscriber instance, if it exists
+
+                    if (subscriber == null || subscriber.isDisposed() || subscriber.isFresh()) {
+                        return; // Check if the subscriber is disposed or non-existing
+                    }
+                    FulibFxApp.LOGGER.warning("Found undestroyed subscriber '%s' in class '%s'.".formatted(field.getName(), instance.getClass().getName()));
+
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException(error(9001).formatted(field.getName(), field.getDeclaringClass().getName()), e);
+                }
+            });
         }
     }
 

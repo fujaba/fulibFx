@@ -118,8 +118,9 @@ public class TraversableNodeTree<E> implements TraversableTree<E> {
                 continue;
             }
 
-            if (node == null)
+            if (node == null) {
                 return null;
+            }
 
             if (element.equals("..")) {
                 if (node.parent != null) {
@@ -131,8 +132,9 @@ public class TraversableNodeTree<E> implements TraversableTree<E> {
             node = node.children().parallelStream().filter(child -> child.id().equals(element)).findAny().orElse(null);
 
         }
-        if (navigate && node != null)
+        if (navigate && node != null) {
             this.current = node;
+        }
         return node == null ? null : node.value();
     }
 
@@ -168,8 +170,9 @@ public class TraversableNodeTree<E> implements TraversableTree<E> {
         }
 
         public @NotNull Collection<Node<E>> children() {
-            if (this.children == null)
+            if (this.children == null) {
                 this.children = new ArrayList<>();
+            }
             return this.children;
         }
 
@@ -187,8 +190,9 @@ public class TraversableNodeTree<E> implements TraversableTree<E> {
 
         public void removeChild(Node<E> child) {
             child.parent = null;
-            if (this.children == null)
+            if (this.children == null) {
                 return;
+            }
             this.children.remove(child);
         }
 

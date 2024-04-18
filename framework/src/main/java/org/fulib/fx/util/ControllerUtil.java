@@ -30,6 +30,7 @@ public class ControllerUtil {
     public static boolean isComponent(@Nullable Object instance) {
         return instance != null && isComponent(instance.getClass());
     }
+
     /**
      * Checks if a class is a component (controller extending a Node).
      * <p>
@@ -39,7 +40,7 @@ public class ControllerUtil {
      * @return True if the clazz is a component (controller extending a Node)
      */
     public static boolean isComponent(@Nullable Class<?> clazz) {
-        return clazz != null && clazz.isAnnotationPresent(Component.class) && Node.class.isAssignableFrom(clazz);
+        return clazz != null && clazz.isAnnotationPresent(Component.class) && !clazz.isAnnotationPresent(Controller.class) && Node.class.isAssignableFrom(clazz);
     }
 
     /**
@@ -48,14 +49,34 @@ public class ControllerUtil {
      * This method is used internally by the framework and shouldn't be required for developers.
      *
      * @param instance The instance to check
+     * @return True if the instance is a controller or component
+     */
+    public static boolean isControllerOrComponent(@Nullable Object instance) {
+        return isController(instance) || isComponent(instance);
+    }
+
+    /**
+     * Checks if an instance is a controller.
+     * <p>
+     * This method is used internally by the framework and shouldn't be required for developers.
+     *
+     * @param instance The instance to check
      * @return True if the instance is a controller
      */
     public static boolean isController(@Nullable Object instance) {
-        if (instance == null) return false;
+        return instance != null && isController(instance.getClass());
+    }
 
-        if (instance.getClass().isAnnotationPresent(Controller.class) && instance.getClass().isAnnotationPresent(Component.class))
-            return false;
-        return instance.getClass().isAnnotationPresent(Controller.class) || isComponent(instance);
+    /**
+     * Checks if a class is a controller.
+     * <p>
+     * This method is used internally by the framework and shouldn't be required for developers.
+     *
+     * @param clazz The class to check
+     * @return True if the class is a controller
+     */
+    public static boolean isController(@Nullable Class<?> clazz) {
+        return clazz != null && clazz.isAnnotationPresent(Controller.class) && !clazz.isAnnotationPresent(Component.class);
     }
 
     /**
@@ -65,12 +86,7 @@ public class ControllerUtil {
      * @return True if the field is a field that can provide a component
      */
     public static boolean canProvideSubComponent(Field field) {
-        if (field.getType().isAnnotationPresent(Component.class) && Node.class.isAssignableFrom(field.getType()))
-            return true; // Field is a component
-
-        Class<?> providedClass = getProvidedClass(field);
-
-        return providedClass != null && providedClass.isAnnotationPresent(Component.class) && Node.class.isAssignableFrom(providedClass); // Field is a provider of a component
+        return isComponent(field.getType()) || isComponent(getProvidedClass(field));
     }
 
     /**
@@ -96,8 +112,8 @@ public class ControllerUtil {
      * @throws InvalidRouteFieldException If the field is not a valid route field
      */
     public static void requireControllerProvider(@NotNull Field field) {
-        Class<?> providedClass = getProvidedClass(field);
-        if (providedClass == null || (!providedClass.isAnnotationPresent(Controller.class) && !providedClass.isAnnotationPresent(Component.class)))
+        if (isControllerOrComponent(getProvidedClass(field))) {
             throw new InvalidRouteFieldException(field);
+        }
     }
 }

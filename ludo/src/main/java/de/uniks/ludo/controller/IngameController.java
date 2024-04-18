@@ -94,9 +94,7 @@ public class IngameController extends BaseController {
 
     @OnRender
     void setupDice() {
-        this.diceSubComponent.setOnMouseClicked(event -> {
-            rollDice();
-        });
+        this.diceSubComponent.setOnMouseClicked(event -> rollDice());
         this.subscriber.bind(this.diceSubComponent.eyesLabel.textFillProperty(), this.currentPlayer.map(player -> Color.web(Constants.COLORS.get(player.getId()))));
     }
 
@@ -233,7 +231,6 @@ public class IngameController extends BaseController {
         this.boardPane.getChildren().clear();
         this.fieldToCircle.clear();
         this.pieceToCircle.clear();
-        this.subscriber.dispose();
     }
 
 }

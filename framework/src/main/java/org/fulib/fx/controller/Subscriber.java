@@ -201,8 +201,9 @@ public class Subscriber implements RefreshableDisposableContainer {
      */
     @NotNull
     private RefreshableDisposableContainer disposable() {
-        if (this.disposable == null || this.disposable.isDisposed())
+        if (this.disposable == null || this.disposable.isDisposed()) {
             this.disposable = new RefreshableCompositeDisposable();
+        }
         return this.disposable;
     }
 

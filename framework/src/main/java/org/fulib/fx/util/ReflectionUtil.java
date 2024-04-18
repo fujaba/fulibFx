@@ -80,8 +80,9 @@ public class ReflectionUtil {
             Object childrenList = getChildren.invoke(parent);
             return (ObservableList<Node>) childrenList;
         } catch (Exception e) {
-            if (clazz.getSuperclass() == Object.class)
+            if (clazz.getSuperclass() == Object.class) {
                 throw new RuntimeException(error(9003).formatted(parent.getClass().getName()), e);
+            }
             return getChildrenList(clazz.getSuperclass(), parent);
         }
     }
@@ -97,8 +98,9 @@ public class ReflectionUtil {
         try {
             provider.setAccessible(true);
             Provider<?> providerInstance = (Provider<?>) provider.get(instance);
-            if (providerInstance == null)
+            if (providerInstance == null) {
                 throw new RuntimeException(error(9002).formatted(provider.getName(), provider.getDeclaringClass().getName()));
+            }
             return providerInstance.get();
         } catch (NullPointerException e) {
             throw new RuntimeException(error(9002).formatted(provider.getName(), provider.getDeclaringClass().getName()), e);

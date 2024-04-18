@@ -157,9 +157,9 @@ public class For<Node extends javafx.scene.Node, Item> {
             return;
         }
 
-        if (this.itemsToNodes != null)
+        if (this.itemsToNodes != null) {
             throw new IllegalStateException(error(7000));
-
+        }
         this.itemsToNodes = new HashMap<>();
 
         this.items.addListener(listChangeListener);

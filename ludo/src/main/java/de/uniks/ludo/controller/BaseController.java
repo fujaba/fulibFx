@@ -3,7 +3,7 @@ package de.uniks.ludo.controller;
 import de.uniks.ludo.App;
 import de.uniks.ludo.service.GameService;
 import org.fulib.fx.annotation.controller.Resource;
-import org.fulib.fx.annotation.event.OnInit;
+import org.fulib.fx.annotation.event.OnDestroy;
 import org.fulib.fx.controller.Subscriber;
 
 import javax.inject.Inject;
@@ -26,9 +26,9 @@ public class BaseController {
     @Inject
     Subscriber subscriber;
 
-    @OnInit
-    public void onInit() {
-        // This would be called in all controllers
+    @OnDestroy
+    void destroy() {
+        subscriber.dispose();
     }
 
 }

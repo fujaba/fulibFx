@@ -174,8 +174,9 @@ public class Modals {
             app.frameworkComponent().controllerManager().init(component, params);
             Node rendered = app.frameworkComponent().controllerManager().render(component, params);
 
-            if (!(rendered instanceof Parent parent))
+            if (!(rendered instanceof Parent parent)) {
                 throw new IllegalArgumentException(error(1011).formatted(component.getClass().getName()));
+            }
 
             Scene scene = new Scene(parent);
             scene.setFill(Paint.valueOf("transparent"));
