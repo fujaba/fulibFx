@@ -39,7 +39,7 @@ public class ControllerUtil {
      * @return True if the clazz is a component (controller extending a Node)
      */
     public static boolean isComponent(@Nullable Class<?> clazz) {
-        return clazz != null && clazz.isAnnotationPresent(Component.class) && Node.class.isAssignableFrom(clazz);
+        return clazz != null && clazz.isAnnotationPresent(Component.class) && !clazz.isAnnotationPresent(Controller.class) && Node.class.isAssignableFrom(clazz);
     }
 
     /**
@@ -48,15 +48,34 @@ public class ControllerUtil {
      * This method is used internally by the framework and shouldn't be required for developers.
      *
      * @param instance The instance to check
+     * @return True if the instance is a controller or component
+     */
+    public static boolean isControllerOrComponent(@Nullable Object instance) {
+        return isController(instance) || isComponent(instance);
+    }
+
+    /**
+     * Checks if an instance is a controller.
+     * <p>
+     * This method is used internally by the framework and shouldn't be required for developers.
+     *
+     * @param instance The instance to check
      * @return True if the instance is a controller
      */
     public static boolean isController(@Nullable Object instance) {
-        if (instance == null) return false;
+        return instance != null && isController(instance.getClass());
+    }
 
-        if (instance.getClass().isAnnotationPresent(Controller.class) && instance.getClass().isAnnotationPresent(Component.class)) {
-            return false;
-        }
-        return instance.getClass().isAnnotationPresent(Controller.class) || isComponent(instance);
+    /**
+     * Checks if a class is a controller.
+     * <p>
+     * This method is used internally by the framework and shouldn't be required for developers.
+     *
+     * @param clazz The class to check
+     * @return True if the class is a controller
+     */
+    public static boolean isController(@Nullable Class<?> clazz) {
+        return clazz != null && clazz.isAnnotationPresent(Controller.class) && !clazz.isAnnotationPresent(Component.class);
     }
 
     /**

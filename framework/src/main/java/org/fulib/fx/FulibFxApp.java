@@ -238,7 +238,7 @@ public abstract class FulibFxApp extends Application {
      */
     public @NotNull Parent show(@NotNull Object controller, @NotNull Map<String, Object> params) {
         // Check if the given instance is a controller
-        if (!ControllerUtil.isController(controller)) {
+        if (!ControllerUtil.isControllerOrComponent(controller)) {
             throw new IllegalArgumentException(error(1001).formatted(controller.getClass().getName()));
         }
         // Render the new controller and check if it's a parent
