@@ -181,7 +181,7 @@ show(new MyComponent()); // Wrong, should not be able to show a controller that 
 ### 1012: `Cannot access private * '*' in class '*' annotated with '*'.`
 
 - Runtime: ✅
-- Annotation Processor: ❌ (Caught by the compiler)
+- Annotation Processor: ✅ (Caught by the compiler)
 
 This error is thrown when the framework tries to access a private field or method.
 
