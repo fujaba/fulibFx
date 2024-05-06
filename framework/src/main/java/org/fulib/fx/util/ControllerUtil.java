@@ -18,6 +18,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Set;
 
+import static org.fulib.fx.util.FrameworkUtil.error;
 import static org.fulib.fx.util.ReflectionUtil.getProvidedClass;
 
 public class ControllerUtil {
@@ -158,7 +159,7 @@ public class ControllerUtil {
     public static void checkOverrides(Method method, Class<? extends Annotation> annotation) {
         Method overridden = ReflectionUtil.getOverriding(method);
         if (overridden != null && ControllerUtil.isEventMethod(overridden)) {
-            throw new RuntimeException("Method '%s' annotated with '%s' in class '%s' overrides event method in class '%s'.".formatted(method.getName(), annotation.getSimpleName(), method.getDeclaringClass().getName(), overridden.getDeclaringClass().getName()));
+            throw new RuntimeException(error(1013).formatted(method.getName(), annotation.getSimpleName(), method.getDeclaringClass().getName(), overridden.getDeclaringClass().getName()));
         }
     }
 }

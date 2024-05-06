@@ -200,6 +200,36 @@ public class MyController {
 }
 ```
 
+### 1012: `Method '*' annotated with '*' in class '*' overrides event method in class '*'.`
+
+- Runtime: ✅
+- Annotation Processor: ❌
+
+This error if an event method overrides another event method as this would lead to the overriding method being called twice.
+
+```java
+public class MyController extends BaseController {
+
+    @Override
+    @OnInit()
+    private void init() {
+    }
+
+    // ...
+}
+```
+
+```java
+public class BaseController {
+
+    @OnInit() // Wrong, event methods shouldn't be overridden in sub classes
+    private void init() {
+    }
+
+    // ...
+}
+```
+
 ## Resources
 
 ### 2000: `Could not find resource '*'.`
