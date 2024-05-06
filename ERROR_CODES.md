@@ -200,10 +200,10 @@ public class MyController {
 }
 ```
 
-### 1012: `Method '*' annotated with '*' in class '*' overrides event method in class '*'.`
+### 1012: `Cannot access private * '*' in class '*' annotated with '*'.`
 
 - Runtime: ✅
-- Annotation Processor: ❌
+- Annotation Processor: ✅
 
 This error if an event method overrides another event method as this would lead to the overriding method being called twice.
 
