@@ -1,11 +1,6 @@
 package org.fulib.fx.util;
 
-import javafx.util.Pair;
-
-import java.util.List;
-import java.util.Optional;
 import java.util.ResourceBundle;
-import java.util.function.BiPredicate;
 
 public class FrameworkUtil {
 
