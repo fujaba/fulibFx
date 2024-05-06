@@ -11,6 +11,7 @@ import javafx.stage.StageStyle;
 import org.fulib.fx.FulibFxApp;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
@@ -171,8 +172,12 @@ public class Modals {
         FulibFxApp.FX_SCHEDULER.scheduleDirect(() -> {
             ModalStage modalStage = new ModalStage(app, destroyOnClose, component);
 
-            app.frameworkComponent().controllerManager().init(component, params);
-            Node rendered = app.frameworkComponent().controllerManager().render(component, params);
+            Map<String, Object> parameters = new HashMap<>(params);
+            parameters.putIfAbsent("stage", modalStage);
+            parameters.putIfAbsent("ownerStage", currentStage);
+
+            app.frameworkComponent().controllerManager().init(component, parameters);
+            Node rendered = app.frameworkComponent().controllerManager().render(component, parameters);
 
             if (!(rendered instanceof Parent parent)) {
                 throw new IllegalArgumentException(error(1011).formatted(component.getClass().getName()));
