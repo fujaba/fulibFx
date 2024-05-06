@@ -73,7 +73,9 @@ public class App extends FulibFxApp {
             setDefaultResourceBundle(component.bundle());
 
             // Starting the application by showing the main view without any parameters
-            show("");
+            if (!LudoUtil.inControllerTest()) {
+                show("");
+            }
 
         } catch (Exception e) {
             // If an error occurs while starting the application, we want to log it and exit the application

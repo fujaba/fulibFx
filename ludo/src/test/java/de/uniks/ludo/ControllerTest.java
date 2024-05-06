@@ -13,6 +13,7 @@ public class ControllerTest extends ApplicationTest {
 
     @Override
     public void start(Stage stage) throws Exception {
+        LudoUtil.enableControllerTest();
         super.start(stage);
         this.stage = stage;
         stage.requestFocus();

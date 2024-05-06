@@ -5,6 +5,16 @@ import javafx.scene.media.MediaPlayer;
 
 public class LudoUtil {
 
+    private static final String CONTROLLER_TEST = "controller.test.enabled";
+
+    public static boolean inControllerTest() {
+        return Boolean.parseBoolean(System.getProperty(CONTROLLER_TEST));
+    }
+
+    public static void enableControllerTest() {
+        System.setProperty(CONTROLLER_TEST, Boolean.toString(true));
+    }
+
     /**
      * Plays a media/sound.
      *
