@@ -173,7 +173,7 @@ public class Modals {
             ModalStage modalStage = new ModalStage(app, destroyOnClose, component);
 
             Map<String, Object> parameters = new HashMap<>(params);
-            parameters.putIfAbsent("stage", modalStage);
+            parameters.putIfAbsent("modalStage", modalStage);
             parameters.putIfAbsent("ownerStage", currentStage);
 
             app.frameworkComponent().controllerManager().init(component, parameters);
