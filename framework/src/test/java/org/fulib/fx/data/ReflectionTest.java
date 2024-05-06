@@ -94,8 +94,8 @@ public class ReflectionTest {
 
     @Test
     public void listFieldsAndMethods() {
-        assertEquals(List.of("number", "text"), Reflection.getAllFields(Example.class).stream().map(Field::getName).toList());
-        assertEquals(List.of("method"), Reflection.getAllMethods(Example.class, false).stream().map(Method::getName).toList());
+        TestUtil.containsAll(List.of("number", "text"), Reflection.getAllFields(Example.class).stream().map(Field::getName).toList());
+        TestUtil.containsAll(List.of("method", "onDestroy", "onRender", "onInit", "method3", "onKey"), Reflection.getAllMethods(Example.class, false).stream().map(Method::getName).toList());
         TestUtil.containsAll(List.of("method", "finalize", "equals", "toString", "hashCode", "getClass", "clone", "notify", "notifyAll", "wait", "wait", "wait"), Reflection.getAllMethods(Example.class, true).stream().map(Method::getName).toList());
     }
 
