@@ -53,12 +53,15 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
         this.resourceField = loadResourceField(componentClass);
         this.subComponentFields = loadSubComponentFields(componentClass);
         this.initMethods = ReflectionUtil.getAllNonPrivateMethodsOrThrow(componentClass, OnInit.class)
+            .peek(method -> ControllerUtil.checkOverrides(method, OnInit.class))
             .sorted(Comparator.comparingInt(m -> m.getAnnotation(OnInit.class).value()))
             .toList();
         this.renderMethods = ReflectionUtil.getAllNonPrivateMethodsOrThrow(componentClass, OnRender.class)
             .sorted(Comparator.comparingInt(m -> m.getAnnotation(OnRender.class).value()))
+            .peek(method -> ControllerUtil.checkOverrides(method, OnRender.class))
             .toList();
         this.destroyMethods = ReflectionUtil.getAllNonPrivateMethodsOrThrow(componentClass, OnDestroy.class)
+            .peek(method -> ControllerUtil.checkOverrides(method, OnDestroy.class))
             .sorted(Comparator.comparingInt(m -> m.getAnnotation(OnDestroy.class).value()))
             .toList();
 
@@ -80,13 +83,6 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
                 }
             })
             .toList();
-    }
-
-    private List<Method> checkDuplicates(@NotNull List<Method> list) {
-        FrameworkUtil.findDuplicate(list, Reflection::sameSignature).ifPresent(p -> {
-            throw new RuntimeException("");
-        });
-        return list;
     }
 
     @Override

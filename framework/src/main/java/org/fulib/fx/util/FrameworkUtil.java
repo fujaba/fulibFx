@@ -37,23 +37,4 @@ public class FrameworkUtil {
         return ERROR_BUNDLE.getString(id + ".note");
     }
 
-
-    /**
-     * Finds all duplicates in a list based on a custom predicate.
-     *
-     * @param list      The list to check
-     * @param predicate The predicate to use
-     * @param <T>       The predicate to use
-     * @return A pair of the first found duplicates
-     */
-    public static <T> Optional<Pair<T, T>> findDuplicate(List<T> list, BiPredicate<T, T> predicate) {
-        for (T element1 : list) {
-            for (T element2 : list) {
-                if (predicate.test(element1, element2)) {
-                    return Optional.of(new Pair<>(element1, element2));
-                }
-            }
-        }
-        return Optional.empty();
-    }
 }

@@ -54,6 +54,9 @@ public class ReflectionTest {
         public void method() {
         }
 
+        public void method3() {
+        }
+
         @OnInit
         public void onInit() {
         }
@@ -79,8 +82,15 @@ public class ReflectionTest {
 
         public void method2() {
         }
-
     }
+
+    static class Example3 extends Example2 {
+
+        @Override
+        public void method3() {
+        }
+    }
+
 
     @Test
     public void listFieldsAndMethods() {
@@ -93,8 +103,10 @@ public class ReflectionTest {
     public void override() throws NoSuchMethodException {
         Method method1 = Example2.class.getMethod("method");
         Method method2 = Example2.class.getMethod("method2");
+        Method method3 = Example3.class.getMethod("method3");
 
         assertEquals(Example.class.getMethod("method"), ReflectionUtil.getOverriding(method1));
+        assertEquals(Example.class.getMethod("method3"), ReflectionUtil.getOverriding(method3));
         assertNull(ReflectionUtil.getOverriding(method2));
     }
 
