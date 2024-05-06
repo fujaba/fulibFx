@@ -4,12 +4,19 @@ import javafx.scene.Node;
 import org.fulib.fx.annotation.Route;
 import org.fulib.fx.annotation.controller.Component;
 import org.fulib.fx.annotation.controller.Controller;
+import org.fulib.fx.annotation.event.OnDestroy;
+import org.fulib.fx.annotation.event.OnInit;
+import org.fulib.fx.annotation.event.OnKey;
+import org.fulib.fx.annotation.event.OnRender;
 import org.fulib.fx.controller.exception.InvalidRouteFieldException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.inject.Provider;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.Set;
 
 import static org.fulib.fx.util.ReflectionUtil.getProvidedClass;
 
@@ -18,6 +25,13 @@ public class ControllerUtil {
     private ControllerUtil() {
         // Prevent instantiation
     }
+
+    private static final Set<Class<? extends Annotation>> EVENT_ANNOTATIONS = Set.of(
+            OnInit.class,
+            OnRender.class,
+            OnDestroy.class,
+            OnKey.class
+    );
 
     /**
      * Checks if an instance is a component (controller extending a Node).
@@ -114,6 +128,37 @@ public class ControllerUtil {
     public static void requireControllerProvider(@NotNull Field field) {
         if (isControllerOrComponent(getProvidedClass(field))) {
             throw new InvalidRouteFieldException(field);
+        }
+    }
+
+    /**
+     * Checks whether a method is annotated with an event annotation such as {@link OnKey} or {@link OnRender}.
+     *
+     * @param method The method to check
+     * @return Whether the method is annotated with an event annotation
+     */
+    public static boolean isEventMethod(@NotNull Method method) {
+        for (Annotation annotation : method.getAnnotations()) {
+            if (EVENT_ANNOTATIONS.contains(annotation.annotationType())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Utility method for checking if a method overrides another event method.
+     * <p>
+     * If a method overrides another method and the overridden method is an event method, calling the superclass method
+     * results in the subclass method being called twice due to how java handles method overrides.
+     *
+     * @param method     The method to check
+     * @param annotation Whether the method overrides another event method
+     */
+    public static void checkOverrides(Method method, Class<? extends Annotation> annotation) {
+        Method overridden = ReflectionUtil.getOverriding(method);
+        if (overridden != null && ControllerUtil.isEventMethod(overridden)) {
+            throw new RuntimeException("Method '%s' annotated with '%s' in class '%s' overrides event method in class '%s'.".formatted(method.getName(), annotation.getSimpleName(), method.getDeclaringClass().getName(), overridden.getDeclaringClass().getName()));
         }
     }
 }

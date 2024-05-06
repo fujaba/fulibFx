@@ -16,6 +16,7 @@ import java.lang.reflect.*;
 import java.util.stream.Stream;
 
 import static org.fulib.fx.util.FrameworkUtil.error;
+import static org.fulib.fx.util.reflection.Reflection.sameSignature;
 
 /**
  * Utility class containing different helper methods for the framework or the user.
@@ -162,6 +163,27 @@ public class ReflectionUtil {
                 throw new RuntimeException(error(1012).formatted(Method.class.getSimpleName(), method.getName(), method.getDeclaringClass().getName(), annotation.getSimpleName()));
             }
         });
+    }
+
+    /**
+     * Checks if a method is overriding a method in one of the classes superclasses and returns the overridden method.
+     *
+     * @param method The method to check
+     * @return The overridden method, or null if there is none
+     */
+    public static @Nullable Method getOverriding(@NotNull Method method) {
+        if (method.getDeclaringClass().getSuperclass() == null) {
+            return null;
+        }
+
+        Class<?> superClass = method.getDeclaringClass().getSuperclass();
+
+        for (Method other : Reflection.getAllMethods(superClass, true)) {
+            if (sameSignature(method, other)) {
+                return other;
+            }
+        }
+        return null;
     }
 
 }

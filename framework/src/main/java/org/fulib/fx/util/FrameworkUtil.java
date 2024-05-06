@@ -1,6 +1,11 @@
 package org.fulib.fx.util;
 
+import javafx.util.Pair;
+
+import java.util.List;
+import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.function.BiPredicate;
 
 public class FrameworkUtil {
 
@@ -30,5 +35,25 @@ public class FrameworkUtil {
 
     public static String note(int id) {
         return ERROR_BUNDLE.getString(id + ".note");
+    }
+
+
+    /**
+     * Finds all duplicates in a list based on a custom predicate.
+     *
+     * @param list      The list to check
+     * @param predicate The predicate to use
+     * @param <T>       The predicate to use
+     * @return A pair of the first found duplicates
+     */
+    public static <T> Optional<Pair<T, T>> findDuplicate(List<T> list, BiPredicate<T, T> predicate) {
+        for (T element1 : list) {
+            for (T element2 : list) {
+                if (predicate.test(element1, element2)) {
+                    return Optional.of(new Pair<>(element1, element2));
+                }
+            }
+        }
+        return Optional.empty();
     }
 }

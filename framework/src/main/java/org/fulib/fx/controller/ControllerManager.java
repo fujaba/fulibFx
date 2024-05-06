@@ -191,6 +191,8 @@ public class ControllerManager {
     private void registerKeyEvents(Object instance) {
         ReflectionUtil.getAllNonPrivateMethodsOrThrow(instance.getClass(), OnKey.class).forEach(method -> {
 
+            ControllerUtil.checkOverrides(method, OnKey.class);
+
             OnKey annotation = method.getAnnotation(OnKey.class);
             EventType<KeyEvent> type = annotation.type().asEventType();
             EventHandler<KeyEvent> handler = createKeyEventHandler(method, instance, annotation);

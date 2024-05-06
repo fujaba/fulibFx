@@ -13,6 +13,7 @@ import org.fulib.fx.annotation.param.Params;
 import org.fulib.fx.annotation.param.ParamsMap;
 import org.fulib.fx.controller.ControllerManager;
 import org.fulib.fx.util.ControllerUtil;
+import org.fulib.fx.util.FrameworkUtil;
 import org.fulib.fx.util.MapUtil;
 import org.fulib.fx.util.ReflectionUtil;
 import org.fulib.fx.util.reflection.Reflection;
@@ -79,6 +80,13 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
                 }
             })
             .toList();
+    }
+
+    private List<Method> checkDuplicates(@NotNull List<Method> list) {
+        FrameworkUtil.findDuplicate(list, Reflection::sameSignature).ifPresent(p -> {
+            throw new RuntimeException("");
+        });
+        return list;
     }
 
     @Override

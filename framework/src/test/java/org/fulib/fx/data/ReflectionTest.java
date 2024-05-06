@@ -1,6 +1,12 @@
 package org.fulib.fx.data;
 
 import org.fulib.fx.TestUtil;
+import org.fulib.fx.annotation.event.OnDestroy;
+import org.fulib.fx.annotation.event.OnInit;
+import org.fulib.fx.annotation.event.OnKey;
+import org.fulib.fx.annotation.event.OnRender;
+import org.fulib.fx.util.ControllerUtil;
+import org.fulib.fx.util.ReflectionUtil;
 import org.fulib.fx.util.reflection.Reflection;
 import org.junit.jupiter.api.Test;
 
@@ -9,7 +15,7 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ReflectionTest {
 
@@ -47,6 +53,33 @@ public class ReflectionTest {
 
         public void method() {
         }
+
+        @OnInit
+        public void onInit() {
+        }
+
+        @OnRender
+        public void onRender() {
+        }
+
+        @OnDestroy
+        public void onDestroy() {
+        }
+
+        @OnKey
+        public void onKey() {
+        }
+    }
+
+    static class Example2 extends Example {
+
+        @Override
+        public void method() {
+        }
+
+        public void method2() {
+        }
+
     }
 
     @Test
@@ -54,6 +87,31 @@ public class ReflectionTest {
         assertEquals(List.of("number", "text"), Reflection.getAllFields(Example.class).stream().map(Field::getName).toList());
         assertEquals(List.of("method"), Reflection.getAllMethods(Example.class, false).stream().map(Method::getName).toList());
         TestUtil.containsAll(List.of("method", "finalize", "equals", "toString", "hashCode", "getClass", "clone", "notify", "notifyAll", "wait", "wait", "wait"), Reflection.getAllMethods(Example.class, true).stream().map(Method::getName).toList());
+    }
+
+    @Test
+    public void override() throws NoSuchMethodException {
+        Method method1 = Example2.class.getMethod("method");
+        Method method2 = Example2.class.getMethod("method2");
+
+        assertEquals(Example.class.getMethod("method"), ReflectionUtil.getOverriding(method1));
+        assertNull(ReflectionUtil.getOverriding(method2));
+    }
+
+    @Test
+    public void eventMethods() throws NoSuchMethodException {
+        Method init = Example.class.getMethod("onInit");
+        Method render = Example.class.getMethod("onRender");
+        Method destroy = Example.class.getMethod("onDestroy");
+        Method key = Example.class.getMethod("onKey");
+        Method other = Example.class.getMethod("method");
+
+        assertTrue(ControllerUtil.isEventMethod(init));
+        assertTrue(ControllerUtil.isEventMethod(render));
+        assertTrue(ControllerUtil.isEventMethod(destroy));
+        assertTrue(ControllerUtil.isEventMethod(key));
+        assertFalse(ControllerUtil.isEventMethod(other));
+
     }
 
 }

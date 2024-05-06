@@ -171,4 +171,11 @@ public class Reflection {
         return methods;
     }
 
+    public static boolean sameSignature(@NotNull Method method1, @NotNull Method method2) {
+        return method1.getName().equals(method2.getName())
+                && method1.getParameterCount() == method2.getParameterCount()
+                && method1.getReturnType().equals(method2.getReturnType())
+                && Arrays.equals(method1.getParameterTypes(), method2.getParameterTypes());
+    }
+
 }
