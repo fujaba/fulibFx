@@ -200,7 +200,7 @@ public class MyController {
 }
 ```
 
-### 1013: `Method '*' annotated with '*' in class '*' overrides event method in class '*'.`
+### 1013: `Method '*' annotated with an event annotation in class '*' overrides event method in class '*'.`
 
 - Runtime: ✅
 - Annotation Processor: ✅
