@@ -61,4 +61,4 @@ Therefore, you have to make sure that the listview is cleared, when the main con
 
 ---
 
-[⬅ Subscriber](1-subscriber.md) | [Overview](README.md)
+[⬅ Data Structures](6-data-structures.md) | [Overview](README.md)
