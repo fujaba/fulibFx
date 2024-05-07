@@ -11,6 +11,7 @@ import javafx.stage.StageStyle;
 import org.fulib.fx.FulibFxApp;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
@@ -171,16 +172,26 @@ public class Modals {
         FulibFxApp.FX_SCHEDULER.scheduleDirect(() -> {
             ModalStage modalStage = new ModalStage(app, destroyOnClose, component);
 
-            app.frameworkComponent().controllerManager().init(component, params);
-            Node rendered = app.frameworkComponent().controllerManager().render(component, params);
+            // Add additional default parameters
+            Map<String, Object> parameters = new HashMap<>(params);
+            parameters.putIfAbsent("modalStage", modalStage);
+            parameters.putIfAbsent("ownerStage", currentStage);
 
+            // Initialize and render the component
+            app.frameworkComponent().controllerManager().init(component, parameters);
+            Node rendered = app.frameworkComponent().controllerManager().render(component, parameters);
+
+            // As the displayed component will be the root of a stage, it has to be a parent
             if (!(rendered instanceof Parent parent)) {
                 throw new IllegalArgumentException(error(1011).formatted(component.getClass().getName()));
             }
 
+            // Set the title if present
+            app.getTitle(component).ifPresent(title -> modalStage.setTitle(app.formatTitle(title)));
+
+            // Configure scene to look like a popup (can be changed using the initializer)
             Scene scene = new Scene(parent);
             scene.setFill(Paint.valueOf("transparent"));
-
             modalStage.setScene(scene);
             modalStage.initStyle(StageStyle.TRANSPARENT);
             modalStage.initOwner(currentStage);

@@ -1,8 +1,10 @@
 package org.fulib.fx;
 
+import javafx.scene.input.KeyCode;
 import org.fulib.fx.annotation.controller.*;
 import org.fulib.fx.annotation.event.OnDestroy;
 import org.fulib.fx.annotation.event.OnInit;
+import org.fulib.fx.annotation.event.OnKey;
 import org.fulib.fx.annotation.event.OnRender;
 import org.fulib.fx.annotation.param.Param;
 import org.fulib.fx.annotation.param.Params;
@@ -98,6 +100,7 @@ public class FxClassGenerator {
         out.println("import java.util.Map;");
         out.println("import java.util.ResourceBundle;");
         out.println("import javafx.scene.Node;");
+        out.println("import org.fulib.fx.annotation.event.OnKey;");
         out.println("import org.fulib.fx.controller.ControllerManager;");
         out.println("import org.fulib.fx.controller.internal.FxSidecar;");
         out.println();
@@ -294,7 +297,7 @@ public class FxClassGenerator {
         generateCallSubComponents(out, componentClass, "render");
         generateRenderResult(out, componentClass);
         generateCallRenderMethods(out, componentClass);
-        // TODO Register key events
+        generateRegisterKeyEventHandlers(out, componentClass);
         out.println("    return result;");
     }
 
@@ -328,6 +331,58 @@ public class FxClassGenerator {
             .peek(methodElement -> checkOverrides(methodElement, OnRender.class))
             .sorted(Comparator.comparingInt(a -> a.getAnnotation(OnRender.class).value()))
             .forEach(element -> generateCall(out, element));
+    }
+
+    private void generateRegisterKeyEventHandlers(PrintWriter out, TypeElement componentClass) {
+        streamAllMethods(componentClass, OnKey.class).forEach(method -> {
+            generateRegisterKeyEventHandler(out, componentClass, method);
+        });
+    }
+
+    private void generateRegisterKeyEventHandler(PrintWriter out, TypeElement componentClass, ExecutableElement method) {
+        // @OnKey(
+        //     code = KeyCode.R,
+        //     control = true,
+        //     shift = false,
+        //     alt = false,
+        //     meta = false,
+        //     character = "r",
+        //     text = "",
+        //     target = onKey.Target.STAGE,
+        //     type = onKey.Type.RELEASED
+        // )
+        // void foo()
+        // --- becomes: ---
+        // controllerManager.addKeyEventHandler(instance, target, type, event -> {
+        //     if (!event.isControlDown()) return;
+        //     if (event.getCode() != KeyCode.R) return;
+        //     instance.foo();
+        // });
+        OnKey onKey = method.getAnnotation(OnKey.class);
+        out.printf("    controllerManager.addKeyEventHandler(instance, OnKey.Target.%s, OnKey.Type.%s.asEventType(), event -> {%n", onKey.target(), onKey.type());
+        if (onKey.control()) {
+            out.printf("      if (!event.isControlDown()) return;%n");
+        }
+        if (onKey.shift()) {
+            out.printf("      if (!event.isShiftDown()) return;%n");
+        }
+        if (onKey.alt()) {
+            out.printf("      if (!event.isAltDown()) return;%n");
+        }
+        if (onKey.meta()) {
+            out.printf("      if (!event.isMetaDown()) return;%n");
+        }
+        if (onKey.code() != KeyCode.UNDEFINED) {
+            out.printf("      if (event.getCode() != javafx.scene.input.KeyCode.%s) return;%n", onKey.code());
+        }
+        if (!onKey.text().isEmpty()) {
+            out.printf("      if (!%s.equals(event.getText())) return;%n", stringLiteral(onKey.text()));
+        }
+        if (!"\0".equals(onKey.character())) {
+            out.printf("      if (!%s.equals(event.getCharacter())) return;%n", stringLiteral(onKey.character()));
+        }
+        out.printf("      instance.%s(%s);%n", method.getSimpleName(), method.getParameters().size() == 1 ? "event" : "");
+        out.printf("    });%n");
     }
 
     private void generateSidecarResources(PrintWriter out, TypeElement componentClass) {

@@ -1,12 +1,17 @@
 package org.fulib.fx.controller.internal;
 
 import javafx.beans.value.WritableValue;
+import javafx.event.EventHandler;
+import javafx.event.EventType;
 import javafx.scene.Node;
 import javafx.scene.Parent;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import org.fulib.fx.FulibFxApp;
 import org.fulib.fx.annotation.controller.*;
 import org.fulib.fx.annotation.event.OnDestroy;
 import org.fulib.fx.annotation.event.OnInit;
+import org.fulib.fx.annotation.event.OnKey;
 import org.fulib.fx.annotation.event.OnRender;
 import org.fulib.fx.annotation.param.Param;
 import org.fulib.fx.annotation.param.Params;
@@ -14,6 +19,7 @@ import org.fulib.fx.annotation.param.ParamsMap;
 import org.fulib.fx.controller.ControllerManager;
 import org.fulib.fx.util.ControllerUtil;
 import org.fulib.fx.util.FrameworkUtil;
+import org.fulib.fx.util.KeyEventHolder;
 import org.fulib.fx.util.MapUtil;
 import org.fulib.fx.util.ReflectionUtil;
 import org.fulib.fx.util.reflection.Reflection;
@@ -348,6 +354,8 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
 
         callMethodsWithAnnotation(instance, params, renderMethods, OnRender.class);
 
+        registerKeyEvents(instance);
+
         return node;
     }
 
@@ -398,6 +406,66 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
             node = controllerManager.loadFXML(fxmlPath, instance, false);
         }
         return node;
+    }
+
+    /**
+     * Registers all key events for the given controller instance.
+     *
+     * @param instance The controller instance
+     */
+    private void registerKeyEvents(Object instance) {
+        ReflectionUtil.getAllNonPrivateMethodsOrThrow(instance.getClass(), OnKey.class).forEach(method -> {
+
+            ControllerUtil.checkOverrides(method, OnKey.class);
+
+            OnKey annotation = method.getAnnotation(OnKey.class);
+            EventType<KeyEvent> type = annotation.type().asEventType();
+            EventHandler<KeyEvent> handler = createKeyEventHandler(method, instance, annotation);
+
+            controllerManager.addKeyEventHandler(instance, annotation.target(), type, handler);
+        });
+    }
+
+    /**
+     * Creates an event handler for the given method and instance that will be called when the specified key event occurs.
+     *
+     * @param method     The method to call
+     * @param instance   The instance to call the method on
+     * @param annotation The annotation with the key event information
+     * @return An event handler for the given method and instance
+     */
+    private EventHandler<KeyEvent> createKeyEventHandler(Method method, Object instance, OnKey annotation) {
+        boolean hasEventParameter = method.getParameterCount() == 1 && method.getParameterTypes()[0].isAssignableFrom(KeyEvent.class);
+
+        if (!hasEventParameter && method.getParameterCount() != 0) {
+            throw new RuntimeException(error(1010).formatted(method.getName(), instance.getClass().getName()));
+        }
+
+        method.setAccessible(true);
+
+        return event -> {
+            if (keyEventMatchesAnnotation(event, annotation)) {
+                try {
+                    if (hasEventParameter) {
+                        method.invoke(instance, event);
+                    } else {
+                        method.invoke(instance);
+                    }
+                } catch (IllegalAccessException | InvocationTargetException e) {
+                    throw new RuntimeException(error(1005).formatted(method.getName(), annotation.getClass().getSimpleName(), method.getClass()), e);
+                }
+            }
+        };
+    }
+
+    private boolean keyEventMatchesAnnotation(KeyEvent event, OnKey annotation) {
+        return (annotation.code() == KeyCode.UNDEFINED || event.getCode() == annotation.code()) &&
+            (annotation.character().isEmpty() || event.getCharacter().equals(annotation.character())) &&
+            (annotation.text().isEmpty() || event.getText().equals(annotation.text())) &&
+            (event.isShiftDown() || !annotation.shift()) &&
+            (event.isControlDown() || !annotation.control()) &&
+            (event.isAltDown() || !annotation.alt()) &&
+            (event.isMetaDown() || !annotation.meta());
     }
 
     @Override

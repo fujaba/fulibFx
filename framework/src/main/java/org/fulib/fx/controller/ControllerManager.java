@@ -6,7 +6,6 @@ import javafx.event.EventHandler;
 import javafx.event.EventType;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
-import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import org.fulib.fx.FulibFxApp;
 import org.fulib.fx.annotation.controller.Component;
@@ -20,7 +19,10 @@ import org.fulib.fx.controller.exception.IllegalControllerException;
 import org.fulib.fx.controller.internal.FxSidecar;
 import org.fulib.fx.controller.internal.ReflectionSidecar;
 import org.fulib.fx.data.disposable.RefreshableCompositeDisposable;
-import org.fulib.fx.util.*;
+import org.fulib.fx.util.ControllerUtil;
+import org.fulib.fx.util.FileUtil;
+import org.fulib.fx.util.FrameworkUtil;
+import org.fulib.fx.util.KeyEventHolder;
 import org.fulib.fx.util.reflection.Reflection;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -30,8 +32,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
@@ -175,35 +175,17 @@ public class ControllerManager {
         if (!ControllerUtil.isControllerOrComponent(instance)) {
             throw new IllegalArgumentException(error(1001).formatted(instance.getClass().getName()));
         }
-        final Node node = getSidecar(instance).render(instance, parameters);
-
-        // TODO Register key events via Sidecar
-        registerKeyEvents(instance);
-
-        return node;
+        return getSidecar(instance).render(instance, parameters);
     }
 
-    /**
-     * Registers all key events for the given controller instance.
-     *
-     * @param instance The controller instance
-     */
-    private void registerKeyEvents(Object instance) {
-        ReflectionUtil.getAllNonPrivateMethodsOrThrow(instance.getClass(), OnKey.class).forEach(method -> {
+    @ApiStatus.Internal
+    public void addKeyEventHandler(Object instance, OnKey.Target target, EventType<KeyEvent> type, EventHandler<KeyEvent> handler) {
+        keyEventHandlers.computeIfAbsent(instance, k -> new HashSet<>()).add(new KeyEventHolder(target, type, handler));
 
-            ControllerUtil.checkOverrides(method, OnKey.class);
-
-            OnKey annotation = method.getAnnotation(OnKey.class);
-            EventType<KeyEvent> type = annotation.type().asEventType();
-            EventHandler<KeyEvent> handler = createKeyEventHandler(method, instance, annotation);
-
-            keyEventHandlers.computeIfAbsent(instance, k -> new HashSet<>()).add(new KeyEventHolder(annotation.target(), type, handler));
-
-            switch (annotation.target()) {
-                case SCENE -> app.get().stage().getScene().addEventFilter(type, handler);
-                case STAGE -> app.get().stage().addEventFilter(type, handler);
-            }
-        });
+        switch (target) {
+            case SCENE -> app.get().stage().getScene().addEventFilter(type, handler);
+            case STAGE -> app.get().stage().addEventFilter(type, handler);
+        }
     }
 
     /**
@@ -242,6 +224,24 @@ public class ControllerManager {
                     throw new RuntimeException(error(9001).formatted(field.getName(), field.getDeclaringClass().getName()), e);
                 }
             });
+        }
+    }
+
+    /**
+     * Clears all key handlers registered for the given instance.
+     *
+     * @param instance The instance to clear the key handlers for
+     */
+    private void cleanUpListeners(Object instance) {
+        final Collection<KeyEventHolder> handlers = keyEventHandlers.remove(instance);
+        if (handlers == null) {
+            return;
+        }
+        for (KeyEventHolder holder : handlers) {
+            switch (holder.target()) {
+                case SCENE -> app.get().stage().getScene().removeEventFilter(holder.type(), holder.handler());
+                case STAGE -> app.get().stage().removeEventFilter(holder.type(), holder.handler());
+            }
         }
     }
 
@@ -324,66 +324,6 @@ public class ControllerManager {
      */
     public void setDefaultResourceBundle(ResourceBundle resourceBundle) {
         defaultResourceBundle = resourceBundle;
-    }
-
-    /**
-     * Creates an event handler for the given method and instance that will be called when the specified key event occurs.
-     *
-     * @param method     The method to call
-     * @param instance   The instance to call the method on
-     * @param annotation The annotation with the key event information
-     * @return An event handler for the given method and instance
-     */
-    private EventHandler<KeyEvent> createKeyEventHandler(Method method, Object instance, OnKey annotation) {
-        boolean hasEventParameter = method.getParameterCount() == 1 && method.getParameterTypes()[0].isAssignableFrom(KeyEvent.class);
-
-        if (!hasEventParameter && method.getParameterCount() != 0) {
-            throw new RuntimeException(error(1010).formatted(method.getName(), instance.getClass().getName()));
-        }
-
-        method.setAccessible(true);
-
-        return event -> {
-            if (keyEventMatchesAnnotation(event, annotation)) {
-                try {
-                    if (hasEventParameter) {
-                        method.invoke(instance, event);
-                    } else {
-                        method.invoke(instance);
-                    }
-                } catch (IllegalAccessException | InvocationTargetException e) {
-                    throw new RuntimeException(error(1005).formatted(method.getName(), annotation.getClass().getSimpleName(), method.getClass()), e);
-                }
-            }
-        };
-    }
-
-    private boolean keyEventMatchesAnnotation(KeyEvent event, OnKey annotation) {
-        return (annotation.code() == KeyCode.UNDEFINED || event.getCode() == annotation.code()) &&
-                (annotation.character().isEmpty() || event.getCharacter().equals(annotation.character())) &&
-                (annotation.text().isEmpty() || event.getText().equals(annotation.text())) &&
-                (event.isShiftDown() || !annotation.shift()) &&
-                (event.isControlDown() || !annotation.control()) &&
-                (event.isAltDown() || !annotation.alt()) &&
-                (event.isMetaDown() || !annotation.meta());
-    }
-
-    /**
-     * Clears all key handlers registered for the given instance.
-     *
-     * @param instance The instance to clear the key handlers for
-     */
-    private void cleanUpListeners(Object instance) {
-        final Collection<KeyEventHolder> handlers = keyEventHandlers.remove(instance);
-        if (handlers == null) {
-            return;
-        }
-        for (KeyEventHolder holder : handlers) {
-            switch (holder.target()) {
-                case SCENE -> app.get().stage().getScene().removeEventFilter(holder.type(), holder.handler());
-                case STAGE -> app.get().stage().removeEventFilter(holder.type(), holder.handler());
-            }
-        }
     }
 
     /**
