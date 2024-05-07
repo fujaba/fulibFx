@@ -357,16 +357,16 @@ public class FxClassGenerator {
         OnKey onKey = method.getAnnotation(OnKey.class);
         out.printf("    controllerManager.addKeyEventHandler(instance, OnKey.Target.%s, OnKey.Type.%s.asEventType(), event -> {%n", onKey.target(), onKey.type());
         if (onKey.control()) {
-            out.printf("      if (!event.isControlDown()) return;");
+            out.printf("      if (!event.isControlDown()) return;%n");
         }
         if (onKey.shift()) {
-            out.printf("      if (!event.isShiftDown()) return;");
+            out.printf("      if (!event.isShiftDown()) return;%n");
         }
         if (onKey.alt()) {
-            out.printf("      if (!event.isAltDown()) return;");
+            out.printf("      if (!event.isAltDown()) return;%n");
         }
         if (onKey.meta()) {
-            out.printf("      if (!event.isMetaDown()) return;");
+            out.printf("      if (!event.isMetaDown()) return;%n");
         }
         if (onKey.code() != KeyCode.UNDEFINED) {
             out.printf("      if (event.getCode() != javafx.scene.input.KeyCode.%s) return;%n", onKey.code());
