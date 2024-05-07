@@ -203,7 +203,7 @@ public class MyController {
 ### 1013: `Method '*' annotated with '*' in class '*' overrides event method in class '*'.`
 
 - Runtime: ✅
-- Annotation Processor: ❌
+- Annotation Processor: ✅
 
 This error if an event method overrides another event method as this would lead to the overriding method being called twice.
 
