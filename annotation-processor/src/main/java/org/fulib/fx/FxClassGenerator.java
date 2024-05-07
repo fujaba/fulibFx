@@ -196,8 +196,8 @@ public class FxClassGenerator {
 
     private void generateCallInitMethods(PrintWriter out, TypeElement componentClass) {
         streamAllMethods(componentClass, OnInit.class)
-            .sorted(Comparator.comparingInt(a -> a.getAnnotation(OnInit.class).value()))
             .peek(methodElement -> checkOverrides(methodElement, OnInit.class))
+            .sorted(Comparator.comparingInt(a -> a.getAnnotation(OnInit.class).value()))
             .forEach(methodElement -> generateCall(out, methodElement));
     }
 
@@ -334,9 +334,9 @@ public class FxClassGenerator {
     }
 
     private void generateRegisterKeyEventHandlers(PrintWriter out, TypeElement componentClass) {
-        streamAllMethods(componentClass, OnKey.class).forEach(method -> {
-            generateRegisterKeyEventHandler(out, componentClass, method);
-        });
+        streamAllMethods(componentClass, OnKey.class)
+            .peek(methodElement -> checkOverrides(methodElement, OnKey.class))
+            .forEach(method -> generateRegisterKeyEventHandler(out, componentClass, method));
     }
 
     private void generateRegisterKeyEventHandler(PrintWriter out, TypeElement componentClass, ExecutableElement method) {
@@ -452,6 +452,18 @@ public class FxClassGenerator {
         return Stream.iterate(componentClass, Objects::nonNull, e -> (TypeElement) processingEnv.getTypeUtils().asElement(e.getSuperclass()));
     }
 
+    private Stream<ExecutableElement> streamAllEventMethods(TypeElement componentClass) {
+        return streamSuperClasses(componentClass).flatMap(e ->
+                Stream.concat(streamAllMethods(e, OnInit.class),
+                        Stream.concat(streamAllMethods(e, OnDestroy.class),
+                                Stream.concat(streamAllMethods(e, OnRender.class),
+                                        streamAllMethods(e, OnKey.class)
+                                )
+                        )
+                )
+        );
+    }
+
     /**
      * Checks if the given method overrides another event method.
      *
@@ -471,17 +483,9 @@ public class FxClassGenerator {
         TypeElement parentElement = (TypeElement) processingEnv.getTypeUtils().asElement(parentClazz);
 
         streamSuperClasses(parentElement).forEach(superClass ->
-            streamAllMethods(superClass, annotation)
+            streamAllEventMethods(superClass)
                 .filter(otherMethod -> otherMethod.getSimpleName().equals(method.getSimpleName()))
                 .filter(otherMethod -> processingEnv.getTypeUtils().isSubsignature((ExecutableType) method.asType(), (ExecutableType) otherMethod.asType()))
-                .filter(otherMethod -> { // Check if the overridden method is an event method
-                    for (Class<? extends Annotation> eventAnnotation : ControllerUtil.EVENT_ANNOTATIONS) {
-                        if (otherMethod.getAnnotation(eventAnnotation) != null) {
-                            return true;
-                        }
-                    }
-                    return false;
-                })
                 .findFirst()
                 .ifPresent(overriddenMethod -> processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error(1013).formatted(method, annotation.getSimpleName(), element.getQualifiedName(), superClass.getQualifiedName()), method))
         );
