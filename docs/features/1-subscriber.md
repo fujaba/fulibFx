@@ -41,4 +41,4 @@ public class TodoController {
 
 ---
 
-[⬅ Features](README.md) | [Overview](README.md) | [For ➡](2-for.md)
+[Overview](README.md) | [For ➡](2-for.md)
