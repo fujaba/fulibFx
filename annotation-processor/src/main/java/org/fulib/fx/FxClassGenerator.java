@@ -483,7 +483,7 @@ public class FxClassGenerator {
                     return false;
                 })
                 .findFirst()
-                .ifPresent(overriddenMethod -> processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error(1013).formatted(method, annotation.getSimpleName(), element.getQualifiedName(), superClass.getQualifiedName()), overriddenMethod))
+                .ifPresent(overriddenMethod -> processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error(1013).formatted(method, annotation.getSimpleName(), element.getQualifiedName(), superClass.getQualifiedName()), method))
         );
     }
 }
