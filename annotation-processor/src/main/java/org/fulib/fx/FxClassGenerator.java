@@ -99,6 +99,7 @@ public class FxClassGenerator {
         out.println("import java.util.Map;");
         out.println("import java.util.ResourceBundle;");
         out.println("import javafx.scene.Node;");
+        out.println("import org.fulib.fx.annotation.event.OnKey;");
         out.println("import org.fulib.fx.controller.ControllerManager;");
         out.println("import org.fulib.fx.controller.internal.FxSidecar;");
         out.println();
@@ -356,27 +357,27 @@ public class FxClassGenerator {
         OnKey onKey = method.getAnnotation(OnKey.class);
         out.printf("    controllerManager.addKeyEventHandler(instance, OnKey.Target.%s, OnKey.Type.%s.asEventType(), event -> {%n", onKey.target(), onKey.type());
         if (onKey.control()) {
-            out.printf("    if (!event.isControlDown()) return;");
+            out.printf("      if (!event.isControlDown()) return;");
         }
         if (onKey.shift()) {
-            out.printf("    if (!event.isShiftDown()) return;");
+            out.printf("      if (!event.isShiftDown()) return;");
         }
         if (onKey.alt()) {
-            out.printf("    if (!event.isAltDown()) return;");
+            out.printf("      if (!event.isAltDown()) return;");
         }
         if (onKey.meta()) {
-            out.printf("    if (!event.isMetaDown()) return;");
+            out.printf("      if (!event.isMetaDown()) return;");
         }
         if (onKey.code() != KeyCode.UNDEFINED) {
-            out.printf("    if (event.getCode() != KeyCode.%s) return;%n", onKey.code());
+            out.printf("      if (event.getCode() != javafx.scene.input.KeyCode.%s) return;%n", onKey.code());
         }
         if (!onKey.text().isEmpty()) {
-            out.printf("    if (!%s.equals(event.getText())) return;%n", stringLiteral(onKey.text()));
+            out.printf("      if (!%s.equals(event.getText())) return;%n", stringLiteral(onKey.text()));
         }
-        if (!onKey.character().isEmpty()) {
-            out.printf("    if (!%s.equals(event.getCharacter())) return;%n", stringLiteral(onKey.character()));
+        if (!"\0".equals(onKey.character())) {
+            out.printf("      if (!%s.equals(event.getCharacter())) return;%n", stringLiteral(onKey.character()));
         }
-        out.printf("    instance.%s(%s);%n", method.getSimpleName(), method.getParameters().size() == 1 ? "event" : "");
+        out.printf("      instance.%s(%s);%n", method.getSimpleName(), method.getParameters().size() == 1 ? "event" : "");
         out.printf("    });%n");
     }
 
