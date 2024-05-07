@@ -502,3 +502,7 @@ In this tutorial, we have learned how to start a new project using `FulibFx` and
 We have also learned how to configure the routing and how to pass parameters to controllers.
 In addition, we have learned how to use resources, titles, subscribers and subcomponents.
 For more information about the different features of `FulibFx`, see the [documentation](../../README.md).
+
+---
+
+[Overview](../README.md)
