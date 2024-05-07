@@ -423,6 +423,10 @@ public class FxClassGenerator {
         });
     }
 
+    private Stream<ExecutableElement> streamAllMethods(TypeElement componentClass) {
+        return streamSuperClasses(componentClass).flatMap(this::streamMethods);
+    }
+
     private Stream<ExecutableElement> streamMethods(TypeElement componentClass, Class<? extends Annotation> annotation) {
         return componentClass
             .getEnclosedElements()
@@ -430,6 +434,15 @@ public class FxClassGenerator {
             .filter(element -> element instanceof ExecutableElement && element.getAnnotation(annotation) != null)
             .map(element -> (ExecutableElement) element);
     }
+
+    private Stream<ExecutableElement> streamMethods(TypeElement componentClass) {
+        return componentClass
+            .getEnclosedElements()
+            .stream()
+            .filter(element -> element instanceof ExecutableElement)
+            .map(element -> (ExecutableElement) element);
+    }
+
 
     // This will throw an error if the fields are private
     private Stream<VariableElement> streamAllFields(TypeElement componentClass, Class<? extends Annotation> annotation) {
@@ -452,18 +465,6 @@ public class FxClassGenerator {
         return Stream.iterate(componentClass, Objects::nonNull, e -> (TypeElement) processingEnv.getTypeUtils().asElement(e.getSuperclass()));
     }
 
-    private Stream<ExecutableElement> streamAllEventMethods(TypeElement componentClass) {
-        return streamSuperClasses(componentClass).flatMap(e ->
-                Stream.concat(streamAllMethods(e, OnInit.class),
-                        Stream.concat(streamAllMethods(e, OnDestroy.class),
-                                Stream.concat(streamAllMethods(e, OnRender.class),
-                                        streamAllMethods(e, OnKey.class)
-                                )
-                        )
-                )
-        );
-    }
-
     /**
      * Checks if the given method overrides another event method.
      *
@@ -482,12 +483,20 @@ public class FxClassGenerator {
 
         TypeElement parentElement = (TypeElement) processingEnv.getTypeUtils().asElement(parentClazz);
 
-        streamSuperClasses(parentElement).forEach(superClass ->
-            streamAllEventMethods(superClass)
-                .filter(otherMethod -> otherMethod.getSimpleName().equals(method.getSimpleName()))
-                .filter(otherMethod -> processingEnv.getTypeUtils().isSubsignature((ExecutableType) method.asType(), (ExecutableType) otherMethod.asType()))
-                .findFirst()
-                .ifPresent(overriddenMethod -> processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error(1013).formatted(method, annotation.getSimpleName(), element.getQualifiedName(), superClass.getQualifiedName()), method))
-        );
+        streamAllMethods(parentElement)
+            .filter(otherMethod -> otherMethod.getSimpleName().equals(method.getSimpleName()))
+            .filter(this::isEventMethod)
+            .filter(otherMethod -> processingEnv.getTypeUtils().isSubsignature((ExecutableType) method.asType(), (ExecutableType) otherMethod.asType()))
+            .findFirst()
+            .ifPresent(overriddenMethod -> processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error(1013).formatted(method, annotation.getSimpleName(), element.getQualifiedName(), ((TypeElement) overriddenMethod.getEnclosingElement()).getQualifiedName()), method));
+    }
+
+    private boolean isEventMethod(ExecutableElement method) {
+        for (Class<? extends Annotation> eventAnnotation : ControllerUtil.EVENT_ANNOTATIONS) {
+            if (method.getAnnotation(eventAnnotation) != null) {
+                return true;
+            }
+        }
+        return false;
     }
 }
