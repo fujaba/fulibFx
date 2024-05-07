@@ -18,23 +18,17 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
-import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.*;
-import java.util.stream.Stream;
-
-import static org.fulib.fx.util.FrameworkUtil.error;
 
 public class FxClassGenerator {
     private static final String CLASS_SUFFIX = "_Fx";
     private final ProcessingEnvironment processingEnv;
+    private final ControllerAnnotationProcessor processor;
 
     /**
      * The (erased) `javafx.beans.value.WritableValue` type.
@@ -51,7 +45,8 @@ public class FxClassGenerator {
      */
     private final TypeMirror parent;
 
-    public FxClassGenerator(ProcessingEnvironment processingEnv) {
+    public FxClassGenerator(ControllerAnnotationProcessor processor, ProcessingEnvironment processingEnv) {
+        this.processor = processor;
         this.processingEnv = processingEnv;
 
         final TypeElement writableValue = processingEnv.getElementUtils().getTypeElement("javafx.beans.value.WritableValue");
@@ -146,11 +141,11 @@ public class FxClassGenerator {
     }
 
     private void generateParametersIntoFields(PrintWriter out, TypeElement componentClass) {
-        streamAllFields(componentClass, Param.class).forEach(field -> {
+        processor.streamAllFields(componentClass, Param.class).forEach(field -> {
             final Param param = field.getAnnotation(Param.class);
             final String fieldName = field.getSimpleName().toString();
             final String fieldType = field.asType().toString();
-            final String paramNameLiteral = stringLiteral(param.value());
+            final String paramNameLiteral = processor.stringLiteral(param.value());
             out.printf("    if (params.containsKey(%s)) {%n", paramNameLiteral);
 
             // TODO field must be public, package-private or protected -- add a diagnostic if it's private
@@ -183,7 +178,7 @@ public class FxClassGenerator {
             out.println("    }");
         });
 
-        streamAllFields(componentClass, ParamsMap.class).forEach(field -> {
+        processor.streamAllFields(componentClass, ParamsMap.class).forEach(field -> {
             final String fieldName = field.getSimpleName().toString();
             if (field.getModifiers().contains(Modifier.FINAL)) {
                 out.printf("    instance.%s.clear();%n", fieldName);
@@ -195,14 +190,13 @@ public class FxClassGenerator {
     }
 
     private void generateCallInitMethods(PrintWriter out, TypeElement componentClass) {
-        streamAllMethods(componentClass, OnInit.class)
-            .peek(methodElement -> checkOverrides(methodElement, OnInit.class))
+        processor.streamAllMethods(componentClass, OnInit.class)
             .sorted(Comparator.comparingInt(a -> a.getAnnotation(OnInit.class).value()))
             .forEach(methodElement -> generateCall(out, methodElement));
     }
 
     private void generateCallParamMethods(PrintWriter out, TypeElement componentClass, Class<? extends Annotation> annotation) {
-        streamAllMethods(componentClass, annotation)
+        processor.streamAllMethods(componentClass, annotation)
             .forEach(methodElement -> generateCall(out, methodElement));
     }
 
@@ -216,7 +210,7 @@ public class FxClassGenerator {
             final VariableElement parameter = parameters.get(i);
             final Param paramAnnotation = parameter.getAnnotation(Param.class);
             if (paramAnnotation != null) {
-                arguments.set(i, "(%s) params.get(%s)".formatted(parameter.asType(), stringLiteral(paramAnnotation.value())));
+                arguments.set(i, "(%s) params.get(%s)".formatted(parameter.asType(), processor.stringLiteral(paramAnnotation.value())));
                 continue;
             }
 
@@ -233,7 +227,7 @@ public class FxClassGenerator {
     private void fillMethodArguments(ExecutableElement methodElement, List<String> arguments, List<? extends VariableElement> parameters) {
         final Param paramAnnotation = methodElement.getAnnotation(Param.class);
         if (paramAnnotation != null) {
-            arguments.set(0, "(%s) params.get(%s)".formatted(parameters.get(0).asType(), stringLiteral(paramAnnotation.value())));
+            arguments.set(0, "(%s) params.get(%s)".formatted(parameters.get(0).asType(), processor.stringLiteral(paramAnnotation.value())));
         }
 
         final Params paramsAnnotation = methodElement.getAnnotation(Params.class);
@@ -241,7 +235,7 @@ public class FxClassGenerator {
             final String[] paramNames = paramsAnnotation.value();
             for (int i = 0; i < paramNames.length; i++) {
                 final VariableElement parameter = parameters.get(i);
-                arguments.set(i, "(%s) params.get(%s)".formatted(parameter.asType(), stringLiteral(paramNames[i])));
+                arguments.set(i, "(%s) params.get(%s)".formatted(parameter.asType(), processor.stringLiteral(paramNames[i])));
             }
         }
 
@@ -252,7 +246,7 @@ public class FxClassGenerator {
     }
 
     private void generateCallSubComponents(PrintWriter out, TypeElement componentClass, String method) {
-        streamAllFields(componentClass, SubComponent.class).forEach(field -> {
+        processor.streamAllFields(componentClass, SubComponent.class).forEach(field -> {
             if (field.asType().toString().startsWith("javax.inject.Provider")) {
                 // Provider fields are initialized on demand
                 return;
@@ -269,15 +263,14 @@ public class FxClassGenerator {
     }
 
     private void generateCallDestroyMethods(PrintWriter out, TypeElement componentClass) {
-        streamAllMethods(componentClass, OnDestroy.class)
-            .peek(methodElement -> checkOverrides(methodElement, OnDestroy.class))
+        processor.streamAllMethods(componentClass, OnDestroy.class)
             .sorted(Comparator.comparingInt(a -> a.getAnnotation(OnDestroy.class).value()))
             .forEach(element -> generateCall(out, element));
     }
 
     private void generateDestroySubComponents(PrintWriter out, TypeElement componentClass) {
         final List<String> fieldNames = new ArrayList<>();
-        streamAllFields(componentClass, SubComponent.class).forEach(field -> {
+        processor.streamAllFields(componentClass, SubComponent.class).forEach(field -> {
             if (field.asType().toString().startsWith("javax.inject.Provider")) {
                 // Provider fields are destroyed on demand
                 return;
@@ -313,7 +306,7 @@ public class FxClassGenerator {
                 if (processingEnv.getTypeUtils().isAssignable(componentClass.asType(), parent)) {
                     out.println("    instance.getChildren().clear();");
                 }
-                out.printf("    final Node result = this.controllerManager.loadFXML(%s, instance, true);%n", stringLiteral(view));
+                out.printf("    final Node result = this.controllerManager.loadFXML(%s, instance, true);%n", processor.stringLiteral(view));
             }
         } else if (controller != null) {
             final String view = controller.view();
@@ -321,21 +314,19 @@ public class FxClassGenerator {
                 out.printf("    final Node result = instance.%s();%n", view.substring(1));
             } else {
                 final String inferredView = view.isEmpty() ? ControllerUtil.transform(componentClass.getSimpleName().toString()) + ".fxml" : view;
-                out.printf("    final Node result = this.controllerManager.loadFXML(%s, instance, false);%n", stringLiteral(inferredView));
+                out.printf("    final Node result = this.controllerManager.loadFXML(%s, instance, false);%n", processor.stringLiteral(inferredView));
             }
         }
     }
 
     private void generateCallRenderMethods(PrintWriter out, TypeElement componentClass) {
-        streamAllMethods(componentClass, OnRender.class)
-            .peek(methodElement -> checkOverrides(methodElement, OnRender.class))
+        processor.streamAllMethods(componentClass, OnRender.class)
             .sorted(Comparator.comparingInt(a -> a.getAnnotation(OnRender.class).value()))
             .forEach(element -> generateCall(out, element));
     }
 
     private void generateRegisterKeyEventHandlers(PrintWriter out, TypeElement componentClass) {
-        streamAllMethods(componentClass, OnKey.class)
-            .peek(methodElement -> checkOverrides(methodElement, OnKey.class))
+        processor.streamAllMethods(componentClass, OnKey.class)
             .forEach(method -> generateRegisterKeyEventHandler(out, componentClass, method));
     }
 
@@ -376,17 +367,17 @@ public class FxClassGenerator {
             out.printf("      if (event.getCode() != javafx.scene.input.KeyCode.%s) return;%n", onKey.code());
         }
         if (!onKey.text().isEmpty()) {
-            out.printf("      if (!%s.equals(event.getText())) return;%n", stringLiteral(onKey.text()));
+            out.printf("      if (!%s.equals(event.getText())) return;%n", processor.stringLiteral(onKey.text()));
         }
         if (!"\0".equals(onKey.character())) {
-            out.printf("      if (!%s.equals(event.getCharacter())) return;%n", stringLiteral(onKey.character()));
+            out.printf("      if (!%s.equals(event.getCharacter())) return;%n", processor.stringLiteral(onKey.character()));
         }
         out.printf("      instance.%s(%s);%n", method.getSimpleName(), method.getParameters().size() == 1 ? "event" : "");
         out.printf("    });%n");
     }
 
     private void generateSidecarResources(PrintWriter out, TypeElement componentClass) {
-        streamAllFields(componentClass, Resource.class)
+        processor.streamAllFields(componentClass, Resource.class)
             .findFirst()
             .ifPresentOrElse(
                 field -> out.printf("    return instance.%s;%n", field.getSimpleName()),
@@ -402,101 +393,12 @@ public class FxClassGenerator {
         }
 
         if (title.value().startsWith("%")) {
-            out.printf("    return getResources(instance).getString(%s);%n", stringLiteral(title.value().substring(1)));
+            out.printf("    return getResources(instance).getString(%s);%n", processor.stringLiteral(title.value().substring(1)));
         } else if ("$name".equals(title.value())) {
-            out.printf("    return %s;%n", stringLiteral(ControllerUtil.transform(componentClass.getSimpleName().toString())));
+            out.printf("    return %s;%n", processor.stringLiteral(ControllerUtil.transform(componentClass.getSimpleName().toString())));
         } else {
-            out.printf("    return %s;%n", stringLiteral(title.value()));
+            out.printf("    return %s;%n", processor.stringLiteral(title.value()));
         }
     }
 
-    private String stringLiteral(String value) {
-        return processingEnv.getElementUtils().getConstantExpression(value);
-    }
-
-    // This will throw an error if the methods are private
-    private Stream<ExecutableElement> streamAllMethods(TypeElement componentClass, Class<? extends Annotation> annotation) {
-        return streamSuperClasses(componentClass).flatMap(e -> streamMethods(e, annotation)).peek(method -> {
-            if (method.getModifiers().contains(Modifier.PRIVATE)) {
-                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error(1012).formatted(Method.class.getSimpleName(), method.getSimpleName(), componentClass.getQualifiedName(), annotation.getSimpleName(), method));
-            }
-        });
-    }
-
-    private Stream<ExecutableElement> streamAllMethods(TypeElement componentClass) {
-        return streamSuperClasses(componentClass).flatMap(this::streamMethods);
-    }
-
-    private Stream<ExecutableElement> streamMethods(TypeElement componentClass, Class<? extends Annotation> annotation) {
-        return componentClass
-            .getEnclosedElements()
-            .stream()
-            .filter(element -> element instanceof ExecutableElement && element.getAnnotation(annotation) != null)
-            .map(element -> (ExecutableElement) element);
-    }
-
-    private Stream<ExecutableElement> streamMethods(TypeElement componentClass) {
-        return componentClass
-            .getEnclosedElements()
-            .stream()
-            .filter(element -> element instanceof ExecutableElement)
-            .map(element -> (ExecutableElement) element);
-    }
-
-
-    // This will throw an error if the fields are private
-    private Stream<VariableElement> streamAllFields(TypeElement componentClass, Class<? extends Annotation> annotation) {
-        return streamSuperClasses(componentClass).flatMap(e -> streamFields(e, annotation)).peek(field -> {
-            if (field.getModifiers().contains(Modifier.PRIVATE)) {
-                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error(1012).formatted(Field.class.getSimpleName(), field.getSimpleName(), componentClass.getQualifiedName(), annotation.getSimpleName(), field));
-            }
-        });
-    }
-
-    private Stream<VariableElement> streamFields(TypeElement componentClass, Class<? extends Annotation> annotation) {
-        return componentClass
-            .getEnclosedElements()
-            .stream()
-            .filter(element -> element instanceof VariableElement && element.getAnnotation(annotation) != null)
-            .map(element -> (VariableElement) element);
-    }
-
-    private Stream<TypeElement> streamSuperClasses(TypeElement componentClass) {
-        return Stream.iterate(componentClass, Objects::nonNull, e -> (TypeElement) processingEnv.getTypeUtils().asElement(e.getSuperclass()));
-    }
-
-    /**
-     * Checks if the given method overrides another event method.
-     *
-     * @param method The method to check
-     * @param annotation The annotation the method is annotated with
-     */
-    private void checkOverrides(ExecutableElement method, Class<? extends Annotation> annotation) {
-        TypeMirror clazz = method.getEnclosingElement().asType();
-        TypeElement element = (TypeElement) processingEnv.getTypeUtils().asElement(clazz);
-        TypeMirror parentClazz = element.getSuperclass();
-
-        // If no parent class is found, the method cannot override anything
-        if (parentClazz.getKind() == TypeKind.NONE) {
-            return;
-        }
-
-        TypeElement parentElement = (TypeElement) processingEnv.getTypeUtils().asElement(parentClazz);
-
-        streamAllMethods(parentElement)
-            .filter(otherMethod -> otherMethod.getSimpleName().equals(method.getSimpleName()))
-            .filter(this::isEventMethod)
-            .filter(otherMethod -> processingEnv.getTypeUtils().isSubsignature((ExecutableType) method.asType(), (ExecutableType) otherMethod.asType()))
-            .findFirst()
-            .ifPresent(overriddenMethod -> processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error(1013).formatted(method, annotation.getSimpleName(), element.getQualifiedName(), ((TypeElement) overriddenMethod.getEnclosingElement()).getQualifiedName()), method));
-    }
-
-    private boolean isEventMethod(ExecutableElement method) {
-        for (Class<? extends Annotation> eventAnnotation : ControllerUtil.EVENT_ANNOTATIONS) {
-            if (method.getAnnotation(eventAnnotation) != null) {
-                return true;
-            }
-        }
-        return false;
-    }
 }

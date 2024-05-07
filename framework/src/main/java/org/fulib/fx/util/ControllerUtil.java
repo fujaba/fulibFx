@@ -154,12 +154,11 @@ public class ControllerUtil {
      * results in the subclass method being called twice due to how java handles method overrides.
      *
      * @param method     The method to check
-     * @param annotation Whether the method overrides another event method
      */
-    public static void checkOverrides(Method method, Class<? extends Annotation> annotation) {
+    public static void checkOverrides(Method method) {
         Method overridden = ReflectionUtil.getOverriding(method);
         if (overridden != null && ControllerUtil.isEventMethod(overridden)) {
-            throw new RuntimeException(error(1013).formatted(method.getName(), annotation.getSimpleName(), method.getDeclaringClass().getName(), overridden.getDeclaringClass().getName()));
+            throw new RuntimeException(error(1013).formatted(method.getName(), method.getDeclaringClass().getName(), overridden.getDeclaringClass().getName()));
         }
     }
 }
