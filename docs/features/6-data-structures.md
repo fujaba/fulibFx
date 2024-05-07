@@ -38,4 +38,4 @@ for checking which type it is and for getting the value correct value.
 
 ---
 
-[⬅ Data Structures](6-data-structures.md) | [Overview](README.md) | [Component List Cells ➡](7-componentlistcell.md)
+[⬅ Node Duplicator](5-node-duplicator.md) | [Overview](README.md) | [Component List Cells ➡](7-componentlistcell.md)
