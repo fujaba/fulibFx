@@ -16,6 +16,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
@@ -193,6 +194,7 @@ public class FxClassGenerator {
     private void generateCallInitMethods(PrintWriter out, TypeElement componentClass) {
         streamAllMethods(componentClass, OnInit.class)
             .sorted(Comparator.comparingInt(a -> a.getAnnotation(OnInit.class).value()))
+            .peek(methodElement -> checkOverrides(methodElement, OnInit.class))
             .forEach(methodElement -> generateCall(out, methodElement));
     }
 
@@ -265,6 +267,7 @@ public class FxClassGenerator {
 
     private void generateCallDestroyMethods(PrintWriter out, TypeElement componentClass) {
         streamAllMethods(componentClass, OnDestroy.class)
+            .peek(methodElement -> checkOverrides(methodElement, OnDestroy.class))
             .sorted(Comparator.comparingInt(a -> a.getAnnotation(OnDestroy.class).value()))
             .forEach(element -> generateCall(out, element));
     }
@@ -322,6 +325,7 @@ public class FxClassGenerator {
 
     private void generateCallRenderMethods(PrintWriter out, TypeElement componentClass) {
         streamAllMethods(componentClass, OnRender.class)
+            .peek(methodElement -> checkOverrides(methodElement, OnRender.class))
             .sorted(Comparator.comparingInt(a -> a.getAnnotation(OnRender.class).value()))
             .forEach(element -> generateCall(out, element));
     }
@@ -391,5 +395,40 @@ public class FxClassGenerator {
 
     private Stream<TypeElement> streamSuperClasses(TypeElement componentClass) {
         return Stream.iterate(componentClass, Objects::nonNull, e -> (TypeElement) processingEnv.getTypeUtils().asElement(e.getSuperclass()));
+    }
+
+    /**
+     * Checks if the given method overrides another event method.
+     *
+     * @param method The method to check
+     * @param annotation The annotation the method is annotated with
+     */
+    private void checkOverrides(ExecutableElement method, Class<? extends Annotation> annotation) {
+        TypeMirror clazz = method.getEnclosingElement().asType();
+        TypeElement element = (TypeElement) processingEnv.getTypeUtils().asElement(clazz);
+        TypeMirror parentClazz = element.getSuperclass();
+
+        // If no parent class is found, the method cannot override anything
+        if (parentClazz.getKind() == TypeKind.NONE) {
+            return;
+        }
+
+        TypeElement parentElement = (TypeElement) processingEnv.getTypeUtils().asElement(parentClazz);
+
+        streamSuperClasses(parentElement).forEach(superClass ->
+            streamAllMethods(superClass, annotation)
+                .filter(otherMethod -> otherMethod.getSimpleName().equals(method.getSimpleName()))
+                .filter(otherMethod -> processingEnv.getTypeUtils().isSubsignature((ExecutableType) method.asType(), (ExecutableType) otherMethod.asType()))
+                .filter(otherMethod -> { // Check if the overridden method is an event method
+                    for (Class<? extends Annotation> eventAnnotation : ControllerUtil.EVENT_ANNOTATIONS) {
+                        if (otherMethod.getAnnotation(eventAnnotation) != null) {
+                            return true;
+                        }
+                    }
+                    return false;
+                })
+                .findFirst()
+                .ifPresent(overriddenMethod -> processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error(1013).formatted(method, annotation.getSimpleName(), element.getQualifiedName(), superClass.getQualifiedName()), overriddenMethod))
+        );
     }
 }

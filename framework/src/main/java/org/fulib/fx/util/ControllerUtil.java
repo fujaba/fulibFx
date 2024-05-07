@@ -27,7 +27,7 @@ public class ControllerUtil {
         // Prevent instantiation
     }
 
-    private static final Set<Class<? extends Annotation>> EVENT_ANNOTATIONS = Set.of(
+    public static final Set<Class<? extends Annotation>> EVENT_ANNOTATIONS = Set.of(
             OnInit.class,
             OnRender.class,
             OnDestroy.class,
