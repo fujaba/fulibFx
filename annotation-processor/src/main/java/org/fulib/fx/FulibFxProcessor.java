@@ -323,18 +323,23 @@ public class FulibFxProcessor extends AbstractProcessor {
             return;
         }
 
+        String methodName = method.getSimpleName().toString();
+
         // Check if one of the parent classes has the method
-        if (eventMethods.containsKey(method.getSimpleName().toString())) {
-            for (ExecutableElement parentMethod : eventMethods.get(method.getSimpleName().toString())) {
-                if (sameMethodSignature(method, parentMethod)) {
-                    Name className = element.getQualifiedName();
-                    Name parentClassName = ((TypeElement) parentMethod.getEnclosingElement()).getQualifiedName();
-                    String error = error(1013).formatted(method, className, parentClassName);
-                    processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error, method);
-                    break;
-                }
+        if (!eventMethods.containsKey(methodName)) {
+            return;
+        }
+
+        for (ExecutableElement parentMethod : eventMethods.get(method.getSimpleName().toString())) {
+            if (sameMethodSignature(method, parentMethod)) {
+                Name className = element.getQualifiedName();
+                Name parentClassName = ((TypeElement) parentMethod.getEnclosingElement()).getQualifiedName();
+                String error = error(1013).formatted(method, className, parentClassName);
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error, method);
+                break;
             }
         }
+
     }
 
     private boolean sameMethodSignature(ExecutableElement method, ExecutableElement otherMethod) {
@@ -350,7 +355,7 @@ public class FulibFxProcessor extends AbstractProcessor {
             .filter(this::isEventElement)
             .filter(element -> element.getModifiers().contains(Modifier.PRIVATE))
             .forEach(element -> {
-                String kind = element.getKind() == ElementKind.METHOD ? Method.class.getSimpleName() : Field.class.getSimpleName();
+                String kind = element.getKind() == ElementKind.METHOD ? "method" : "field";
                 Name name = element.getSimpleName();
                 Name clazzName = clazz.getQualifiedName();
                 String error = error(1012).formatted(kind, name, clazzName);
