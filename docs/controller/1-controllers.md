@@ -59,6 +59,40 @@ The destruction of a controller takes place when the controller is no longer nee
 is displayed using the `show()` method or when the application is closed. During this phase, you should clean up any
 resources that are no longer needed.
 
+### Inheritance
+Controllers can inherit from other classes. This can be useful to share common functionality between multiple controllers.
+All annotations used in the parent class will be used in the child class as well (e.g. `@OnInit`, `@OnRender`, `@OnDestroy`, `@Param`, ...).
+
+Overriding event methods is also possible, allowing for standardized methods to be specified.
+If a child class overrides an event method, the child method should not be annotated with the event annotation.
+
+```java
+public class BaseController {
+    
+    // This subscriber will be used in all child classes
+    Subscriber subscriber = ...;
+
+    @OnDestroy
+    public void cleanup() {
+        // Cleanup the subscriber once instead of in every child class
+        subscriber.dispose();
+    }
+    
+}
+
+@Controller
+public class TodoController extends BaseController {
+    
+    // ...
+    
+    @OnInit
+    public void init() {
+        subscriber.subscribe(todoService.getTodos(), this::updateTodos);
+    }
+    
+}
+```
+
 ### Destroying controllers
 
 When a controller is no longer needed, it should be destroyed to free up resources. This will automatically happen when
