@@ -19,7 +19,11 @@ import javax.tools.Diagnostic;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import static org.fulib.fx.util.FrameworkUtil.error;
 import static org.fulib.fx.util.FrameworkUtil.note;
@@ -55,6 +59,7 @@ public class FulibFxProcessor extends AbstractProcessor {
             checkComponent(element);
             checkDoubleAnnotation(element); // Check if a class is annotated with both @Controller and @Component
             if (element instanceof TypeElement typeElement) {
+                checkEventModifiers(typeElement);
                 generator.generateSidecar(typeElement);
                 checkOverrides(typeElement);
             }
@@ -64,6 +69,7 @@ public class FulibFxProcessor extends AbstractProcessor {
         for (Element element : roundEnv.getElementsAnnotatedWith(Controller.class)) {
             checkController(element);
             if (element instanceof TypeElement typeElement) {
+                checkEventModifiers(typeElement);
                 generator.generateSidecar(typeElement);
                 checkOverrides(typeElement);
             }
@@ -104,7 +110,7 @@ public class FulibFxProcessor extends AbstractProcessor {
         typeElement.getEnclosedElements().stream()
             .filter(e -> e.getKind() == ElementKind.METHOD)
             .map(e -> (ExecutableElement) e)
-            .filter(helper::isEventMethod)
+            .filter(this::isEventElement)
             .forEach(this::checkOverrides);
     }
 
@@ -236,7 +242,10 @@ public class FulibFxProcessor extends AbstractProcessor {
             .ifPresentOrElse(
                 method -> {
                     if (!method.getParameters().isEmpty()) {
-                        processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error(1008).formatted(method.getSimpleName(), method.getEnclosingElement().asType().toString()), method);
+                        Name methodSimpleName = method.getSimpleName();
+                        String className = method.getEnclosingElement().asType().toString();
+                        String error = error(1008).formatted(methodSimpleName, className);
+                        processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error, method);
                     }
 
                     TypeMirror parent = processingEnv.getElementUtils().getTypeElement("javafx.scene.Parent").asType();
@@ -281,6 +290,21 @@ public class FulibFxProcessor extends AbstractProcessor {
     }
 
     /**
+     * Checks if an element is an event element (annotated with {@link ControllerUtil#EVENT_ANNOTATIONS}).
+     *
+     * @param element The element to check
+     * @return True if the element is an event element
+     */
+    private boolean isEventElement(Element element) {
+        for (Class<? extends Annotation> eventAnnotation : ControllerUtil.EVENT_ANNOTATIONS) {
+            if (element.getAnnotation(eventAnnotation) != null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Checks if the given method overrides another event method.
      *
      * @param method The method to check
@@ -299,7 +323,7 @@ public class FulibFxProcessor extends AbstractProcessor {
 
         helper.streamAllMethods(parentElement)
             .filter(otherMethod -> otherMethod.getSimpleName().equals(method.getSimpleName()))
-            .filter(helper::isEventMethod)
+            .filter(this::isEventElement)
             .filter(otherMethod -> {
                 ExecutableType methodType = (ExecutableType) method.asType();
                 ExecutableType otherMethodType = (ExecutableType) otherMethod.asType();
@@ -313,6 +337,20 @@ public class FulibFxProcessor extends AbstractProcessor {
                     processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error, method);
                 }
             );
+    }
+
+    private void checkEventModifiers(TypeElement clazz) {
+        Stream.concat(helper.streamAllMethods(clazz), helper.streamAllFields(clazz))
+            .filter(this::isEventElement)
+            .filter(element -> element.getModifiers().contains(Modifier.PRIVATE))
+            .forEach(element -> {
+                String kind = element.getKind() == ElementKind.METHOD ? Method.class.getSimpleName() : Field.class.getSimpleName();
+                Name name = element.getSimpleName();
+                Name clazzName = clazz.getQualifiedName();
+                String error = error(1012).formatted(kind, name, clazzName);
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error, element);
+            }
+        );
     }
 
 }
