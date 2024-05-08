@@ -354,13 +354,12 @@ public class FulibFxProcessor extends AbstractProcessor {
             .filter(this::isEventElement)
             .filter(element -> element.getModifiers().contains(Modifier.PRIVATE))
             .forEach(element -> {
-                    String kind = element.getKind() == ElementKind.METHOD ? Method.class.getSimpleName() : Field.class.getSimpleName();
-                    Name name = element.getSimpleName();
-                    Name clazzName = clazz.getQualifiedName();
-                    String error = error(1012).formatted(kind, name, clazzName);
-                    processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error, element);
-                }
-            );
+                String kind = element.getKind() == ElementKind.METHOD ? Method.class.getSimpleName() : Field.class.getSimpleName();
+                Name name = element.getSimpleName();
+                Name clazzName = clazz.getQualifiedName();
+                String error = error(1012).formatted(kind, name, clazzName);
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error, element);
+            });
     }
 
 }
