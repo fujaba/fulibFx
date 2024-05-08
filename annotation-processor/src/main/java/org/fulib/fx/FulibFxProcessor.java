@@ -330,7 +330,7 @@ public class FulibFxProcessor extends AbstractProcessor {
             return;
         }
 
-        for (ExecutableElement parentMethod : eventMethods.get(method.getSimpleName().toString())) {
+        for (ExecutableElement parentMethod : eventMethods.get(methodName)) {
             if (sameMethodSignature(method, parentMethod)) {
                 Name className = element.getQualifiedName();
                 Name parentClassName = ((TypeElement) parentMethod.getEnclosingElement()).getQualifiedName();
