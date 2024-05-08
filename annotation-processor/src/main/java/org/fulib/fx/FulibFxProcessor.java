@@ -110,9 +110,9 @@ public class FulibFxProcessor extends AbstractProcessor {
     }
 
     private void checkOverrides(TypeElement typeElement) {
-        Map<TypeElement, List<ExecutableElement>> eventMethods = helper.streamAllMethods(typeElement)
+        Map<String, List<ExecutableElement>> eventMethods = helper.streamAllMethods((TypeElement) processingEnv.getTypeUtils().asElement(typeElement.getSuperclass()))
             .filter(this::isEventElement)
-            .collect(groupingBy(method -> (TypeElement) processingEnv.getTypeUtils().asElement(method.getEnclosingElement().asType())));
+            .collect(groupingBy(method -> method.getSimpleName().toString()));
         typeElement.getEnclosedElements().stream()
             .filter(e -> e.getKind() == ElementKind.METHOD)
             .map(e -> (ExecutableElement) e)
@@ -313,9 +313,10 @@ public class FulibFxProcessor extends AbstractProcessor {
     /**
      * Checks if the given method overrides another event method.
      *
-     * @param method The method to check
+     * @param method       The method to check
+     * @param eventMethods A map of all event methods of the superclasses
      */
-    private void checkOverrides(ExecutableElement method, Map<TypeElement, List<ExecutableElement>> eventMethods) {
+    private void checkOverrides(ExecutableElement method, Map<String, List<ExecutableElement>> eventMethods) {
         TypeMirror clazz = method.getEnclosingElement().asType();
         TypeElement element = (TypeElement) processingEnv.getTypeUtils().asElement(clazz);
         TypeMirror parentClazz = element.getSuperclass();
@@ -327,7 +328,9 @@ public class FulibFxProcessor extends AbstractProcessor {
 
         TypeElement parentElement = (TypeElement) processingEnv.getTypeUtils().asElement(parentClazz);
 
-        helper.streamSuperClasses(parentElement)
+        helper.streamAllMethods(parentElement)
+            .map(ExecutableElement::getSimpleName)
+            .map(Name::toString)
             .filter(eventMethods::containsKey)
             .map(eventMethods::get)
             .flatMap(List::stream)
