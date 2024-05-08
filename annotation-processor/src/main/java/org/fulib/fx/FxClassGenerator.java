@@ -28,7 +28,7 @@ import java.util.*;
 public class FxClassGenerator {
     private static final String CLASS_SUFFIX = "_Fx";
     private final ProcessingEnvironment processingEnv;
-    private final ControllerAnnotationProcessor processor;
+    private final ProcessingHelper helper;
 
     /**
      * The (erased) `javafx.beans.value.WritableValue` type.
@@ -45,8 +45,8 @@ public class FxClassGenerator {
      */
     private final TypeMirror parent;
 
-    public FxClassGenerator(ControllerAnnotationProcessor processor, ProcessingEnvironment processingEnv) {
-        this.processor = processor;
+    public FxClassGenerator(ProcessingHelper helper, ProcessingEnvironment processingEnv) {
+        this.helper = helper;
         this.processingEnv = processingEnv;
 
         final TypeElement writableValue = processingEnv.getElementUtils().getTypeElement("javafx.beans.value.WritableValue");
@@ -141,11 +141,11 @@ public class FxClassGenerator {
     }
 
     private void generateParametersIntoFields(PrintWriter out, TypeElement componentClass) {
-        processor.streamAllFields(componentClass, Param.class).forEach(field -> {
+        helper.streamAllFields(componentClass, Param.class).forEach(field -> {
             final Param param = field.getAnnotation(Param.class);
             final String fieldName = field.getSimpleName().toString();
             final String fieldType = field.asType().toString();
-            final String paramNameLiteral = processor.stringLiteral(param.value());
+            final String paramNameLiteral = helper.stringLiteral(param.value());
             out.printf("    if (params.containsKey(%s)) {%n", paramNameLiteral);
 
             // TODO field must be public, package-private or protected -- add a diagnostic if it's private
@@ -178,7 +178,7 @@ public class FxClassGenerator {
             out.println("    }");
         });
 
-        processor.streamAllFields(componentClass, ParamsMap.class).forEach(field -> {
+        helper.streamAllFields(componentClass, ParamsMap.class).forEach(field -> {
             final String fieldName = field.getSimpleName().toString();
             if (field.getModifiers().contains(Modifier.FINAL)) {
                 out.printf("    instance.%s.clear();%n", fieldName);
@@ -190,13 +190,13 @@ public class FxClassGenerator {
     }
 
     private void generateCallInitMethods(PrintWriter out, TypeElement componentClass) {
-        processor.streamAllMethods(componentClass, OnInit.class)
+        helper.streamAllMethods(componentClass, OnInit.class)
             .sorted(Comparator.comparingInt(a -> a.getAnnotation(OnInit.class).value()))
             .forEach(methodElement -> generateCall(out, methodElement));
     }
 
     private void generateCallParamMethods(PrintWriter out, TypeElement componentClass, Class<? extends Annotation> annotation) {
-        processor.streamAllMethods(componentClass, annotation)
+        helper.streamAllMethods(componentClass, annotation)
             .forEach(methodElement -> generateCall(out, methodElement));
     }
 
@@ -210,7 +210,7 @@ public class FxClassGenerator {
             final VariableElement parameter = parameters.get(i);
             final Param paramAnnotation = parameter.getAnnotation(Param.class);
             if (paramAnnotation != null) {
-                arguments.set(i, "(%s) params.get(%s)".formatted(parameter.asType(), processor.stringLiteral(paramAnnotation.value())));
+                arguments.set(i, "(%s) params.get(%s)".formatted(parameter.asType(), helper.stringLiteral(paramAnnotation.value())));
                 continue;
             }
 
@@ -227,7 +227,7 @@ public class FxClassGenerator {
     private void fillMethodArguments(ExecutableElement methodElement, List<String> arguments, List<? extends VariableElement> parameters) {
         final Param paramAnnotation = methodElement.getAnnotation(Param.class);
         if (paramAnnotation != null) {
-            arguments.set(0, "(%s) params.get(%s)".formatted(parameters.get(0).asType(), processor.stringLiteral(paramAnnotation.value())));
+            arguments.set(0, "(%s) params.get(%s)".formatted(parameters.get(0).asType(), helper.stringLiteral(paramAnnotation.value())));
         }
 
         final Params paramsAnnotation = methodElement.getAnnotation(Params.class);
@@ -235,7 +235,7 @@ public class FxClassGenerator {
             final String[] paramNames = paramsAnnotation.value();
             for (int i = 0; i < paramNames.length; i++) {
                 final VariableElement parameter = parameters.get(i);
-                arguments.set(i, "(%s) params.get(%s)".formatted(parameter.asType(), processor.stringLiteral(paramNames[i])));
+                arguments.set(i, "(%s) params.get(%s)".formatted(parameter.asType(), helper.stringLiteral(paramNames[i])));
             }
         }
 
@@ -246,7 +246,7 @@ public class FxClassGenerator {
     }
 
     private void generateCallSubComponents(PrintWriter out, TypeElement componentClass, String method) {
-        processor.streamAllFields(componentClass, SubComponent.class).forEach(field -> {
+        helper.streamAllFields(componentClass, SubComponent.class).forEach(field -> {
             if (field.asType().toString().startsWith("javax.inject.Provider")) {
                 // Provider fields are initialized on demand
                 return;
@@ -263,14 +263,14 @@ public class FxClassGenerator {
     }
 
     private void generateCallDestroyMethods(PrintWriter out, TypeElement componentClass) {
-        processor.streamAllMethods(componentClass, OnDestroy.class)
+        helper.streamAllMethods(componentClass, OnDestroy.class)
             .sorted(Comparator.comparingInt(a -> a.getAnnotation(OnDestroy.class).value()))
             .forEach(element -> generateCall(out, element));
     }
 
     private void generateDestroySubComponents(PrintWriter out, TypeElement componentClass) {
         final List<String> fieldNames = new ArrayList<>();
-        processor.streamAllFields(componentClass, SubComponent.class).forEach(field -> {
+        helper.streamAllFields(componentClass, SubComponent.class).forEach(field -> {
             if (field.asType().toString().startsWith("javax.inject.Provider")) {
                 // Provider fields are destroyed on demand
                 return;
@@ -306,7 +306,7 @@ public class FxClassGenerator {
                 if (processingEnv.getTypeUtils().isAssignable(componentClass.asType(), parent)) {
                     out.println("    instance.getChildren().clear();");
                 }
-                out.printf("    final Node result = this.controllerManager.loadFXML(%s, instance, true);%n", processor.stringLiteral(view));
+                out.printf("    final Node result = this.controllerManager.loadFXML(%s, instance, true);%n", helper.stringLiteral(view));
             }
         } else if (controller != null) {
             final String view = controller.view();
@@ -314,19 +314,19 @@ public class FxClassGenerator {
                 out.printf("    final Node result = instance.%s();%n", view.substring(1));
             } else {
                 final String inferredView = view.isEmpty() ? ControllerUtil.transform(componentClass.getSimpleName().toString()) + ".fxml" : view;
-                out.printf("    final Node result = this.controllerManager.loadFXML(%s, instance, false);%n", processor.stringLiteral(inferredView));
+                out.printf("    final Node result = this.controllerManager.loadFXML(%s, instance, false);%n", helper.stringLiteral(inferredView));
             }
         }
     }
 
     private void generateCallRenderMethods(PrintWriter out, TypeElement componentClass) {
-        processor.streamAllMethods(componentClass, OnRender.class)
+        helper.streamAllMethods(componentClass, OnRender.class)
             .sorted(Comparator.comparingInt(a -> a.getAnnotation(OnRender.class).value()))
             .forEach(element -> generateCall(out, element));
     }
 
     private void generateRegisterKeyEventHandlers(PrintWriter out, TypeElement componentClass) {
-        processor.streamAllMethods(componentClass, OnKey.class)
+        helper.streamAllMethods(componentClass, OnKey.class)
             .forEach(method -> generateRegisterKeyEventHandler(out, componentClass, method));
     }
 
@@ -367,17 +367,17 @@ public class FxClassGenerator {
             out.printf("      if (event.getCode() != javafx.scene.input.KeyCode.%s) return;%n", onKey.code());
         }
         if (!onKey.text().isEmpty()) {
-            out.printf("      if (!%s.equals(event.getText())) return;%n", processor.stringLiteral(onKey.text()));
+            out.printf("      if (!%s.equals(event.getText())) return;%n", helper.stringLiteral(onKey.text()));
         }
         if (!"\0".equals(onKey.character())) {
-            out.printf("      if (!%s.equals(event.getCharacter())) return;%n", processor.stringLiteral(onKey.character()));
+            out.printf("      if (!%s.equals(event.getCharacter())) return;%n", helper.stringLiteral(onKey.character()));
         }
         out.printf("      instance.%s(%s);%n", method.getSimpleName(), method.getParameters().size() == 1 ? "event" : "");
         out.printf("    });%n");
     }
 
     private void generateSidecarResources(PrintWriter out, TypeElement componentClass) {
-        processor.streamAllFields(componentClass, Resource.class)
+        helper.streamAllFields(componentClass, Resource.class)
             .findFirst()
             .ifPresentOrElse(
                 field -> out.printf("    return instance.%s;%n", field.getSimpleName()),
@@ -393,11 +393,11 @@ public class FxClassGenerator {
         }
 
         if (title.value().startsWith("%")) {
-            out.printf("    return getResources(instance).getString(%s);%n", processor.stringLiteral(title.value().substring(1)));
+            out.printf("    return getResources(instance).getString(%s);%n", helper.stringLiteral(title.value().substring(1)));
         } else if ("$name".equals(title.value())) {
-            out.printf("    return %s;%n", processor.stringLiteral(ControllerUtil.transform(componentClass.getSimpleName().toString())));
+            out.printf("    return %s;%n", helper.stringLiteral(ControllerUtil.transform(componentClass.getSimpleName().toString())));
         } else {
-            out.printf("    return %s;%n", processor.stringLiteral(title.value()));
+            out.printf("    return %s;%n", helper.stringLiteral(title.value()));
         }
     }
 
