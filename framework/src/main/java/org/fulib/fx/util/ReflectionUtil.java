@@ -141,7 +141,7 @@ public class ReflectionUtil {
     public static Stream<Field> getAllNonPrivateFieldsOrThrow(@NotNull Class<?> clazz, @NotNull Class<? extends @NotNull Annotation> annotation) {
         return Reflection.getAllFieldsWithAnnotation(clazz, annotation).peek(field -> {
             if (Modifier.isPrivate(field.getModifiers())) {
-                throw new RuntimeException(error(1012).formatted(Field.class.getSimpleName(), field.getName(), field.getDeclaringClass().getName(), annotation.getSimpleName()));
+                throw new RuntimeException(error(1012).formatted(Field.class.getSimpleName(), field.getName(), field.getDeclaringClass().getName()));
             }
         });
     }
@@ -159,9 +159,30 @@ public class ReflectionUtil {
     public static Stream<Method> getAllNonPrivateMethodsOrThrow(@NotNull Class<?> clazz, @NotNull Class<? extends @NotNull Annotation> annotation) {
         return Reflection.getAllMethodsWithAnnotation(clazz, annotation).peek(method -> {
             if (Modifier.isPrivate(method.getModifiers())) {
-                throw new RuntimeException(error(1012).formatted(Method.class.getSimpleName(), method.getName(), method.getDeclaringClass().getName(), annotation.getSimpleName()));
+                throw new RuntimeException(error(1012).formatted(Method.class.getSimpleName(), method.getName(), method.getDeclaringClass().getName()));
             }
         });
     }
+
+    /**
+     * Checks if a method is overriding a method in one of the classes superclasses and returns the overridden method.
+     *
+     * @param method The method to check
+     * @return The overridden method, or null if there is none
+     */
+    public static @Nullable Method getOverriding(@NotNull Method method) {
+        Class<?> declaringClass = method.getDeclaringClass();
+        Class<?> superclass = declaringClass.getSuperclass();
+
+        while (superclass != null) {
+            try {
+                return superclass.getDeclaredMethod(method.getName(), method.getParameterTypes());
+            } catch (NoSuchMethodException e) {
+                superclass = superclass.getSuperclass();
+            }
+        }
+        return null;
+    }
+
 
 }

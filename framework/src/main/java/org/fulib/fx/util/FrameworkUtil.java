@@ -1,10 +1,11 @@
 package org.fulib.fx.util;
 
+import java.util.Locale;
 import java.util.ResourceBundle;
 
 public class FrameworkUtil {
 
-    private static final ResourceBundle ERROR_BUNDLE = ResourceBundle.getBundle("org.fulib.fx.lang.error");
+    private static final ResourceBundle ERROR_BUNDLE = ResourceBundle.getBundle("org.fulib.fx.lang.error", Locale.ROOT);
 
     private FrameworkUtil() {
         // Prevent instantiation
@@ -31,4 +32,5 @@ public class FrameworkUtil {
     public static String note(int id) {
         return ERROR_BUNDLE.getString(id + ".note");
     }
+
 }

@@ -18,7 +18,6 @@ import org.fulib.fx.annotation.param.Params;
 import org.fulib.fx.annotation.param.ParamsMap;
 import org.fulib.fx.controller.ControllerManager;
 import org.fulib.fx.util.ControllerUtil;
-import org.fulib.fx.util.KeyEventHolder;
 import org.fulib.fx.util.MapUtil;
 import org.fulib.fx.util.ReflectionUtil;
 import org.fulib.fx.util.reflection.Reflection;
@@ -58,12 +57,15 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
         this.resourceField = loadResourceField(componentClass);
         this.subComponentFields = loadSubComponentFields(componentClass);
         this.initMethods = ReflectionUtil.getAllNonPrivateMethodsOrThrow(componentClass, OnInit.class)
+            .peek(ControllerUtil::checkOverrides)
             .sorted(Comparator.comparingInt(m -> m.getAnnotation(OnInit.class).value()))
             .toList();
         this.renderMethods = ReflectionUtil.getAllNonPrivateMethodsOrThrow(componentClass, OnRender.class)
             .sorted(Comparator.comparingInt(m -> m.getAnnotation(OnRender.class).value()))
+            .peek(ControllerUtil::checkOverrides)
             .toList();
         this.destroyMethods = ReflectionUtil.getAllNonPrivateMethodsOrThrow(componentClass, OnDestroy.class)
+            .peek(ControllerUtil::checkOverrides)
             .sorted(Comparator.comparingInt(m -> m.getAnnotation(OnDestroy.class).value()))
             .toList();
 
@@ -411,6 +413,8 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
      */
     private void registerKeyEvents(Object instance) {
         ReflectionUtil.getAllNonPrivateMethodsOrThrow(instance.getClass(), OnKey.class).forEach(method -> {
+
+            ControllerUtil.checkOverrides(method);
 
             OnKey annotation = method.getAnnotation(OnKey.class);
             EventType<KeyEvent> type = annotation.type().asEventType();
