@@ -3,7 +3,6 @@ package org.fulib.fx;
 import com.google.auto.service.AutoService;
 import org.fulib.fx.annotation.Route;
 import org.fulib.fx.annotation.controller.*;
-import org.fulib.fx.annotation.event.OnInit;
 import org.fulib.fx.annotation.event.OnKey;
 import org.fulib.fx.annotation.param.Params;
 import org.fulib.fx.annotation.param.ParamsMap;
@@ -31,9 +30,9 @@ import static org.fulib.fx.util.FrameworkUtil.error;
 import static org.fulib.fx.util.FrameworkUtil.note;
 
 @SupportedAnnotationTypes({
-        "org.fulib.fx.annotation.controller.*",
-        "org.fulib.fx.annotation.Route",
-        "org.fulib.fx.annotation.param.*",
+    "org.fulib.fx.annotation.controller.*",
+    "org.fulib.fx.annotation.Route",
+    "org.fulib.fx.annotation.param.*",
 })
 @SupportedSourceVersion(SourceVersion.RELEASE_17)
 @AutoService(Processor.class)
@@ -106,10 +105,10 @@ public class ControllerAnnotationProcessor extends AbstractProcessor {
 
     private void checkOverrides(TypeElement typeElement) {
         typeElement.getEnclosedElements().stream()
-                .filter(e -> e.getKind() == ElementKind.METHOD)
-                .map(e -> (ExecutableElement) e)
-                .filter(this::isEventMethod)
-                .forEach(this::checkOverrides);
+            .filter(e -> e.getKind() == ElementKind.METHOD)
+            .map(e -> (ExecutableElement) e)
+            .filter(this::isEventMethod)
+            .forEach(this::checkOverrides);
     }
 
     private void checkOnKey(Element element) {
@@ -233,24 +232,24 @@ public class ControllerAnnotationProcessor extends AbstractProcessor {
     private void checkViewMethod(Element element, String view) {
         String methodName = view.substring(1); // remove the leading '#'
         processingEnv.getElementUtils().getAllMembers((TypeElement) element).stream()
-                .filter(elem -> elem.getKind() == ElementKind.METHOD)
-                .filter(elem -> elem.getSimpleName().toString().equals(methodName))
-                .map(elem -> (ExecutableElement) elem)
-                .findFirst()
-                .ifPresentOrElse(
-                        method -> {
-                            if (!method.getParameters().isEmpty()) {
-                                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error(1008).formatted(method.getSimpleName(), method.getEnclosingElement().asType().toString()), method);
-                            }
+            .filter(elem -> elem.getKind() == ElementKind.METHOD)
+            .filter(elem -> elem.getSimpleName().toString().equals(methodName))
+            .map(elem -> (ExecutableElement) elem)
+            .findFirst()
+            .ifPresentOrElse(
+                method -> {
+                    if (!method.getParameters().isEmpty()) {
+                        processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error(1008).formatted(method.getSimpleName(), method.getEnclosingElement().asType().toString()), method);
+                    }
 
-                            TypeMirror parent = processingEnv.getElementUtils().getTypeElement("javafx.scene.Parent").asType();
+                    TypeMirror parent = processingEnv.getElementUtils().getTypeElement("javafx.scene.Parent").asType();
 
-                            if (!processingEnv.getTypeUtils().isAssignable(method.getReturnType(), parent)) {
-                                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error(1002), method);
-                            }
-                        },
-                        () -> processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error(1003).formatted(methodName), element)
-                );
+                    if (!processingEnv.getTypeUtils().isAssignable(method.getReturnType(), parent)) {
+                        processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error(1002), method);
+                    }
+                },
+                () -> processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error(1003).formatted(methodName), element)
+            );
     }
 
     private void checkSubComponentElement(Element element) {
@@ -306,11 +305,21 @@ public class ControllerAnnotationProcessor extends AbstractProcessor {
         TypeElement parentElement = (TypeElement) processingEnv.getTypeUtils().asElement(parentClazz);
 
         streamAllMethods(parentElement)
-                .filter(otherMethod -> otherMethod.getSimpleName().equals(method.getSimpleName()))
-                .filter(this::isEventMethod)
-                .filter(otherMethod -> processingEnv.getTypeUtils().isSubsignature((ExecutableType) method.asType(), (ExecutableType) otherMethod.asType()))
-                .findFirst()
-                .ifPresent(overriddenMethod -> processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error(1013).formatted(method, element.getQualifiedName(), ((TypeElement) overriddenMethod.getEnclosingElement()).getQualifiedName()), method));
+            .filter(otherMethod -> otherMethod.getSimpleName().equals(method.getSimpleName()))
+            .filter(this::isEventMethod)
+            .filter(otherMethod -> {
+                ExecutableType methodType = (ExecutableType) method.asType();
+                ExecutableType otherMethodType = (ExecutableType) otherMethod.asType();
+                return processingEnv.getTypeUtils().isSubsignature(methodType, otherMethodType);
+            })
+            .findFirst()
+            .ifPresent(overriddenMethod -> {
+                    Name className = element.getQualifiedName();
+                    Name parentClassName = ((TypeElement) overriddenMethod.getEnclosingElement()).getQualifiedName();
+                    String error = error(1013).formatted(method, className, parentClassName);
+                    processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error, method);
+                }
+            );
     }
 
     private boolean isEventMethod(ExecutableElement method) {
@@ -324,10 +333,10 @@ public class ControllerAnnotationProcessor extends AbstractProcessor {
 
     Stream<ExecutableElement> streamMethods(TypeElement componentClass) {
         return componentClass
-                .getEnclosedElements()
-                .stream()
-                .filter(element -> element instanceof ExecutableElement)
-                .map(element -> (ExecutableElement) element);
+            .getEnclosedElements()
+            .stream()
+            .filter(element -> element instanceof ExecutableElement)
+            .map(element -> (ExecutableElement) element);
     }
 
     Stream<ExecutableElement> streamAllMethods(TypeElement componentClass) {
@@ -337,6 +346,7 @@ public class ControllerAnnotationProcessor extends AbstractProcessor {
     Stream<TypeElement> streamSuperClasses(TypeElement componentClass) {
         return Stream.iterate(componentClass, Objects::nonNull, e -> (TypeElement) processingEnv.getTypeUtils().asElement(e.getSuperclass()));
     }
+
     // This will throw an error if the methods are private
     Stream<ExecutableElement> streamAllMethods(TypeElement componentClass, Class<? extends Annotation> annotation) {
         return streamSuperClasses(componentClass).flatMap(e -> streamMethods(e, annotation)).peek(method -> {
@@ -348,10 +358,10 @@ public class ControllerAnnotationProcessor extends AbstractProcessor {
 
     Stream<ExecutableElement> streamMethods(TypeElement componentClass, Class<? extends Annotation> annotation) {
         return componentClass
-                .getEnclosedElements()
-                .stream()
-                .filter(element -> element instanceof ExecutableElement && element.getAnnotation(annotation) != null)
-                .map(element -> (ExecutableElement) element);
+            .getEnclosedElements()
+            .stream()
+            .filter(element -> element instanceof ExecutableElement && element.getAnnotation(annotation) != null)
+            .map(element -> (ExecutableElement) element);
     }
 
     // This will throw an error if the fields are private
@@ -365,10 +375,10 @@ public class ControllerAnnotationProcessor extends AbstractProcessor {
 
     Stream<VariableElement> streamFields(TypeElement componentClass, Class<? extends Annotation> annotation) {
         return componentClass
-                .getEnclosedElements()
-                .stream()
-                .filter(element -> element instanceof VariableElement && element.getAnnotation(annotation) != null)
-                .map(element -> (VariableElement) element);
+            .getEnclosedElements()
+            .stream()
+            .filter(element -> element instanceof VariableElement && element.getAnnotation(annotation) != null)
+            .map(element -> (VariableElement) element);
     }
 
     String stringLiteral(String value) {
