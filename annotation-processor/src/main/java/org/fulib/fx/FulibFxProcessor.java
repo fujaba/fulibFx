@@ -38,7 +38,6 @@ import static org.fulib.fx.util.FrameworkUtil.note;
 })
 @SupportedSourceVersion(SourceVersion.RELEASE_17)
 @AutoService(Processor.class)
-@SuppressWarnings("unused")
 public class FulibFxProcessor extends AbstractProcessor {
 
     private FxClassGenerator generator;
@@ -317,31 +316,25 @@ public class FulibFxProcessor extends AbstractProcessor {
      * @param eventMethods A map of all event methods of the superclasses
      */
     private void checkOverrides(ExecutableElement method, Map<String, List<ExecutableElement>> eventMethods) {
-        TypeMirror clazz = method.getEnclosingElement().asType();
-        TypeElement element = (TypeElement) processingEnv.getTypeUtils().asElement(clazz);
-        TypeMirror parentClazz = element.getSuperclass();
+        TypeElement element = (TypeElement) processingEnv.getTypeUtils().asElement(method.getEnclosingElement().asType());
 
         // If no parent class is found, the method cannot override anything
-        if (parentClazz.getKind() == TypeKind.NONE) {
+        if (element.getSuperclass().getKind() == TypeKind.NONE) {
             return;
         }
 
-        TypeElement parentElement = (TypeElement) processingEnv.getTypeUtils().asElement(parentClazz);
-
-        helper.streamAllMethods(parentElement)
-            .map(ExecutableElement::getSimpleName)
-            .map(Name::toString)
-            .filter(eventMethods::containsKey)
-            .map(eventMethods::get)
-            .flatMap(List::stream)
-            .filter(otherMethod -> sameMethodSignature(method, otherMethod))
-            .findFirst()
-            .ifPresent(overriddenMethod -> {
-                Name className = element.getQualifiedName();
-                Name parentClassName = ((TypeElement) overriddenMethod.getEnclosingElement()).getQualifiedName();
-                String error = error(1013).formatted(method, className, parentClassName);
-                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error, method);
-            });
+        // Check if one of the parent classes has the method
+        if (eventMethods.containsKey(method.getSimpleName().toString())) {
+            for (ExecutableElement parentMethod : eventMethods.get(method.getSimpleName().toString())) {
+                if (sameMethodSignature(method, parentMethod)) {
+                    Name className = element.getQualifiedName();
+                    Name parentClassName = ((TypeElement) parentMethod.getEnclosingElement()).getQualifiedName();
+                    String error = error(1013).formatted(method, className, parentClassName);
+                    processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error, method);
+                    break;
+                }
+            }
+        }
     }
 
     private boolean sameMethodSignature(ExecutableElement method, ExecutableElement otherMethod) {
