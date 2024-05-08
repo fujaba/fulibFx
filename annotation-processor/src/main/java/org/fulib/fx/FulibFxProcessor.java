@@ -22,9 +22,12 @@ import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import static java.util.stream.Collectors.groupingBy;
 import static org.fulib.fx.util.FrameworkUtil.error;
 import static org.fulib.fx.util.FrameworkUtil.note;
 
@@ -107,11 +110,14 @@ public class FulibFxProcessor extends AbstractProcessor {
     }
 
     private void checkOverrides(TypeElement typeElement) {
+        Map<TypeElement, List<ExecutableElement>> eventMethods = helper.streamAllMethods(typeElement)
+            .filter(this::isEventElement)
+            .collect(groupingBy(method -> (TypeElement) processingEnv.getTypeUtils().asElement(method.getEnclosingElement().asType())));
         typeElement.getEnclosedElements().stream()
             .filter(e -> e.getKind() == ElementKind.METHOD)
             .map(e -> (ExecutableElement) e)
             .filter(this::isEventElement)
-            .forEach(this::checkOverrides);
+            .forEach(e -> checkOverrides(e, eventMethods));
     }
 
     private void checkOnKey(Element element) {
@@ -309,7 +315,7 @@ public class FulibFxProcessor extends AbstractProcessor {
      *
      * @param method The method to check
      */
-    private void checkOverrides(ExecutableElement method) {
+    private void checkOverrides(ExecutableElement method, Map<TypeElement, List<ExecutableElement>> eventMethods) {
         TypeMirror clazz = method.getEnclosingElement().asType();
         TypeElement element = (TypeElement) processingEnv.getTypeUtils().asElement(clazz);
         TypeMirror parentClazz = element.getSuperclass();
@@ -321,22 +327,26 @@ public class FulibFxProcessor extends AbstractProcessor {
 
         TypeElement parentElement = (TypeElement) processingEnv.getTypeUtils().asElement(parentClazz);
 
-        helper.streamAllMethods(parentElement)
-            .filter(otherMethod -> otherMethod.getSimpleName().equals(method.getSimpleName()))
-            .filter(this::isEventElement)
-            .filter(otherMethod -> {
-                ExecutableType methodType = (ExecutableType) method.asType();
-                ExecutableType otherMethodType = (ExecutableType) otherMethod.asType();
-                return processingEnv.getTypeUtils().isSubsignature(methodType, otherMethodType);
-            })
+        helper.streamSuperClasses(parentElement)
+            .filter(eventMethods::containsKey)
+            .map(eventMethods::get)
+            .flatMap(List::stream)
+            .filter(otherMethod -> sameMethodSignature(method, otherMethod))
             .findFirst()
             .ifPresent(overriddenMethod -> {
-                    Name className = element.getQualifiedName();
-                    Name parentClassName = ((TypeElement) overriddenMethod.getEnclosingElement()).getQualifiedName();
-                    String error = error(1013).formatted(method, className, parentClassName);
-                    processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error, method);
-                }
-            );
+                Name className = element.getQualifiedName();
+                Name parentClassName = ((TypeElement) overriddenMethod.getEnclosingElement()).getQualifiedName();
+                String error = error(1013).formatted(method, className, parentClassName);
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error, method);
+            });
+    }
+
+    private boolean sameMethodSignature(ExecutableElement method, ExecutableElement otherMethod) {
+        ExecutableType methodType = (ExecutableType) method.asType();
+        ExecutableType otherMethodType = (ExecutableType) otherMethod.asType();
+        return method.getSimpleName().equals(otherMethod.getSimpleName()) &&
+            method.getParameters().size() == otherMethod.getParameters().size() &&
+            processingEnv.getTypeUtils().isSubsignature(methodType, otherMethodType);
     }
 
     private void checkEventModifiers(TypeElement clazz) {
@@ -344,13 +354,13 @@ public class FulibFxProcessor extends AbstractProcessor {
             .filter(this::isEventElement)
             .filter(element -> element.getModifiers().contains(Modifier.PRIVATE))
             .forEach(element -> {
-                String kind = element.getKind() == ElementKind.METHOD ? Method.class.getSimpleName() : Field.class.getSimpleName();
-                Name name = element.getSimpleName();
-                Name clazzName = clazz.getQualifiedName();
-                String error = error(1012).formatted(kind, name, clazzName);
-                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error, element);
-            }
-        );
+                    String kind = element.getKind() == ElementKind.METHOD ? Method.class.getSimpleName() : Field.class.getSimpleName();
+                    Name name = element.getSimpleName();
+                    Name clazzName = clazz.getQualifiedName();
+                    String error = error(1012).formatted(kind, name, clazzName);
+                    processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, error, element);
+                }
+            );
     }
 
 }
