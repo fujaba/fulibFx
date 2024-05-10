@@ -406,7 +406,7 @@ public abstract class FulibFxApp extends Application {
             throw new IllegalArgumentException(error(1011).formatted(controller.getClass().getName()));
         }
         ReflectionUtil.resetMouseHandler(stage());
-        display(parent);
+        getTitle(controller).ifPresent(title -> stage.setTitle(formatTitle(title)));
     }
 
     /**
