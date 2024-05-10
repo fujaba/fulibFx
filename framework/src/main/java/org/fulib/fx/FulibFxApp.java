@@ -407,6 +407,7 @@ public abstract class FulibFxApp extends Application {
         }
         ReflectionUtil.resetMouseHandler(stage());
         getTitle(controller).ifPresent(title -> stage.setTitle(formatTitle(title)));
+        display(parent); // Display the controller
     }
 
     /**
