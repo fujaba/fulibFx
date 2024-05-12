@@ -279,7 +279,7 @@ public abstract class FulibFxApp extends Application {
      */
     protected void prepareDisplay(@Nullable String route, @NotNull Parent parent, @NotNull Object controller, @NotNull Map<String, Object> params) {
         this.currentMainController = controller;
-        getTitle(currentMainController).ifPresent(title -> stage.setTitle(formatTitle(title)));
+        applyTitle(currentMainController, stage);
         display(parent);
         onShow(Optional.ofNullable(route), controller, parent, params);
     }
@@ -406,8 +406,8 @@ public abstract class FulibFxApp extends Application {
             throw new IllegalArgumentException(error(1011).formatted(controller.getClass().getName()));
         }
         ReflectionUtil.resetMouseHandler(stage());
-        getTitle(controller).ifPresent(title -> stage.setTitle(formatTitle(title)));
-        display(parent); // Display the controller
+        applyTitle(controller, stage());
+        display(parent);
     }
 
     /**
@@ -448,6 +448,16 @@ public abstract class FulibFxApp extends Application {
      */
     public Optional<String> getTitle(Object controller) {
         return this.frameworkComponent.controllerManager().getTitle(controller);
+    }
+
+    /**
+     * Applies the title of the given controller to the stage.
+     *
+     * @param controller The controller instance
+     * @param stage      The stage to apply the title to
+     */
+    public void applyTitle(Object controller, Stage stage) {
+        getTitle(controller).ifPresent(title -> stage.setTitle(formatTitle(title)));
     }
 
     /**
