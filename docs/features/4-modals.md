@@ -10,6 +10,8 @@ A BiConsumer provides access to the component instance and the stage for configu
 When displaying the component, the parameters `modalStage` and `ownerStage` will be passed so that the modal can for
 example be closed from inside the component class.
 
+The same component instance cannot be used twice for displaying a modal. When using Dagger it is recommended to inject a provider and use it to create an instance for every modal.
+
 ```java
 
 @Component
@@ -35,7 +37,8 @@ public class ModalComponent extends VBox {
 ```
 
 ```java
-Modals.showModal(app, modalComponent, (stage, component) -> {
+// As every modal needs its own instance, we use a provider (e.g. with Dagger)
+Modals.showModal(app, modalComponentProvider.get(), (stage, component) -> {
     stage.doSomething();
     component.doSomethingElse();
 });
