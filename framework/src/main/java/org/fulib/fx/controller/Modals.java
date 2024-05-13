@@ -187,7 +187,7 @@ public class Modals {
             }
 
             // Set the title if present
-            app.getTitle(component).ifPresent(title -> modalStage.setTitle(app.formatTitle(title)));
+            app.applyTitle(component, modalStage);
 
             // Configure scene to look like a popup (can be changed using the initializer)
             Scene scene = new Scene(parent);
