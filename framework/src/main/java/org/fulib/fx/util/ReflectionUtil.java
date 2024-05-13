@@ -37,7 +37,7 @@ public class ReflectionUtil {
             mouseHandlerCtor = Class.forName(Scene.class.getName() + "$MouseHandler").getDeclaredConstructor(Scene.class);
             mouseHandlerField.setAccessible(true);
             mouseHandlerCtor.setAccessible(true);
-        } catch (ReflectiveOperationException e) {
+        } catch (ReflectiveOperationException | InaccessibleObjectException e) {
             FulibFxApp.LOGGER.severe("Could not initialize mouse handler reflection. This may cause problems with mouse drag events.");
         }
     }
