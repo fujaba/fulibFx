@@ -7,7 +7,7 @@ import org.testfx.framework.junit5.ApplicationTest;
 public class ControllerTest extends ApplicationTest {
 
     @Spy
-    public final App app = new App();
+    protected App app = new App();
 
     protected Stage stage;
 
@@ -17,5 +17,13 @@ public class ControllerTest extends ApplicationTest {
         this.stage = stage;
         stage.requestFocus();
         app.start(stage);
+    }
+
+    @Override
+    public void stop() throws Exception {
+        super.stop();
+        app.stop();
+        app = null;
+        stage = null;
     }
 }
