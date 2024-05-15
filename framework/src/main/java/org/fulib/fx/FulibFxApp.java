@@ -206,7 +206,6 @@ public abstract class FulibFxApp extends Application {
     public void stop() {
         cleanup();
         autoRefresher().close();
-        System.exit(0);
     }
 
     /**
