@@ -38,6 +38,7 @@ Spies and Mocks can later be injected into the controller instance which is bein
 ## Writing a real test
 
 Since most of the setup is already defined in the `ControllerTest` class we can just extend it for our own tests.
+In order to get Mockito working, the class has to be annotated with `@ExtendWith(MockitoExtension.class)`.
 
 ```java
 @ExtendWith(MockitoExtension.class)
@@ -80,4 +81,4 @@ Another way of waiting is the `sleep()` method, which allows to wait for a prede
 
 ---
 
-[⬅ Setup](1-setup.md) | [Overview](README.md) | [Testing SubComponents ➡](2-subcomponents.md)
+[⬅ Setup](1-setup.md) | [Overview](README.md) | [Testing SubComponents ➡](3-subcomponents.md)

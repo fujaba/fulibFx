@@ -32,3 +32,6 @@ public class IngameControllerTest extends ControllerTest {
     }
 }
 ```
+---
+
+[⬅ Testing Controllers](2-controllers.md) | [Overview](README.md) | [Testing with Dagger ➡](4-dagger.md)
