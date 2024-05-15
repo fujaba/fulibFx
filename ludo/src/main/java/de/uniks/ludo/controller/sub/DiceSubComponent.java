@@ -22,7 +22,7 @@ public class DiceSubComponent extends VBox {
     public Label eyesLabel;
 
     @Inject
-    public GameService gameService;
+    GameService gameService;
 
     private final BooleanProperty enabled = new SimpleBooleanProperty(true);
 

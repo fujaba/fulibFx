@@ -35,7 +35,7 @@ public class IngameControllerTest extends ControllerTest {
     GameService gameService;
     @Spy
     Subscriber subscriber;
-    @Spy
+    @InjectMocks
     DiceSubComponent diceSubComponent;
 
     @InjectMocks
@@ -44,7 +44,7 @@ public class IngameControllerTest extends ControllerTest {
     @Override
     public void start(Stage stage) throws Exception {
         super.start(stage);
-        diceSubComponent.gameService = gameService;
+        ingameController.diceSubComponent = diceSubComponent;
         app.show(ingameController, Map.of("playerAmount", 2));
     }
 
