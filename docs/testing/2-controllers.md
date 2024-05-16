@@ -22,6 +22,8 @@ public class ControllerTest extends ApplicationTest {
     public void start(Stage stage) throws Exception {
         super.start(stage);
         this.stage = stage;
+        stage.setX(0); // This fixes potential issues in headless environments
+        stage.setY(0);
         app.start(stage);
         stage.requestFocus(); // Make the test use the correct stage
     }

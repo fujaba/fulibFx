@@ -33,6 +33,7 @@ test {
 ```
 
 Whenever the tests are ran with `CI=true`, headless mode will be enabled allowing for testing in CI environments like GitHub Actions.
+In order to fix some issues with tests running in headless mode, make sure to set the stage's coordinates to a value like (0, 0) because otherwise some calculations can fail due to the position being NaN.
 
 ## Mockito
 
