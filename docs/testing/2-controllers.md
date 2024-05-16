@@ -5,16 +5,16 @@ In the following section, you will learn how to test a basic controller using Te
 ## ControllerTest
 
 Testing controllers using TestFX requires the test to extend from `ApplicationTest`.
-It is however recommended to create a helper class called something like `ControllerTest` extending `ApplicationTest` instead of extending it directly.
+It is however recommended to create a helper class like `ControllerTest` extending `ApplicationTest`.
 This class will contain some common code to reduce the amount of boilerplate required for each controller test.
 
 ```java
 public class ControllerTest extends ApplicationTest {
 
     @Spy
-    public final App app = new App();
+    protected App app = new App();
     @Spy 
-    protected final ResourceBundle resources = ...; // Define common instances here and mock/spy them
+    protected ResourceBundle resources = ...; // Define common instances here and mock/spy them
 
     protected Stage stage; // Useful for checking the title for example
 
@@ -25,13 +25,21 @@ public class ControllerTest extends ApplicationTest {
         app.start(stage);
         stage.requestFocus(); // Make the test use the correct stage
     }
+
+    @Override
+    public void stop() throws Exception {
+        super.stop();
+        app.stop();
+        app = null;
+        stage = null;
+    }
 }
 ```
 
 The main annotations offered by Mockito are `@Spy` and `@Mock`. 
 Mocking an instance completely removes all default behaviour and content of methods, fields and such, resulting in an empty shell which can later be redefined.
 This is useful if the real behaviour isn't needed at all, but the instance itself has to exist.
-Spying an instance doesn't touch the default behaviour but allows redefining parts of the logic.
+Spying an instance doesn't touch the default behaviour but allows redefining parts of the logic and checking whether methods have been called using `verify`.
 
 Spies and Mocks can later be injected into the controller instance which is being tested using `@InjectMocks`.
 
@@ -76,7 +84,7 @@ public class SetupControllerTest extends ControllerTest {
 ```
 
 Whenever something is loading asynchronously the method `waitForFxEvents()` should be called before checking the results.
-This assures that all JavaFX events have been run before continuing the tests.
+This ensures that all JavaFX events have been run before continuing the tests.
 Another way of waiting is the `sleep()` method, which allows to wait for a predefined time.
 
 ---

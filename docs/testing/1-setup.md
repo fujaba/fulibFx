@@ -2,11 +2,11 @@
 
 In order to properly test your application, it is recommended to use [TestFX](https://github.com/TestFX/TestFX) alongside [Mockito](https://github.com/mockito/mockito).
 For a full explanation of both libraries, checkout their official documentation, as the following documentation will only cover a small part of what the projects have to offer.
-## TestFX
 
+## TestFX
 TestFX can be used to test the frontend of your application by checking if certain requirements are met, for example view elements being visible or having a certain property.
 
-Alongside TestFX, we also include Monocle which allows for headless testing without the app having to be open on your screen every time the tests are ran.
+Alongside TestFX, we also include Monocle which allows for headless testing without the app having to be open on your screen every time the tests run.
 
 ```groovy
     testImplementation group: 'org.testfx', name: 'testfx-junit5', version: testFxVersion
@@ -32,7 +32,7 @@ test {
 }
 ```
 
-Whenever the tests are ran with `CI=true`, headless mode will be enabled allowing for testing in CI environments like GH Actions.
+Whenever the tests are ran with `CI=true`, headless mode will be enabled allowing for testing in CI environments like GitHub Actions.
 
 ## Mockito
 

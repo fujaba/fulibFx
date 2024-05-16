@@ -4,7 +4,7 @@ When using Dagger inside the application, testing the app requires a testcompone
 This component contains all the dependencies the main module provides, but modified in a way that doesn't require a connection for example.
 
 The component itself can just extend the main component and then use modules to override certain dependencies.
-Inside the modules Mockito methods such as `spy()` and `mock()` can be used to create the required instances. 
+Inside the modules, Mockito methods such as `spy()` and `mock()` can be used to create the required instances. 
 If specific behaviour is required, the instances can also be created manually.
 
 ```java
