@@ -36,6 +36,7 @@ dependencies {
     testImplementation group: 'org.testfx', name: 'openjfx-monocle', version: monocleVersion
     testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: mockitoVersion
     testAnnotationProcessor group: 'com.google.dagger', name: 'dagger-compiler', version: daggerVersion
+    testImplementation group: 'org.hamcrest', name: 'hamcrest', version: hamcrestVersion
 }
 
 java {
