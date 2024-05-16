@@ -3,21 +3,11 @@ package org.fulib.fx.controller;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.scene.paint.Paint;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
-import javafx.stage.Window;
 import org.fulib.fx.FulibFxApp;
-import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
-
-import static org.fulib.fx.util.FrameworkUtil.error;
 
 public class Modals {
 
@@ -171,75 +161,13 @@ public class Modals {
      * @param <Display>    the type of the controller
      */
     public static <Display extends Node> void showModal(FulibFxApp app, Stage currentStage, Display component, BiConsumer<Stage, Display> initializer, Map<String, Object> params, boolean destroyOnClose) {
-        FulibFxApp.FX_SCHEDULER.scheduleDirect(() -> {
-            ModalStage modalStage = new ModalStage(app, destroyOnClose, component);
-
-            // Add additional default parameters
-            Map<String, Object> parameters = new HashMap<>(params);
-            parameters.putIfAbsent("modalStage", modalStage);
-            parameters.putIfAbsent("ownerStage", currentStage);
-
-            // Initialize and render the component
-            app.frameworkComponent().controllerManager().init(component, parameters);
-            Node rendered = app.frameworkComponent().controllerManager().render(component, parameters);
-
-            // As the displayed component will be the root of a stage, it has to be a parent
-            if (!(rendered instanceof Parent parent)) {
-                throw new IllegalArgumentException(error(1011).formatted(component.getClass().getName()));
-            }
-
-            // Set the title if present
-            app.applyTitle(component, modalStage);
-
-            // Configure scene to look like a popup (can be changed using the initializer)
-            Scene scene = new Scene(parent);
-            scene.setFill(Paint.valueOf("transparent"));
-            modalStage.setScene(scene);
-            modalStage.initStyle(StageStyle.TRANSPARENT);
-            modalStage.initOwner(currentStage);
-            modalStage.initModality(Modality.APPLICATION_MODAL);
-            modalStage.requestFocus();
-            modalStage.show();
-            modalStage.setAlwaysOnTop(true);
-            initializer.accept(modalStage, component);
-        });
-    }
-
-    /**
-     * Slightly modified version of {@link Stage} that destroys the controller when the stage is hidden.
-     */
-    public static class ModalStage extends Stage {
-
-        private final FulibFxApp app;
-        private final Object component;
-        private final boolean destroyOnClose;
-
-        public ModalStage(FulibFxApp app, boolean destroyOnClose, @NotNull Object component) {
-            super();
-            this.destroyOnClose = destroyOnClose;
-            this.app = app;
-            this.component = component;
-        }
-
-        @Override
-        public void hide() {
-            if (destroyOnClose) app.frameworkComponent().controllerManager().destroy(component);
-            super.hide();
-        }
-
-    }
-
-    /**
-     * Returns a list of all visible modal stages
-     *
-     * @return A list of all visible modal stages
-     */
-    public static List<ModalStage> getModalStages() {
-        return Window.getWindows()
-            .stream()
-            .filter(window -> window instanceof Modals.ModalStage)
-            .map(window -> (ModalStage) window)
-            .toList();
+        org.fulib.fx.constructs.Modals modals = new org.fulib.fx.constructs.Modals(app);
+        modals.modal(component)
+                .owner(currentStage)
+                .initDialog(initializer)
+                .params(params)
+                .destroyOnClose(destroyOnClose)
+                .show();
     }
 
 }

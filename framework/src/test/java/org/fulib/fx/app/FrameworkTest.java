@@ -3,24 +3,23 @@ package org.fulib.fx.app;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import org.fulib.fx.FulibFxApp;
-import org.fulib.fx.app.controller.InvalidParamController;
-import org.fulib.fx.app.controller.types.BasicComponent;
-import org.fulib.fx.app.controller.ParamController;
-import org.fulib.fx.app.controller.TitleController;
-import org.fulib.fx.app.controller.history.AController;
-import org.fulib.fx.app.controller.history.BController;
-import org.fulib.fx.app.controller.history.CController;
-import org.fulib.fx.app.controller.ModalComponent;
-import org.fulib.fx.app.controller.subcomponent.basic.ButtonSubComponent;
-import org.fulib.fx.controller.Modals;
-import org.fulib.fx.controller.exception.ControllerInvalidRouteException;
-import org.fulib.fx.controller.exception.IllegalControllerException;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import org.fulib.fx.FulibFxApp;
+import org.fulib.fx.app.controller.InvalidParamController;
+import org.fulib.fx.app.controller.ModalComponent;
+import org.fulib.fx.app.controller.ParamController;
+import org.fulib.fx.app.controller.TitleController;
+import org.fulib.fx.app.controller.history.AController;
+import org.fulib.fx.app.controller.history.BController;
+import org.fulib.fx.app.controller.history.CController;
+import org.fulib.fx.app.controller.subcomponent.basic.ButtonSubComponent;
+import org.fulib.fx.app.controller.types.BasicComponent;
+import org.fulib.fx.constructs.Modals;
+import org.fulib.fx.controller.exception.ControllerInvalidRouteException;
 import org.junit.jupiter.api.Test;
 import org.testfx.framework.junit5.ApplicationTest;
 
@@ -166,20 +165,45 @@ public class FrameworkTest extends ApplicationTest {
         verifyThat("Basic Controller", Node::isVisible);
         sleep(200);
 
-        Modals.showModal(app, new ModalComponent(), (stage, controller) -> {
-            stage.setTitle("Modal");
-            stage.setWidth(200);
-            stage.setHeight(200);
-        });
+        ModalComponent component = new ModalComponent();
+
+        new Modals(app)
+                .modal(component)
+                .init((stage, modalComponent) -> stage.setTitle("Modal"))
+                .params(Map.of("key", "value"))
+                .show();
 
         waitForFxEvents();
 
-        Modals.ModalStage modal = (Modals.ModalStage) Stage.getWindows().stream().filter(window -> window instanceof Modals.ModalStage).map(window -> (Stage) window).findAny().orElse(null);
+        Stage modal = Modals.getModalStages().getFirst();
 
         assertNotNull(modal);
+        assertEquals("value", component.getValue());
         verifyThat("Modal Component", Node::isVisible);
-        assertEquals(200, modal.getWidth());
-        assertEquals(200, modal.getHeight());
+        assertEquals("Modal", modal.getTitle());
+    }
+
+    @Test
+    public void modalTestLegacy() {
+        runAndWait(() -> app.show("/controller/basic"));
+        verifyThat("Basic Controller", Node::isVisible);
+        sleep(200);
+
+        ModalComponent component = new ModalComponent();
+
+        org.fulib.fx.controller.Modals.showModal(app, component, (stage, controller) -> {
+            stage.setTitle("Modal");
+            stage.setWidth(200);
+            stage.setHeight(200);
+        }, Map.of("key", "value"), true);
+
+        waitForFxEvents();
+
+        Stage modal = Modals.getModalStages().getFirst();
+
+        assertNotNull(modal);
+        assertEquals("value", component.getValue());
+        verifyThat("Modal Component", Node::isVisible);
         assertEquals("Modal", modal.getTitle());
     }
 
