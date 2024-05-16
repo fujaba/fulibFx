@@ -8,20 +8,16 @@ import javafx.scene.control.Label;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
-import org.fulib.fx.controller.Subscriber;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Locale;
 import java.util.Map;
-import java.util.Random;
-import java.util.ResourceBundle;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.Mockito.when;
 import static org.testfx.api.FxAssert.verifyThat;
 import static org.testfx.util.NodeQueryUtils.hasText;
@@ -30,14 +26,10 @@ import static org.testfx.util.NodeQueryUtils.hasText;
 public class IngameControllerTest extends ControllerTest {
 
     @Spy
-    ResourceBundle bundle = ResourceBundle.getBundle("de/uniks/ludo/lang/lang", Locale.ENGLISH);
-    @Spy
     GameService gameService;
-    @Spy
-    Subscriber subscriber;
+
     @InjectMocks
     DiceSubComponent diceSubComponent;
-
     @InjectMocks
     IngameController ingameController;
 
