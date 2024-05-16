@@ -7,12 +7,9 @@ import javafx.stage.Stage;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Locale;
 import java.util.Map;
-import java.util.ResourceBundle;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -20,11 +17,6 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class SetupControllerTest extends ControllerTest {
-    @Spy
-    ResourceBundle bundle = ResourceBundle.getBundle(
-            "de/uniks/ludo/lang/lang",
-            Locale.ENGLISH
-    );
 
     @InjectMocks
     SetupController setupController;
