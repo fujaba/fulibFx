@@ -36,14 +36,37 @@ This step however is dependent on how the application is structured.
 The easiest way is to create a setter method and call it, before the app starts.
 
 ```java
+// ...
+protected TestComponent testComponent;
+
 @Override
 public void start(Stage stage) throws Exception {
     super.start(stage);
-    app.setComponent(DaggerTestComponent.builder().mainApp(app).build());
+    this.testComponent = (TestComponent) DaggerTestComponent.builder().mainApp(app).build();
+    app.setComponent(testComponent);
     app.start(stage);
     stage.requestFocus();
 }
+
+// ...
 ```
+
+The component instance makes it possible to inject services from test classes e.g. AppTest to redefine their behavior.
+
+```java
+public class AppTest extends ControllerTest {
+    // ...
+    
+    @BeforeEach
+    void setup() {
+        final AuthApiService authApiService = testComponent.authApiService();
+        // ...
+    }
+    
+    // ...
+}
+```
+
 ---
 
 [⬅ Testing SubComponents](3-subcomponents.md) | [Overview](README.md)

@@ -10,7 +10,7 @@ This class will contain some common code to reduce the amount of boilerplate req
 
 ```java
 public class ControllerTest extends ApplicationTest {
-
+    
     @Spy
     protected App app = new App();
     @Spy 
@@ -63,8 +63,8 @@ public class SetupControllerTest extends ControllerTest {
 
     @Test
     public void test() {
-        // Since we don't really want to show a different controller, we mock the show() method's behaviour to just return a vbox
-        doReturn(new VBox()).when(app).show(any(), any());
+        // Since we don't really want to show a different controller, we mock the show() method's behaviour to just return null
+        doReturn(null).when(app).show(any(), any());
 
         assertEquals("Ludo - Set up the game", app.stage().getTitle());
 
@@ -74,6 +74,8 @@ public class SetupControllerTest extends ControllerTest {
         press(MouseButton.PRIMARY);
         release(MouseButton.PRIMARY);
         clickOn("#startButton");
+
+        waitForFxEvents(); // Wait for the logic to run
         
         // Mockito can be used to check if the show() method was called with certain arguments
         verify(app, times(1)).show("ingame", Map.of("playerAmount", 2));
@@ -86,6 +88,7 @@ public class SetupControllerTest extends ControllerTest {
 Whenever something is loading asynchronously the method `waitForFxEvents()` should be called before checking the results.
 This ensures that all JavaFX events have been run before continuing the tests.
 Another way of waiting is the `sleep()` method, which allows to wait for a predefined time.
+This is not recommended though as the defined time is either too long or too short and therefore can cause issues or unnecessary delays.
 
 ---
 
