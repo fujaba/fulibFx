@@ -8,3 +8,4 @@ More detailed information can be found in the categories below.
 - [Controllers and Components](controller/README.md)
 - [Tutorial](tutorial/how-to-start.md)
 - [Other Features](features/README.md)
+- [Testing](testing/README.md)
