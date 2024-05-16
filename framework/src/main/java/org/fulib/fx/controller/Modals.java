@@ -8,10 +8,12 @@ import javafx.scene.paint.Paint;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.stage.Window;
 import org.fulib.fx.FulibFxApp;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
@@ -89,10 +91,10 @@ public class Modals {
      * When closing the window, the controller will be destroyed. If the {@link Stage#setOnCloseRequest(EventHandler)}
      * method is overridden, the controller will not be destroyed automatically.
      *
-     * @param app          the app instance
-     * @param component    the class of the controller to show
-     * @param params       the parameters to pass to the controller
-     * @param <Display>    the type of the controller
+     * @param app       the app instance
+     * @param component the class of the controller to show
+     * @param params    the parameters to pass to the controller
+     * @param <Display> the type of the controller
      */
     public static <Display extends Parent> void showModal(FulibFxApp app, Display component, Map<String, Object> params) {
         showModal(app, app.stage(), component, (stage, controller) -> {
@@ -195,9 +197,10 @@ public class Modals {
             modalStage.setScene(scene);
             modalStage.initStyle(StageStyle.TRANSPARENT);
             modalStage.initOwner(currentStage);
-            modalStage.initModality(Modality.WINDOW_MODAL);
-            modalStage.show();
+            modalStage.initModality(Modality.APPLICATION_MODAL);
             modalStage.requestFocus();
+            modalStage.show();
+            modalStage.setAlwaysOnTop(true);
             initializer.accept(modalStage, component);
         });
     }
@@ -224,6 +227,19 @@ public class Modals {
             super.hide();
         }
 
+    }
+
+    /**
+     * Returns a list of all visible modal stages
+     *
+     * @return A list of all visible modal stages
+     */
+    public static List<ModalStage> getModalStages() {
+        return Window.getWindows()
+            .stream()
+            .filter(window -> window instanceof Modals.ModalStage)
+            .map(window -> (ModalStage) window)
+            .toList();
     }
 
 }

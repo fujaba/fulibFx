@@ -1,6 +1,7 @@
 package de.uniks.ludo;
 
 import javafx.stage.Stage;
+import org.fulib.fx.controller.Subscriber;
 import org.mockito.Spy;
 import org.testfx.framework.junit5.ApplicationTest;
 
@@ -8,6 +9,9 @@ public class ControllerTest extends ApplicationTest {
 
     @Spy
     protected App app = new App();
+
+    @Spy
+    Subscriber subscriber;
 
     protected Stage stage;
 
