@@ -164,7 +164,7 @@ public class Modals {
         org.fulib.fx.constructs.Modals modals = new org.fulib.fx.constructs.Modals(app);
         modals.modal(component)
                 .owner(currentStage)
-                .initDialog(initializer)
+                .dialog(true)
                 .params(params)
                 .destroyOnClose(destroyOnClose)
                 .show();

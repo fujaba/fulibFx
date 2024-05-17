@@ -181,6 +181,10 @@ public class FrameworkTest extends ApplicationTest {
         assertEquals("value", component.getValue());
         verifyThat("Modal Component", Node::isVisible);
         assertEquals("Modal", modal.getTitle());
+
+        runAndWait(modal::close);
+
+        assertThrows(RuntimeException.class, () -> new Modals(app).modal(component).show());
     }
 
     @Test

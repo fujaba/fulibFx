@@ -205,7 +205,8 @@ public class MyController {
 - Runtime: ✅
 - Annotation Processor: ✅
 
-This error if an event method overrides another event method as this would lead to the overriding method being called twice.
+This error is thrown if an event method overrides another event method as this would lead to the overriding method being 
+called twice.
 
 ```java
 public class MyController extends BaseController {
@@ -229,6 +230,14 @@ public class BaseController {
     // ...
 }
 ```
+
+### 1014: `The same component instance can only be included in one scene.`
+
+- Runtime: ✅
+- Annotation Processor: ❌
+
+This error is thrown when a component instance that is already included in a scene is used in a modal.
+A node can only be included in one scene, therefore using an already used component instance in a modal
 
 ## Resources
 
