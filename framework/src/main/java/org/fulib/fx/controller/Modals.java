@@ -9,6 +9,12 @@ import org.fulib.fx.FulibFxApp;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
+/**
+ * Helper class for creating modal windows.
+ *
+ * @deprecated Use {@link org.fulib.fx.constructs.Modals} instead.
+ */
+@Deprecated(forRemoval = true)
 public class Modals {
 
     private Modals() {
