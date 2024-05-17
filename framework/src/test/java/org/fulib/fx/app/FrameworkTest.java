@@ -175,7 +175,7 @@ public class FrameworkTest extends ApplicationTest {
 
         waitForFxEvents();
 
-        Stage modal = Modals.getModalStages().getFirst();
+        Stage modal = Modals.getModalStages().get(0);
 
         assertNotNull(modal);
         assertEquals("value", component.getValue());
@@ -188,6 +188,8 @@ public class FrameworkTest extends ApplicationTest {
     }
 
     @Test
+    @Deprecated
+    @SuppressWarnings("all")
     public void modalTestLegacy() {
         runAndWait(() -> app.show("/controller/basic"));
         verifyThat("Basic Controller", Node::isVisible);
@@ -203,7 +205,7 @@ public class FrameworkTest extends ApplicationTest {
 
         waitForFxEvents();
 
-        Stage modal = Modals.getModalStages().getFirst();
+        Stage modal = Modals.getModalStages().get(0);
 
         assertNotNull(modal);
         assertEquals("value", component.getValue());

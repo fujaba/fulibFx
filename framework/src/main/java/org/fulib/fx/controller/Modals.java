@@ -171,6 +171,7 @@ public class Modals {
         modals.modal(component)
                 .owner(currentStage)
                 .dialog(true)
+                .init(initializer)
                 .params(params)
                 .destroyOnClose(destroyOnClose)
                 .show();
