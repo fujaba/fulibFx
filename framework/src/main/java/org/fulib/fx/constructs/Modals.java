@@ -21,16 +21,9 @@ import static org.fulib.fx.util.FrameworkUtil.error;
 
 public class Modals {
 
-    @Inject
     FulibFxApp app;
 
-    /**
-     * This constructor is used for Dependency Injection with Dagger, use {@link Modals#Modals(FulibFxApp)}
-     */
     @Inject
-    public Modals() {
-    }
-
     public Modals(FulibFxApp app) {
         this.app = app;
     }
@@ -42,8 +35,8 @@ public class Modals {
      * @param <T>       The type of component
      * @return A modal instance
      */
-    public <T extends Node> Modal<T> modal(T component) {
-        return new Modal<>(app, component);
+    public <T extends Node> ModalBuilder<T> modal(T component) {
+        return new ModalBuilder<>(app, component);
     }
 
 
@@ -52,7 +45,7 @@ public class Modals {
      *
      * @param <T> The type of the component
      */
-    public static class Modal<T extends Node> {
+    public static class ModalBuilder<T extends Node> {
 
         /**
          * Initializes the stage with some default options like transparency and modality
@@ -73,7 +66,7 @@ public class Modals {
         private boolean destroyOnClose = true;
         private boolean dialog = false;
 
-        public Modal(FulibFxApp app, T component) {
+        public ModalBuilder(FulibFxApp app, T component) {
             this.app = app;
             this.component = component;
             this.owner = app.stage();
@@ -87,7 +80,7 @@ public class Modals {
          * @param initializer The initializer to add
          * @return The current modal instance
          */
-        public Modal<T> init(BiConsumer<Stage, T> initializer) {
+        public ModalBuilder<T> init(BiConsumer<Stage, T> initializer) {
             if (this.initializer == null) {
                 this.initializer = initializer;
                 return this;
@@ -98,44 +91,48 @@ public class Modals {
 
         /**
          * Sets the owner stage.
+         * <p>
+         * If the owner stage is closed, the modal will be closed as well.
+         * <p>
+         * If no owner is set, the {@link FulibFxApp#stage()} will be used.
          *
          * @param owner The owner stage.
          * @return The current modal instance
          */
-        public Modal<T> owner(Stage owner) {
+        public ModalBuilder<T> owner(Stage owner) {
             this.owner = owner;
             return this;
         }
 
         /**
          * Adds a pre-made initializer with some default options regarding transparency and modality.
+         * <p>
+         * This will set the stage style to {@link StageStyle#TRANSPARENT}, the modality to {@link Modality#WINDOW_MODAL}
+         * and the scene fill to transparent (see {@link ModalBuilder#FULIBFX_DIALOG}).
          *
          * @param dialog Whether the default dialog options should be used
          * @return The current modal instance
          */
-        public Modal<T> dialog(boolean dialog) {
+        public ModalBuilder<T> dialog(boolean dialog) {
             this.dialog = dialog;
             return this;
         }
 
         /**
          * Sets the parameters to be used when initializing/rendering the component.
+         * <p>
+         * The default parameters "modalStage" and "ownerStage" will be added automatically if they are not present already.
+         * The modal stage is the current modal stage and the owner stage is the stage that opened the modal (see {@link ModalBuilder#owner(Stage)}).
          *
          * @param params The parameter map
          * @return The current modal instance
          */
-        public Modal<T> params(Map<String, Object> params) {
+        public ModalBuilder<T> params(Map<String, Object> params) {
             this.params = params;
             return this;
         }
 
-        /**
-         * Whether the component should be destroyed when the modal is closed.
-         *
-         * @param destroyOnClose Whether the component should be destroyed when the modal is closed
-         * @return The current modal instance
-         */
-        public Modal<T> destroyOnClose(boolean destroyOnClose) {
+        public ModalBuilder<T> destroyOnClose(boolean destroyOnClose) {
             this.destroyOnClose = destroyOnClose;
             return this;
         }
@@ -144,45 +141,44 @@ public class Modals {
          * Displays the current modal.
          * This can only be called once per modal builder.
          */
-        public void show() {
+        public ModalStage show() {
 
             if (component.getScene() != null) {
                 throw new RuntimeException(error(1014));
             }
 
-            FulibFxApp.FX_SCHEDULER.scheduleDirect(() -> {
-                ModalStage modalStage = new ModalStage(app, destroyOnClose, component);
+            ModalStage modalStage = new ModalStage(app, destroyOnClose, component);
 
-                // Add additional default parameters
-                Map<String, Object> parameters = params == null ? new HashMap<>() : new HashMap<>(params);
-                parameters.putIfAbsent("modalStage", modalStage);
-                parameters.putIfAbsent("ownerStage", owner);
+            // Add additional default parameters
+            Map<String, Object> parameters = params == null ? new HashMap<>() : new HashMap<>(params);
+            parameters.putIfAbsent("modalStage", modalStage);
+            parameters.putIfAbsent("ownerStage", owner);
 
-                // Initialize and render the component
-                app.frameworkComponent().controllerManager().init(component, parameters);
-                Node rendered = app.frameworkComponent().controllerManager().render(component, parameters);
+            // Initialize and render the component
+            app.frameworkComponent().controllerManager().init(component, parameters);
+            Node rendered = app.frameworkComponent().controllerManager().render(component, parameters);
 
-                // As the displayed component will be the root of a stage, it has to be a parent
-                if (!(rendered instanceof Parent parent)) {
-                    throw new IllegalArgumentException(error(1011).formatted(component.getClass().getName()));
-                }
+            // As the displayed component will be the root of a stage, it has to be a parent
+            if (!(rendered instanceof Parent parent)) {
+                throw new IllegalArgumentException(error(1011).formatted(component.getClass().getName()));
+            }
 
-                // Set the title if present
-                app.applyTitle(component, modalStage);
+            // Set the title if present
+            app.applyTitle(component, modalStage);
 
-                // Setup the stage and scene
-                Scene scene = new Scene(parent);
-                modalStage.setScene(scene);
-                modalStage.initOwner(owner);
-                if (dialog) {
-                    FULIBFX_DIALOG.accept(modalStage, component);
-                }
-                if (initializer != null) {
-                    initializer.accept(modalStage, component);
-                }
-                modalStage.show();
-                modalStage.requestFocus();
-            });
+            // Setup the stage and scene
+            Scene scene = new Scene(parent);
+            modalStage.setScene(scene);
+            modalStage.initOwner(owner);
+            if (dialog) {
+                FULIBFX_DIALOG.accept(modalStage, component);
+            }
+            if (initializer != null) {
+                initializer.accept(modalStage, component);
+            }
+            modalStage.show();
+            modalStage.requestFocus();
+            return modalStage;
         }
     }
 
@@ -217,10 +213,10 @@ public class Modals {
      */
     public static List<ModalStage> getModalStages() {
         return Window.getWindows()
-                .stream()
-                .filter(window -> window instanceof ModalStage)
-                .map(window -> (ModalStage) window)
-                .toList();
+            .stream()
+            .filter(window -> window instanceof ModalStage)
+            .map(window -> (ModalStage) window)
+            .toList();
     }
 
 }

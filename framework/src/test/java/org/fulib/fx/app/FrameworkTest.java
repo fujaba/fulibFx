@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static org.fulib.fx.FulibFxApp.FX_SCHEDULER;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.testfx.api.FxAssert.verifyThat;
 import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
@@ -119,7 +120,7 @@ public class FrameworkTest extends ApplicationTest {
     @Test
     public void simpleForTest() {
         ObservableList<String> list = FXCollections.observableList(new ArrayList<>());
-        FulibFxApp.FX_SCHEDULER.scheduleDirect(() -> {
+        FX_SCHEDULER.scheduleDirect(() -> {
             list.add("Hello");
             list.add("World");
             list.add("!");
@@ -131,12 +132,12 @@ public class FrameworkTest extends ApplicationTest {
         VBox container = lookup("#container").queryAs(VBox.class);
         assertEquals(3, container.getChildren().size());
 
-        FulibFxApp.FX_SCHEDULER.scheduleDirect(() -> list.remove("World"));
+        FX_SCHEDULER.scheduleDirect(() -> list.remove("World"));
         waitForFxEvents();
 
         assertEquals(2, container.getChildren().size());
 
-        FulibFxApp.FX_SCHEDULER.scheduleDirect(() -> list.add(1, "World"));
+        FX_SCHEDULER.scheduleDirect(() -> list.add(1, "World"));
         waitForFxEvents();
 
         assertEquals(3, container.getChildren().size());
@@ -167,11 +168,12 @@ public class FrameworkTest extends ApplicationTest {
 
         ModalComponent component = new ModalComponent();
 
-        new Modals(app)
-                .modal(component)
-                .init((stage, modalComponent) -> stage.setTitle("Modal"))
-                .params(Map.of("key", "value"))
-                .show();
+        FX_SCHEDULER.scheduleDirect(() -> new Modals(app)
+            .modal(component)
+            .init((stage, modalComponent) -> stage.setTitle("Modal"))
+            .params(Map.of("key", "value"))
+            .show()
+        );
 
         waitForFxEvents();
 
@@ -184,7 +186,7 @@ public class FrameworkTest extends ApplicationTest {
 
         runAndWait(modal::close);
 
-        assertThrows(RuntimeException.class, () -> new Modals(app).modal(component).show());
+        FX_SCHEDULER.scheduleDirect(() -> assertThrows(RuntimeException.class, () -> new Modals(app).modal(component).show()));
     }
 
     @Test
@@ -197,11 +199,11 @@ public class FrameworkTest extends ApplicationTest {
 
         ModalComponent component = new ModalComponent();
 
-        org.fulib.fx.controller.Modals.showModal(app, component, (stage, controller) -> {
+        FX_SCHEDULER.scheduleDirect(() -> org.fulib.fx.controller.Modals.showModal(app, component, (stage, controller) -> {
             stage.setTitle("Modal");
             stage.setWidth(200);
             stage.setHeight(200);
-        }, Map.of("key", "value"), true);
+        }, Map.of("key", "value"), true));
 
         waitForFxEvents();
 
@@ -218,11 +220,11 @@ public class FrameworkTest extends ApplicationTest {
         ParamController controller = new ParamController();
         StringProperty property = new SimpleStringProperty("string");
         Map<String, Object> params = Map.of(
-                "integer", 1,
-                "string", "string",
-                "character", 'a',
-                "bool", true,
-                "property", property
+            "integer", 1,
+            "string", "string",
+            "character", 'a',
+            "bool", true,
+            "property", property
         );
         runAndWait(() -> app.show(controller, params));
 
@@ -243,24 +245,24 @@ public class FrameworkTest extends ApplicationTest {
         assertEquals(property, controller.stringPropertyProperty());
 
         runAndWait(() ->
-                assertThrows(
-                        RuntimeException.class, // Fails because the field is of type Integer, but a String is provided
-                        () -> app.show(new InvalidParamController(), Map.of("one", "string"))
-                )
+            assertThrows(
+                RuntimeException.class, // Fails because the field is of type Integer, but a String is provided
+                () -> app.show(new InvalidParamController(), Map.of("one", "string"))
+            )
         );
 
         runAndWait(() ->
-                assertThrows(
-                        RuntimeException.class, // Fails because the property expects an Integer, but a String is provided
-                        () -> app.show(new InvalidParamController(), Map.of("two", "123"))
-                )
+            assertThrows(
+                RuntimeException.class, // Fails because the property expects an Integer, but a String is provided
+                () -> app.show(new InvalidParamController(), Map.of("two", "123"))
+            )
         );
 
         runAndWait(() ->
-                assertThrows(
-                        RuntimeException.class, // Fails because the property is null
-                        () -> app.show(new InvalidParamController(), Map.of("three", 123))
-                )
+            assertThrows(
+                RuntimeException.class, // Fails because the property is null
+                () -> app.show(new InvalidParamController(), Map.of("three", 123))
+            )
         );
     }
 
@@ -293,7 +295,7 @@ public class FrameworkTest extends ApplicationTest {
         runAndWait(app::back);
         verifyThat("B:b", Node::isVisible);
 
-        FulibFxApp.FX_SCHEDULER.scheduleDirect(app::refresh);
+        FX_SCHEDULER.scheduleDirect(app::refresh);
         waitForFxEvents();
         verifyThat("B:b", Node::isVisible);
     }
