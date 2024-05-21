@@ -4,12 +4,8 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.paint.Paint;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
-import javafx.stage.StageStyle;
-import javafx.stage.Window;
+import javafx.stage.*;
 import org.fulib.fx.FulibFxApp;
-import org.jetbrains.annotations.NotNull;
 
 import javax.inject.Inject;
 import java.util.HashMap;
@@ -20,6 +16,11 @@ import java.util.function.BiConsumer;
 import static org.fulib.fx.util.FrameworkUtil.error;
 
 public class Modals {
+
+    /**
+     * Key of the property for defining a stage as a modal stage
+     */
+    private static final String MODAL_STAGE = "fulibFx.stage.isModal";
 
     FulibFxApp app;
 
@@ -141,13 +142,19 @@ public class Modals {
          * Displays the current modal.
          * This can only be called once per modal builder.
          */
-        public ModalStage show() {
+        public Stage show() {
 
             if (component.getScene() != null) {
                 throw new RuntimeException(error(1014));
             }
 
-            ModalStage modalStage = new ModalStage(app, destroyOnClose, component);
+            Stage modalStage = new Stage();
+
+            modalStage.getProperties().put(MODAL_STAGE, true);
+
+            if (destroyOnClose) {
+                modalStage.addEventHandler(WindowEvent.WINDOW_HIDING, event -> app.frameworkComponent().controllerManager().destroy(component));
+            }
 
             // Add additional default parameters
             Map<String, Object> parameters = params == null ? new HashMap<>() : new HashMap<>(params);
@@ -183,40 +190,20 @@ public class Modals {
     }
 
     /**
-     * Slightly modified version of {@link Stage} that destroys the controller when the stage is hidden.
-     */
-    public static class ModalStage extends Stage {
-
-        private final FulibFxApp app;
-        private final Object component;
-        private final boolean destroyOnClose;
-
-        public ModalStage(FulibFxApp app, boolean destroyOnClose, @NotNull Object component) {
-            super();
-            this.destroyOnClose = destroyOnClose;
-            this.app = app;
-            this.component = component;
-        }
-
-        @Override
-        public void hide() {
-            if (destroyOnClose) app.frameworkComponent().controllerManager().destroy(component);
-            super.hide();
-        }
-
-    }
-
-    /**
      * Returns a list of all visible modal stages
      *
      * @return A list of all visible modal stages
      */
-    public static List<ModalStage> getModalStages() {
+    public static List<Stage> getModalStages() {
         return Window.getWindows()
             .stream()
-            .filter(window -> window instanceof ModalStage)
-            .map(window -> (ModalStage) window)
+            .filter(Modals::isModal)
+            .map(window -> (Stage) window)
             .toList();
+    }
+
+    public static boolean isModal(Window window) {
+        return Boolean.parseBoolean(String.valueOf(window.getProperties().get(MODAL_STAGE)));
     }
 
 }

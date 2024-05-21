@@ -179,12 +179,17 @@ public class FrameworkTest extends ApplicationTest {
 
         Stage modal = Modals.getModalStages().get(0);
 
+        assertTrue(Modals.isModal(modal));
+        assertFalse(Modals.isModal(app.stage()));
+
         assertNotNull(modal);
         assertEquals("value", component.getValue());
         verifyThat("Modal Component", Node::isVisible);
         assertEquals("Modal", modal.getTitle());
 
         runAndWait(modal::close);
+
+        assertTrue(component.destroyed);
 
         FX_SCHEDULER.scheduleDirect(() -> assertThrows(RuntimeException.class, () -> new Modals(app).modal(component).show()));
     }
