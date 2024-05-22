@@ -4,8 +4,20 @@ Modals are a special type of window that can be used to display a controller on 
 can be used to display popup windows, dialogs, etc.
 
 The framework provides a `Modals` class that can be used to display a modal.
-When using `showModal()` a stage will be created and configured to be displayed above the current stage.
-A BiConsumer provides access to the component instance and the stage for configuring other things.
+Using a builder, a stage can be configured and then be displayed.
+
+A BiConsumer provides access to the component instance and the stage for configuring things the builder doesn't provide.
+It can be set using `init()`.
+
+Enabling `dialog()` adds some default styling to the stage.
+This has been added as an option to enable the legacy default styling present in the old modal class.
+
+Parameters can be passed by using the `param()` method in form of a map (see `show()` in the `FulibFxApp` class).
+
+Enabling `destroyOnClose()` configures the component to be destroyed upon closing the modal. 
+This is enabled by default and shouldn't be changed if not necessary.
+
+The stage can either be built using `build()` and then displayed by yourself, or built and displayed at once using `show()`.
 
 When displaying the component, the parameters `modalStage` and `ownerStage` will be passed so that the modal can for
 example be closed from inside the component class.
@@ -37,11 +49,16 @@ public class ModalComponent extends VBox {
 ```
 
 ```java
-// As every modal needs its own instance, we use a provider (e.g. with Dagger)
-Modals.showModal(app, modalComponentProvider.get(), (stage, component) -> {
-    stage.doSomething();
-    component.doSomethingElse();
-});
+Modals modals = new Modals(app); // Can also be injected by Dagger
+
+modals
+    .modal(myModalComponent)
+    .dialog(true) // Apply the legacy fulibFx styling
+    .init((stage, component) -> {
+        stage.setTitle(component.getString());    
+    })
+    .params(Map.of("key", value))
+    .show();
 ```
 
 ---
