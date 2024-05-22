@@ -21,9 +21,7 @@ import org.fulib.fx.controller.internal.ReflectionSidecar;
 import org.fulib.fx.data.disposable.RefreshableCompositeDisposable;
 import org.fulib.fx.util.ControllerUtil;
 import org.fulib.fx.util.FileUtil;
-import org.fulib.fx.util.FrameworkUtil;
 import org.fulib.fx.util.KeyEventHolder;
-import org.fulib.fx.util.reflection.Reflection;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -205,26 +203,7 @@ public class ControllerManager {
         }
         getSidecar(instance).destroy(instance);
 
-        // TODO Unregister key events via Sidecar
         cleanUpListeners(instance);
-
-        // In development mode, check for undestroyed subscribers
-        if (FrameworkUtil.runningInDev()) {
-            Reflection.getAllFieldsOfType(instance.getClass(), Subscriber.class).forEach(field -> {  // Get all Subscriber fields
-                try {
-                    field.setAccessible(true);
-                    Subscriber subscriber = (Subscriber) field.get(instance); // Get the Subscriber instance, if it exists
-
-                    if (subscriber == null || subscriber.isDisposed() || subscriber.isFresh()) {
-                        return; // Check if the subscriber is disposed or non-existing
-                    }
-                    FulibFxApp.LOGGER.warning("Found undestroyed subscriber '%s' in class '%s'.".formatted(field.getName(), instance.getClass().getName()));
-
-                } catch (IllegalAccessException e) {
-                    throw new RuntimeException(error(9001).formatted(field.getName(), field.getDeclaringClass().getName()), e);
-                }
-            });
-        }
     }
 
     /**

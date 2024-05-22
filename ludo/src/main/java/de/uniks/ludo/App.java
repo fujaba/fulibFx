@@ -66,8 +66,10 @@ public class App extends FulibFxApp {
             // If the resource path is not set, the framework will use the default resource path (src/main/resources)
             setResourcesPath(Path.of("ludo/src/main/resources/"));
 
-            // Setting the path which the auto refresher should watch (required for auto-reloading in dev)
-            autoRefresher().setup(Path.of("ludo/src/main/resources/de/uniks/ludo"));
+            if (System.getenv("AUTO_REFRESH") != null) {
+                // Setting the path which the auto refresher should watch (required for auto-reloading in dev)
+                autoRefresher().setup(Path.of("ludo/src/main/resources/de/uniks/ludo"));
+            }
 
             // Setting the default resource bundle of the application to the resource bundle provided by the component
             setDefaultResourceBundle(component.bundle());

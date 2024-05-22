@@ -716,3 +716,26 @@ This error is thrown if closing the file watcher fails.
 
 This error is thrown if the framework fails to create a copy of an object because no duplicator has been registered for
 the object's class.
+
+### 9007: `Could not watch '*' - it does not exist or is not a directory.`
+
+- Runtime: ✅
+- Annotation Processor: ❌
+
+This error occurs when attempting to set up the `AutoRefresher` with an invalid path, or forgetting to disable it outside development mode.
+
+```java
+@Override
+public void start(Stage primaryStage) {
+    // ...
+
+    // Bad: (in production, the src directory will not exist)
+    autoRefresher().setup(Path.of("src/main/resources/de/uniks/ludo"));
+
+    // Good: (guarded by an environment variable)
+    if (System.getenv("AUTO_REFRESH") != null) {
+        autoRefresher().setup(Path.of("src/main/resources/de/uniks/ludo"));
+    }
+}
+```
+

@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import static org.fulib.fx.util.FrameworkUtil.error;
+import static org.fulib.fx.util.FrameworkUtil.note;
 
 @Singleton
 public class Router {
@@ -99,10 +100,11 @@ public class Router {
     public @NotNull Pair<Object, Parent> renderRoute(@NotNull String route, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
         // Check if the route exists and has a valid controller
         if (!this.routes.containsPath(route)) {
-            if (FrameworkUtil.runningInDev() && this.routes.containsPath("/" + route)) {
-                FulibFxApp.LOGGER.warning("This route doesn't exist. Did you mean '/%s'?".formatted(route));
+            String message = error(3005).formatted(route);
+            if (this.routes.containsPath("/" + route)) {
+                message += " " + note(3005).formatted("/" + route);
             }
-            throw new ControllerInvalidRouteException(route);
+            throw new ControllerInvalidRouteException(message);
         }
 
         // Get the provider and the controller class
