@@ -1,7 +1,6 @@
 package org.fulib.fx.controller;
 
 import javafx.event.EventHandler;
-import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.stage.Stage;
 import org.fulib.fx.FulibFxApp;
@@ -166,7 +165,7 @@ public class Modals {
      * @param params       the parameters to pass to the controller
      * @param <Display>    the type of the controller
      */
-    public static <Display extends Node> void showModal(FulibFxApp app, Stage currentStage, Display component, BiConsumer<Stage, Display> initializer, Map<String, Object> params, boolean destroyOnClose) {
+    public static <Display extends Parent> void showModal(FulibFxApp app, Stage currentStage, Display component, BiConsumer<Stage, Display> initializer, Map<String, Object> params, boolean destroyOnClose) {
         org.fulib.fx.constructs.Modals modals = new org.fulib.fx.constructs.Modals(app);
         modals.modal(component)
                 .owner(currentStage)

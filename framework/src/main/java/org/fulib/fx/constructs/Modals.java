@@ -6,6 +6,7 @@ import javafx.scene.Scene;
 import javafx.scene.paint.Paint;
 import javafx.stage.*;
 import org.fulib.fx.FulibFxApp;
+import org.fulib.fx.util.ControllerUtil;
 
 import javax.inject.Inject;
 import java.util.HashMap;
@@ -36,7 +37,10 @@ public class Modals {
      * @param <T>       The type of component
      * @return A modal instance
      */
-    public <T extends Node> ModalBuilder<T> modal(T component) {
+    public <T extends Parent> ModalBuilder<T> modal(T component) {
+        if (!ControllerUtil.isComponent(component)) {
+            throw new IllegalArgumentException(error(1000));
+        }
         return new ModalBuilder<>(app, component);
     }
 
@@ -46,7 +50,7 @@ public class Modals {
      *
      * @param <T> The type of the component
      */
-    public static class ModalBuilder<T extends Node> {
+    public static class ModalBuilder<T extends Parent> {
 
         /**
          * Initializes the stage with some default options like transparency and modality
