@@ -191,6 +191,18 @@ public class FrameworkTest extends ApplicationTest {
 
         assertTrue(component.destroyed);
 
+        ModalComponent component2 = new ModalComponent();
+
+        FX_SCHEDULER.scheduleDirect(() -> {
+            Stage built = new Modals(app)
+                    .modal(component2)
+                    .init((stage, modalComponent) -> stage.setTitle("Modal"))
+                    .build();
+            assertEquals("Modal", built.getTitle());
+        });
+
+        waitForFxEvents();
+
         FX_SCHEDULER.scheduleDirect(() -> assertThrows(RuntimeException.class, () -> new Modals(app).modal(component).show()));
     }
 

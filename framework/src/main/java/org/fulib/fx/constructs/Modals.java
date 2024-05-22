@@ -139,10 +139,13 @@ public class Modals {
         }
 
         /**
-         * Displays the current modal.
+         * Builds the stage for the current modal.
+         * <p>
          * This can only be called once per modal builder.
+         *
+         * @return The stage for the current modal
          */
-        public Stage show() {
+        public Stage build() {
 
             if (component.getScene() != null) {
                 throw new RuntimeException(error(1014));
@@ -183,6 +186,18 @@ public class Modals {
             if (initializer != null) {
                 initializer.accept(modalStage, component);
             }
+            return modalStage;
+        }
+
+        /**
+         * Builds and displays the stage for the current modal.
+         * <p>
+         * This can only be called once per modal builder.
+         *
+         * @return The stage for the current modal
+         */
+        public Stage show() {
+            Stage modalStage = build();
             modalStage.show();
             modalStage.requestFocus();
             return modalStage;
@@ -196,10 +211,10 @@ public class Modals {
      */
     public static List<Stage> getModalStages() {
         return Window.getWindows()
-            .stream()
-            .filter(Modals::isModal)
-            .map(window -> (Stage) window)
-            .toList();
+                .stream()
+                .filter(Modals::isModal)
+                .map(window -> (Stage) window)
+                .toList();
     }
 
     public static boolean isModal(Window window) {
