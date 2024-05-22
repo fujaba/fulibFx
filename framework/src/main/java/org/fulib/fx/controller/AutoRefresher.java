@@ -35,9 +35,8 @@ public class AutoRefresher {
 
     public void setup(Path directory) {
 
-        if (!FrameworkUtil.runningInDev()) {
-            FulibFxApp.LOGGER.warning("AutoRefresher is only meant to be used in development mode! Not starting.");
-            return;
+        if (!Files.isDirectory(directory)) {
+            throw new RuntimeException(error(9007).formatted(directory));
         }
 
         this.enabled = true;
