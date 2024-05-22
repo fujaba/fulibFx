@@ -203,7 +203,6 @@ public class ControllerManager {
         }
         getSidecar(instance).destroy(instance);
 
-        // TODO Unregister key events via Sidecar
         cleanUpListeners(instance);
     }
 
