@@ -157,9 +157,7 @@ A list of all possible error codes can be found [here](ERROR_CODES.md).
 ### 1. The framework throws an exception when doing something
 All exceptions thrown by the framework are listed in the [error code documentation](ERROR_CODES.md). 
 When the framework throws an exception, it will print the error code and a short description of the error to the console.
-If for example the error `java.lang.IllegalArgumentException: Class '*' is not a component. [FFX1000]` is thrown, you can 
-check the error code documentation for [FFX1000](ERROR_CODES.md#1000-class--is-not-a-component) to find out what the error 
-means and how to fix it.
+If for example the error `java.lang.IllegalArgumentException: FFX1000: Class '*' is not a component.` is thrown, you can check the error code documentation for [FFX1000](ERROR_CODES.md#1000-class--is-not-a-component) to find out what the error means and how to fix it.
 
 ### 2. My route is not found even though it is registered
 When using `show("route/to/controller")` without a leading "`/`", the route is relative to the currently displayed controller. 
