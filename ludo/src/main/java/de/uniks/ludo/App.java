@@ -39,6 +39,9 @@ public class App extends FulibFxApp {
             // Setting the default resource bundle of the application to the resource bundle provided by the component
             setDefaultResourceBundle(component.bundle());
 
+            primaryStage.setWidth(1200);
+            primaryStage.setHeight(800);
+
             // Adding a key event handler to the stage, which listens for the F5 key to refresh the application
             stage().addEventHandler(KEY_RELEASED, event -> {
                 if (event.getCode() == KeyCode.F5) {
