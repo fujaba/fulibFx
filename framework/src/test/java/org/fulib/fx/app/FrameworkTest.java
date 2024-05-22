@@ -3,24 +3,23 @@ package org.fulib.fx.app;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import org.fulib.fx.FulibFxApp;
-import org.fulib.fx.app.controller.InvalidParamController;
-import org.fulib.fx.app.controller.types.BasicComponent;
-import org.fulib.fx.app.controller.ParamController;
-import org.fulib.fx.app.controller.TitleController;
-import org.fulib.fx.app.controller.history.AController;
-import org.fulib.fx.app.controller.history.BController;
-import org.fulib.fx.app.controller.history.CController;
-import org.fulib.fx.app.controller.ModalComponent;
-import org.fulib.fx.app.controller.subcomponent.basic.ButtonSubComponent;
-import org.fulib.fx.controller.Modals;
-import org.fulib.fx.controller.exception.ControllerInvalidRouteException;
-import org.fulib.fx.controller.exception.IllegalControllerException;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import org.fulib.fx.FulibFxApp;
+import org.fulib.fx.app.controller.InvalidParamController;
+import org.fulib.fx.app.controller.ModalComponent;
+import org.fulib.fx.app.controller.ParamController;
+import org.fulib.fx.app.controller.TitleController;
+import org.fulib.fx.app.controller.history.AController;
+import org.fulib.fx.app.controller.history.BController;
+import org.fulib.fx.app.controller.history.CController;
+import org.fulib.fx.app.controller.subcomponent.basic.ButtonSubComponent;
+import org.fulib.fx.app.controller.types.BasicComponent;
+import org.fulib.fx.constructs.Modals;
+import org.fulib.fx.controller.exception.ControllerInvalidRouteException;
 import org.junit.jupiter.api.Test;
 import org.testfx.framework.junit5.ApplicationTest;
 
@@ -28,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static org.fulib.fx.FulibFxApp.FX_SCHEDULER;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.testfx.api.FxAssert.verifyThat;
 import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
@@ -120,7 +120,7 @@ public class FrameworkTest extends ApplicationTest {
     @Test
     public void simpleForTest() {
         ObservableList<String> list = FXCollections.observableList(new ArrayList<>());
-        FulibFxApp.FX_SCHEDULER.scheduleDirect(() -> {
+        FX_SCHEDULER.scheduleDirect(() -> {
             list.add("Hello");
             list.add("World");
             list.add("!");
@@ -132,12 +132,12 @@ public class FrameworkTest extends ApplicationTest {
         VBox container = lookup("#container").queryAs(VBox.class);
         assertEquals(3, container.getChildren().size());
 
-        FulibFxApp.FX_SCHEDULER.scheduleDirect(() -> list.remove("World"));
+        FX_SCHEDULER.scheduleDirect(() -> list.remove("World"));
         waitForFxEvents();
 
         assertEquals(2, container.getChildren().size());
 
-        FulibFxApp.FX_SCHEDULER.scheduleDirect(() -> list.add(1, "World"));
+        FX_SCHEDULER.scheduleDirect(() -> list.add(1, "World"));
         waitForFxEvents();
 
         assertEquals(3, container.getChildren().size());
@@ -166,20 +166,69 @@ public class FrameworkTest extends ApplicationTest {
         verifyThat("Basic Controller", Node::isVisible);
         sleep(200);
 
-        Modals.showModal(app, new ModalComponent(), (stage, controller) -> {
-            stage.setTitle("Modal");
-            stage.setWidth(200);
-            stage.setHeight(200);
+        ModalComponent component = new ModalComponent();
+
+        FX_SCHEDULER.scheduleDirect(() -> new Modals(app)
+            .modal(component)
+            .init((stage, modalComponent) -> stage.setTitle("Modal"))
+            .params(Map.of("key", "value"))
+            .show()
+        );
+
+        waitForFxEvents();
+
+        Stage modal = Modals.getModalStages().get(0);
+
+        assertTrue(Modals.isModal(modal));
+        assertFalse(Modals.isModal(app.stage()));
+
+        assertNotNull(modal);
+        assertEquals("value", component.getValue());
+        verifyThat("Modal Component", Node::isVisible);
+        assertEquals("Modal", modal.getTitle());
+
+        runAndWait(modal::close);
+
+        assertTrue(component.destroyed);
+
+        ModalComponent component2 = new ModalComponent();
+
+        FX_SCHEDULER.scheduleDirect(() -> {
+            Stage built = new Modals(app)
+                    .modal(component2)
+                    .init((stage, modalComponent) -> stage.setTitle("Modal"))
+                    .build();
+            assertEquals("Modal", built.getTitle());
         });
 
         waitForFxEvents();
 
-        Modals.ModalStage modal = (Modals.ModalStage) Stage.getWindows().stream().filter(window -> window instanceof Modals.ModalStage).map(window -> (Stage) window).findAny().orElse(null);
+        FX_SCHEDULER.scheduleDirect(() -> assertThrows(RuntimeException.class, () -> new Modals(app).modal(component).show()));
+    }
+
+    @Test
+    @Deprecated
+    @SuppressWarnings("all")
+    public void modalTestLegacy() {
+        runAndWait(() -> app.show("/controller/basic"));
+        verifyThat("Basic Controller", Node::isVisible);
+        sleep(200);
+
+        ModalComponent component = new ModalComponent();
+
+        FX_SCHEDULER.scheduleDirect(() -> org.fulib.fx.controller.Modals.showModal(app, component, (stage, controller) -> {
+            stage.setTitle("Modal");
+            stage.setWidth(200);
+            stage.setHeight(200);
+        }, Map.of("key", "value"), true));
+
+        waitForFxEvents();
+
+        Stage modal = Modals.getModalStages().get(0);
 
         assertNotNull(modal);
+        assertEquals("value", component.getValue());
         verifyThat("Modal Component", Node::isVisible);
-        assertEquals(200, modal.getWidth());
-        assertEquals(200, modal.getHeight());
         assertEquals("Modal", modal.getTitle());
     }
 
@@ -188,11 +237,11 @@ public class FrameworkTest extends ApplicationTest {
         ParamController controller = new ParamController();
         StringProperty property = new SimpleStringProperty("string");
         Map<String, Object> params = Map.of(
-                "integer", 1,
-                "string", "string",
-                "character", 'a',
-                "bool", true,
-                "property", property
+            "integer", 1,
+            "string", "string",
+            "character", 'a',
+            "bool", true,
+            "property", property
         );
         runAndWait(() -> app.show(controller, params));
 
@@ -213,24 +262,24 @@ public class FrameworkTest extends ApplicationTest {
         assertEquals(property, controller.stringPropertyProperty());
 
         runAndWait(() ->
-                assertThrows(
-                        RuntimeException.class, // Fails because the field is of type Integer, but a String is provided
-                        () -> app.show(new InvalidParamController(), Map.of("one", "string"))
-                )
+            assertThrows(
+                RuntimeException.class, // Fails because the field is of type Integer, but a String is provided
+                () -> app.show(new InvalidParamController(), Map.of("one", "string"))
+            )
         );
 
         runAndWait(() ->
-                assertThrows(
-                        RuntimeException.class, // Fails because the property expects an Integer, but a String is provided
-                        () -> app.show(new InvalidParamController(), Map.of("two", "123"))
-                )
+            assertThrows(
+                RuntimeException.class, // Fails because the property expects an Integer, but a String is provided
+                () -> app.show(new InvalidParamController(), Map.of("two", "123"))
+            )
         );
 
         runAndWait(() ->
-                assertThrows(
-                        RuntimeException.class, // Fails because the property is null
-                        () -> app.show(new InvalidParamController(), Map.of("three", 123))
-                )
+            assertThrows(
+                RuntimeException.class, // Fails because the property is null
+                () -> app.show(new InvalidParamController(), Map.of("three", 123))
+            )
         );
     }
 
@@ -263,7 +312,7 @@ public class FrameworkTest extends ApplicationTest {
         runAndWait(app::back);
         verifyThat("B:b", Node::isVisible);
 
-        FulibFxApp.FX_SCHEDULER.scheduleDirect(app::refresh);
+        FX_SCHEDULER.scheduleDirect(app::refresh);
         waitForFxEvents();
         verifyThat("B:b", Node::isVisible);
     }
