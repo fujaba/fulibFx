@@ -463,9 +463,9 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
 
             // key pressed ==> not strict || key required
             (event.isShiftDown() && (!annotation.strict() || annotation.shift())) &&
-            (event.isControlDown() && (!annotation.strict() || !annotation.control())) &&
-            (event.isAltDown() && (!annotation.strict() || !annotation.alt())) &&
-            (event.isMetaDown() && (!annotation.strict() || !annotation.meta()));
+            (event.isControlDown() && (!annotation.strict() || annotation.control())) &&
+            (event.isAltDown() && (!annotation.strict() || annotation.alt())) &&
+            (event.isMetaDown() && (!annotation.strict() || annotation.meta()));
     }
 
     @Override
