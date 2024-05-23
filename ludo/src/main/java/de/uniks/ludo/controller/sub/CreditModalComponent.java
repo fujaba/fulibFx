@@ -31,7 +31,7 @@ public class CreditModalComponent extends VBox {
         this.setBorder(Border.stroke(Paint.valueOf("black")));
         Label title = new Label("Ludo");
         title.setUnderline(true);
-        Label label = new Label("Powered by FulibFx.\nThis game has been created by LeStegii and ClashSoft.");
+        Label label = new Label("Powered by FulibFx.\nThis game has been created by LeStegii and Clashsoft.");
         Button ok = new Button("OK");
         ok.setOnAction(e -> modalStage.close());
 
