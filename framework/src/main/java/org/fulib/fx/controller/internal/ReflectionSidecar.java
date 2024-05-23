@@ -460,10 +460,12 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
         return (annotation.code() == KeyCode.UNDEFINED || event.getCode() == annotation.code()) &&
             (annotation.character().isEmpty() || event.getCharacter().equals(annotation.character())) &&
             (annotation.text().isEmpty() || event.getText().equals(annotation.text())) &&
-            (event.isShiftDown() || !annotation.shift()) &&
-            (event.isControlDown() || !annotation.control()) &&
-            (event.isAltDown() || !annotation.alt()) &&
-            (event.isMetaDown() || !annotation.meta());
+
+            // key pressed ==> not strict || key required
+            (event.isShiftDown() && (!annotation.strict() || annotation.shift())) &&
+            (event.isControlDown() && (!annotation.strict() || !annotation.control())) &&
+            (event.isAltDown() && (!annotation.strict() || !annotation.alt())) &&
+            (event.isMetaDown() && (!annotation.strict() || !annotation.meta()));
     }
 
     @Override
