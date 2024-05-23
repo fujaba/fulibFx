@@ -70,9 +70,10 @@ public @interface OnKey {
 
     /**
      * Whether the settings for meta, control, alt and shift keys are strict.
-     *
+     * <ul>
      * <li> When strict mode is enabled, setting any of these options to false means the key must not be pressed.</li>
      * <li> When strict mode is disabled, setting any of these options to false means the key does not need to be pressed.</li>
+     * </ul>
      *
      * @return Whether the settings for meta, control, alt and shift keys are strict.
      */
@@ -81,8 +82,10 @@ public @interface OnKey {
     /**
      * The target at which the event should be handled.
      *
+     * <ul>
      * <li> STAGE: The event will be handled by the stage</li>
      * <li> SCENE: The event will be handled by the scene</li>
+     * </ul>
      *
      * @return The target at which the event should be handled
      */
