@@ -7,6 +7,11 @@ import java.util.Objects;
 
 import static org.fulib.fx.util.FrameworkUtil.error;
 
+/**
+ * A queue with a certain site overwriting the oldest entry when full.
+ *
+ * @param <T> The type of items in the queue
+ */
 public class EvictingQueue<T> implements SizeableTraversableQueue<T> {
 
     private int size;

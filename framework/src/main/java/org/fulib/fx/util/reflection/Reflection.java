@@ -126,16 +126,37 @@ public class Reflection {
         return getWrapperType(type).isAssignableFrom(valueType);
     }
 
+    /**
+     * Returns the wrapped type of the given type.
+     *
+     * @param type The type to be wrapped
+     * @return the wrapped type or the given type if not a primitive type
+     */
     public static Class<?> getWrapperType(@NotNull Class<?> type) {
         return type.isPrimitive() ? wrap(type) : type;
     }
 
     // https://stackoverflow.com/questions/1704634/simple-way-to-get-wrapper-class-type-in-java/62219759#62219759
+
+    /**
+     * Wraps an unwrapped type.
+     *
+     * @param unwrapped The unwrapped type
+     * @param <T>       The unwrapped type
+     * @return The wrapped type
+     */
     @SuppressWarnings("unchecked")
     public static <T> Class<T> wrap(@NotNull Class<T> unwrapped) {
         return (Class<T>) MethodType.methodType(unwrapped).wrap().returnType();
     }
 
+    /**
+     * Unwraps a wrapped type.
+     *
+     * @param wrapped The wrapped type
+     * @param <T>     The wrapped type
+     * @return The unwrapped type
+     */
     @SuppressWarnings("unchecked")
     public static <T> Class<T> unwrap(@NotNull Class<T> wrapped) {
         return (Class<T>) MethodType.methodType(wrapped).unwrap().returnType();

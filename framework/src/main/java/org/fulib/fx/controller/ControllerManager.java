@@ -241,6 +241,7 @@ public class ControllerManager {
      *
      * @param fileName The name of the fxml resource file (with path and file extension)
      * @param instance The controller instance to use
+     * @param setRoot  Whether to set the instance as the FXML root element
      * @return A parent representing the fxml file
      */
     @ApiStatus.Internal

@@ -37,11 +37,12 @@ import java.lang.reflect.Modifier;
 import java.util.*;
 
 /**
- * This class is a copy of the ControllerProxyBuilder from the JavaFX framework.
- * It is used to load controllers from FXML files and support the injection of subcontrollers, e.g. provided by Dagger.
+ * This class is a modified copy of the {@link com.sun.javafx.fxml.builder.ProxyBuilder} from JavaFX.
+ * It is used to load controllers from FXML files and support the injection of subcomponents.
  * <p>
- * This builder is strongly modified to support the injection of subcontrollers.
  * Besides the modification of the instance creation, various parts have been optimized and simplified with new Java features.
+ *
+ * @param <T> The type to be built
  */
 @ApiStatus.Internal
 public class ControllerProxyBuilder<T> extends AbstractMap<String, Object> implements Builder<T> {

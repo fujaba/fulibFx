@@ -5,6 +5,11 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
+/**
+ * A class representing two possible values with different types.
+ * @param <L> The first type (left)
+ * @param <R> The second type (right)
+ */
 public class Either<L, R> {
 
     private final @Nullable L left;

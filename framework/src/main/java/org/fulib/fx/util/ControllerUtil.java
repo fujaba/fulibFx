@@ -21,6 +21,10 @@ import java.util.Set;
 import static org.fulib.fx.util.FrameworkUtil.error;
 import static org.fulib.fx.util.ReflectionUtil.getProvidedClass;
 
+/**
+ * Different utilities for managing controllers.
+ * Mostly internal, use with care.
+ */
 public class ControllerUtil {
 
     private ControllerUtil() {

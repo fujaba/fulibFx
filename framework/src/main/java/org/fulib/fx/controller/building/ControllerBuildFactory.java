@@ -17,7 +17,9 @@ import java.util.Map;
 import static org.fulib.fx.util.FrameworkUtil.error;
 
 /**
- * A custom building-factory for instantiating controllers. If an element in an FXML file is of a class annotated with @Controller and a field providing an instance of the same class exists, the provided instance will be used as the controller for the element.
+ * A custom building-factory for instantiating controllers.
+ * If an element in an FXML file is of a class annotated with @Controller and a field providing an instance of the same
+ * class exists, the provided instance will be used as the controller for the element.
  */
 @ApiStatus.Internal
 public class ControllerBuildFactory implements BuilderFactory {

@@ -5,7 +5,6 @@ import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import org.fulib.fx.FulibFxApp;
 import org.fulib.fx.util.FileUtil;
-import org.fulib.fx.util.FrameworkUtil;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -16,6 +15,9 @@ import java.util.concurrent.atomic.AtomicLong;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 import static org.fulib.fx.util.FrameworkUtil.error;
 
+/**
+ * Class used for automatically reloading controllers when their corresponding FXML file changes.
+ */
 @Singleton
 public class AutoRefresher {
 
@@ -33,6 +35,12 @@ public class AutoRefresher {
     public AutoRefresher() {
     }
 
+    /**
+     * Registers the auto refresher for the given directory.
+     *
+     * @param directory The directory to check for updates
+     * @throws RuntimeException If the given path is not a directory
+     */
     public void setup(Path directory) {
 
         if (!Files.isDirectory(directory)) {
