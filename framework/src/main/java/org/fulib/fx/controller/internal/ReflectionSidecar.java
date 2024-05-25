@@ -456,14 +456,28 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
         };
     }
 
-    private boolean keyEventMatchesAnnotation(KeyEvent event, OnKey annotation) {
-        return (annotation.code() == KeyCode.UNDEFINED || event.getCode() == annotation.code()) &&
-            (annotation.character().isEmpty() || event.getCharacter().equals(annotation.character())) &&
-            (annotation.text().isEmpty() || event.getText().equals(annotation.text())) &&
-            (event.isShiftDown() || !annotation.shift()) &&
-            (event.isControlDown() || !annotation.control()) &&
-            (event.isAltDown() || !annotation.alt()) &&
-            (event.isMetaDown() || !annotation.meta());
+    private boolean keyEventMatchesAnnotation(KeyEvent event, OnKey onKey) {
+        if (onKey.code() != KeyCode.UNDEFINED && event.getCode() != onKey.code()) {
+            return false;
+        }
+        if (!onKey.character().isEmpty() && !event.getCharacter().equals(onKey.character())) {
+            return false;
+        }
+        if (!onKey.text().isEmpty() && !event.getText().equals(onKey.text())) {
+            return false;
+        }
+        if (onKey.strict()) {
+            return onKey.shift() == event.isShiftDown()
+                && onKey.control() == event.isControlDown()
+                && onKey.alt() == event.isAltDown()
+                && onKey.meta() == event.isMetaDown();
+        } else {
+            // "!x || y" means "x <implies> y"
+            return (!onKey.shift() || event.isShiftDown())
+                && (!onKey.control() || event.isControlDown())
+                && (!onKey.alt() || event.isAltDown())
+                && (!onKey.meta() || event.isMetaDown());
+        }
     }
 
     @Override
