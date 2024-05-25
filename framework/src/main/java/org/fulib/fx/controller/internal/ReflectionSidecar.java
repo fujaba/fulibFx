@@ -457,16 +457,15 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
     }
 
     private boolean keyEventMatchesAnnotation(KeyEvent event, OnKey onKey) {
-        return (onKey.code() == KeyCode.UNDEFINED || event.getCode() == onKey.code()) &&
+        return
+            (onKey.code() == KeyCode.UNDEFINED || event.getCode() == onKey.code()) &&
             (onKey.character().isEmpty() || event.getCharacter().equals(onKey.character())) &&
             (onKey.text().isEmpty() || event.getText().equals(onKey.text())) &&
 
-            // key required and key pressed || key not required and (not strict or strict and not pressed)
-            // If strict is enabled, the key must not be pressed
-            (onKey.shift() && event.isShiftDown()) || (!onKey.shift() && (!onKey.strict() || !event.isShiftDown())) &&
-            (onKey.control() && event.isControlDown()) || (!onKey.control() && (!onKey.strict() || !event.isControlDown())) &&
-            (onKey.alt() && event.isAltDown()) || (!onKey.alt() && (!onKey.strict() || !event.isAltDown())) &&
-            (onKey.meta() && event.isMetaDown()) || (!onKey.meta() && (!onKey.strict() || !event.isMetaDown()));
+            (((onKey.shift() && event.isShiftDown())) || (!onKey.shift() && !event.isShiftDown())) &&
+            (((onKey.control() && event.isControlDown())) || (!onKey.control() && !event.isControlDown())) &&
+            (((onKey.alt() && event.isAltDown())) || (!onKey.alt() && !event.isAltDown())) &&
+            (((onKey.meta() && event.isMetaDown())) || (!onKey.meta() && !event.isMetaDown()));
     }
 
     @Override
