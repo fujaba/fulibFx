@@ -457,15 +457,27 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
     }
 
     private boolean keyEventMatchesAnnotation(KeyEvent event, OnKey onKey) {
-        return
-            (onKey.code() == KeyCode.UNDEFINED || event.getCode() == onKey.code()) &&
-            (onKey.character().isEmpty() || event.getCharacter().equals(onKey.character())) &&
-            (onKey.text().isEmpty() || event.getText().equals(onKey.text())) &&
-
-            (((onKey.shift() && event.isShiftDown())) || (!onKey.shift() && !event.isShiftDown())) &&
-            (((onKey.control() && event.isControlDown())) || (!onKey.control() && !event.isControlDown())) &&
-            (((onKey.alt() && event.isAltDown())) || (!onKey.alt() && !event.isAltDown())) &&
-            (((onKey.meta() && event.isMetaDown())) || (!onKey.meta() && !event.isMetaDown()));
+        if (onKey.code() != KeyCode.UNDEFINED && event.getCode() != onKey.code()) {
+            return false;
+        }
+        if (!onKey.character().isEmpty() && !event.getCharacter().equals(onKey.character())) {
+            return false;
+        }
+        if (!onKey.text().isEmpty() && !event.getText().equals(onKey.text())) {
+            return false;
+        }
+        if (onKey.strict()) {
+            return onKey.shift() == event.isShiftDown()
+                && onKey.control() == event.isControlDown()
+                && onKey.alt() == event.isAltDown()
+                && onKey.meta() == event.isMetaDown();
+        } else {
+            // "!x || y" means "x <implies> y"
+            return (!onKey.shift() || event.isShiftDown())
+                && (!onKey.control() || event.isControlDown())
+                && (!onKey.alt() || event.isAltDown())
+                && (!onKey.meta() || event.isMetaDown());
+        }
     }
 
     @Override
