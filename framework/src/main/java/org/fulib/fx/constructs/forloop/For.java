@@ -76,6 +76,8 @@ public class For<Node extends javafx.scene.Node, Item> {
 
     /**
      * Use the factory methods to create a new For loop.
+     *
+     * @param controllerManager The controller manager for initializing the components
      */
     protected For(ControllerManager controllerManager) {
         this.controllerManager = controllerManager;

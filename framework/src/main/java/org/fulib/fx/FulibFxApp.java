@@ -33,6 +33,11 @@ import java.util.logging.Logger;
 
 import static org.fulib.fx.util.FrameworkUtil.error;
 
+/**
+ * The starting point of a FulibFx application offering many utilities and functionality.
+ * <p>
+ * Extend from this class and override and call {@link FulibFxApp#start(Stage)} to start.
+ */
 public abstract class FulibFxApp extends Application {
 
     public static final Scheduler FX_SCHEDULER = Schedulers.from(Platform::runLater);
@@ -160,6 +165,7 @@ public abstract class FulibFxApp extends Application {
      * @param component The component instance
      * @param params    The arguments passed to the component
      * @param onDestroy A disposable which will be modified to include the disposable of the component
+     * @param <T>       The type of component to render
      * @return The rendered component
      */
     public @NotNull <T extends Node> T initAndRender(@NotNull T component, @NotNull Map<@NotNull String, @Nullable Object> params, @Nullable DisposableContainer onDestroy) {
@@ -344,6 +350,8 @@ public abstract class FulibFxApp extends Application {
 
     /**
      * Sets the default resource bundle to use for FXML files if no resource bundle is provided in the controller/component.
+     *
+     * @param resourceBundle The default resource bundle
      */
     public void setDefaultResourceBundle(ResourceBundle resourceBundle) {
         this.frameworkComponent.controllerManager().setDefaultResourceBundle(resourceBundle);
@@ -351,6 +359,8 @@ public abstract class FulibFxApp extends Application {
 
     /**
      * Returns auto refresher of the application.
+     *
+     * @return The auto refresher of the application
      */
     public AutoRefresher autoRefresher() {
         return this.frameworkComponent.autoRefresher();

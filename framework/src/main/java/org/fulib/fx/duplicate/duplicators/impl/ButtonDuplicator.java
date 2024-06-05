@@ -1,10 +1,9 @@
 package org.fulib.fx.duplicate.duplicators.impl;
 
-import org.fulib.fx.duplicate.duplicators.LabeledDuplicator;
 import javafx.scene.control.Button;
+import org.fulib.fx.duplicate.duplicators.LabeledDuplicator;
 
-public class ButtonDuplicator<T extends Button> extends LabeledDuplicator<T>
-{
+public class ButtonDuplicator<T extends Button> extends LabeledDuplicator<T> {
 
     @Override
     public T duplicate(T button) {

@@ -98,10 +98,16 @@ public @interface OnKey {
      */
     Type type() default Type.PRESSED;
 
+    /**
+     * Possible targets for registering key events.
+     */
     enum Target {
         STAGE, SCENE
     }
 
+    /**
+     * Enum representation for different {@link KeyEvent} types.
+     */
     enum Type {
         ANY(KeyEvent.ANY),
         PRESSED(KeyEvent.KEY_PRESSED),

@@ -13,6 +13,9 @@ import javax.inject.Singleton;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
+/**
+ * Factory class for {@link For} loops.
+ */
 @Singleton
 public class FxFor {
 
@@ -37,6 +40,8 @@ public class FxFor {
      * @param nodeProvider The provider to create the controller for each item
      * @param beforeInit   The method to call when the controller is created (useful for setting the item)
      * @param params       The parameters to pass to the created controller
+     * @param <Item>       The type of item
+     * @param <Node>       The node to display for each item
      * @return The For loop
      */
     public <Node extends javafx.scene.Node, Item> For<Node, Item> of(@NotNull Parent container, @NotNull ObservableList<@NotNull Item> items, @NotNull Provider<@NotNull Node> nodeProvider, @NotNull Map<@NotNull String, @Nullable Object> params, @NotNull BiConsumer<@NotNull Node, @Nullable Item> beforeInit) {
@@ -63,6 +68,8 @@ public class FxFor {
      * @param items        The list of items to display
      * @param nodeProvider The provider to create the controller for each item
      * @param beforeInit   The method to call when the controller is created (useful for setting the item)
+     * @param <Item>       The type of item
+     * @param <Node>       The node to display for each item
      * @return The For loop
      */
     public <Node extends javafx.scene.Node, Item> For<Node, Item> of(@NotNull Parent container, @NotNull ObservableList<@NotNull Item> items, @NotNull Provider<@NotNull Node> nodeProvider, @NotNull BiConsumer<@NotNull Node, @Nullable Item> beforeInit) {
@@ -83,6 +90,8 @@ public class FxFor {
      * @param container    The container to add the nodes to
      * @param items        The list of items to display
      * @param nodeProvider The provider to create the controller for each item
+     * @param <Item>       The type of item
+     * @param <Node>       The node to display for each item
      * @return The For loop
      */
     public <Node extends javafx.scene.Node, Item> For<Node, Item> of(@NotNull Parent container, @NotNull ObservableList<@NotNull Item> items, @NotNull Provider<@NotNull Node> nodeProvider) {

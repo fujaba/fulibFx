@@ -7,6 +7,10 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Map;
 import java.util.ResourceBundle;
 
+/**
+ * Internal class for managing controllers.
+ * @param <T> The type of the controller
+ */
 public interface FxSidecar<T> {
     void init(T instance, Map<String, Object> params);
 

@@ -46,6 +46,7 @@ compileJava {
 
 javadoc {
     options.encoding = "UTF-8"
+    (options as StandardJavadocDocletOptions).addBooleanOption('Xdoclint:all,-missing', true)
 }
 
 sourcesJar {

@@ -7,6 +7,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+/**
+ * Utilities for managing files.
+ * Mostly internal, use with care.
+ */
 public class FileUtil {
 
     private FileUtil() {

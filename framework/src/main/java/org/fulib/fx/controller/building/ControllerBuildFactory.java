@@ -17,29 +17,31 @@ import java.util.Map;
 import static org.fulib.fx.util.FrameworkUtil.error;
 
 /**
- * A custom building-factory for instantiating controllers. If an element in an FXML file is of a class annotated with @Controller and a field providing an instance of the same class exists, the provided instance will be used as the controller for the element.
+ * A custom building-factory for instantiating controllers.
+ * If an element in an FXML file is of a class annotated with @Controller and a field providing an instance of the same
+ * class exists, the provided instance will be used as the controller for the element.
  */
 @ApiStatus.Internal
 public class ControllerBuildFactory implements BuilderFactory {
 
     private final Object instance;
 
-    // Cache for subcontroller instances, mapped by class -> instance/provider
-    private final Map<Class<?>, List<Object>> subControllerInstances;
-    private final Map<Class<?>, Provider<?>> subControllerProviders;
+    // Cache for subcomponent instances, mapped by class -> instance/provider
+    private final Map<Class<?>, List<Object>> subComponentInstances;
+    private final Map<Class<?>, Provider<?>> subComponentProviders;
 
     public ControllerBuildFactory(@NotNull Object instance) {
         this.instance = instance;
-        this.subControllerInstances = new HashMap<>();
-        this.subControllerProviders = new HashMap<>();
+        this.subComponentInstances = new HashMap<>();
+        this.subComponentProviders = new HashMap<>();
 
-        initSubControllers();
+        initSubComponents();
     }
 
     /**
-     * Searches the controller class for fields annotated with @SubController and stores the instances.
+     * Searches the controller class for fields annotated with @Subcomponent and stores the instances.
      */
-    private void initSubControllers() {
+    private void initSubComponents() {
         ReflectionUtil.getAllNonPrivateFieldsOrThrow(instance.getClass(), SubComponent.class).forEach(field -> {
 
             // If the field is a provider, store it in the provider map
@@ -50,10 +52,10 @@ public class ControllerBuildFactory implements BuilderFactory {
                     if (type == null) {
                         throw new RuntimeException(error(6006).formatted(field.getName(), field.getClass().getName()));
                     }
-                    if (subControllerProviders.containsKey(type)) {
+                    if (subComponentProviders.containsKey(type)) {
                         throw new RuntimeException(error(6000).formatted(type.getName(), instance.getClass()));
                     }
-                    subControllerProviders.put(type, (Provider<?>) field.get(instance));
+                    subComponentProviders.put(type, (Provider<?>) field.get(instance));
                 } catch (IllegalAccessException e) {
                     throw new RuntimeException(error(6001).formatted(field.getName(), field.getClass().getName()), e);
                 }
@@ -62,13 +64,13 @@ public class ControllerBuildFactory implements BuilderFactory {
 
             // If the field is not a provider, store the instance in the instance map
 
-            if (!subControllerInstances.containsKey(field.getType())) {
-                subControllerInstances.put(field.getType(), new ArrayList<>());
+            if (!subComponentInstances.containsKey(field.getType())) {
+                subComponentInstances.put(field.getType(), new ArrayList<>());
             }
 
             try {
                 field.setAccessible(true);
-                subControllerInstances.get(field.getType()).add(field.get(instance));
+                subComponentInstances.get(field.getType()).add(field.get(instance));
             } catch (IllegalAccessException e) {
                 throw new RuntimeException(error(6002).formatted(field.getName(), field.getClass().getName()), e);
             }
@@ -85,24 +87,24 @@ public class ControllerBuildFactory implements BuilderFactory {
     }
 
     /**
-     * Searches the controller class for a field annotated with @SubController that provides an instance of the given type.
-     * If no matching field is found, the framework will look for a provider field annotated with @SubController.
+     * Searches the controller class for a field annotated with {@link SubComponent} that provides an instance of the given type.
+     * If no matching field is found, the framework will look for a provider field annotated with {@link SubComponent}.
      * If no matching provider is found, the framework will throw an exception.
      *
-     * @param type The type of the subcontroller
-     * @return The instance of the subcontroller
+     * @param type The type of the subcomponent
+     * @return The instance of the subcomponent
      */
     public Object getProvidedInstance(Class<?> type) {
-        if (subControllerInstances.containsKey(type)) {
-            if (!subControllerInstances.get(type).isEmpty()) {
+        if (subComponentInstances.containsKey(type)) {
+            if (!subComponentInstances.get(type).isEmpty()) {
                 // If there are multiple instances of the same type, use the first one and remove it from the list
-                Object instance = subControllerInstances.get(type).get(0);
-                subControllerInstances.get(type).remove(0);
+                Object instance = subComponentInstances.get(type).get(0);
+                subComponentInstances.get(type).remove(0);
                 return instance;
             } else
                 throw new RuntimeException(error(6003).formatted(type.getName(), instance.getClass()));
-        } else if (subControllerProviders.containsKey(type)) {
-            return subControllerProviders.get(type).get();
+        } else if (subComponentProviders.containsKey(type)) {
+            return subComponentProviders.get(type).get();
         } else {
             throw new RuntimeException(error(6004).formatted(type.getName(), instance.getClass()));
         }
