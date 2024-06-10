@@ -2,12 +2,12 @@ package org.fulib.fx.constructs.forloop;
 
 import javafx.collections.ObservableList;
 import javafx.scene.Parent;
+import org.fulib.fx.FulibFxApp;
 import org.fulib.fx.annotation.controller.Component;
 import org.fulib.fx.controller.ControllerManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 import java.util.Map;
@@ -21,9 +21,13 @@ public class FxFor {
 
     private final ControllerManager controllerManager;
 
-    @Inject
+    @Deprecated
     public FxFor(ControllerManager controllerManager) {
         this.controllerManager = controllerManager;
+    }
+
+    public FxFor(FulibFxApp app) {
+        this.controllerManager = app.frameworkComponent().controllerManager();
     }
 
     /**
