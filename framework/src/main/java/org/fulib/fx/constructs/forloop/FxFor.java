@@ -8,6 +8,7 @@ import org.fulib.fx.controller.ControllerManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 import java.util.Map;
@@ -26,6 +27,7 @@ public class FxFor {
         this.controllerManager = controllerManager;
     }
 
+    @Inject
     public FxFor(FulibFxApp app) {
         this.controllerManager = app.frameworkComponent().controllerManager();
     }
