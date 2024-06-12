@@ -416,11 +416,14 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
 
             ControllerUtil.checkOverrides(method);
 
-            OnKey annotation = method.getAnnotation(OnKey.class);
-            EventType<KeyEvent> type = annotation.type().asEventType();
-            EventHandler<KeyEvent> handler = createKeyEventHandler(method, instance, annotation);
+            OnKey[] annotations = method.getAnnotationsByType(OnKey.class);
+            for (OnKey annotation : annotations) {
 
-            controllerManager.addKeyEventHandler(instance, annotation.target(), type, handler);
+                EventType<KeyEvent> type = annotation.type().asEventType();
+                EventHandler<KeyEvent> handler = createKeyEventHandler(method, instance, annotation);
+
+                controllerManager.addKeyEventHandler(instance, annotation.target(), type, handler);
+            }
         });
     }
 

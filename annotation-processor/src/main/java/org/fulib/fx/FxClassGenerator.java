@@ -349,39 +349,41 @@ public class FxClassGenerator {
         //     if (event.getCode() != KeyCode.R) return;
         //     instance.foo();
         // });
-        OnKey onKey = method.getAnnotation(OnKey.class);
-        out.printf("    controllerManager.addKeyEventHandler(instance, OnKey.Target.%s, OnKey.Type.%s.asEventType(), event -> {%n", onKey.target(), onKey.type());
-        if (onKey.control()) {
-            out.printf("      if (!event.isControlDown()) return;%n");
-        } else if (onKey.strict()) {
-            out.printf("      if (event.isControlDown()) return;%n");
+        for (OnKey onKey : method.getAnnotationsByType(OnKey.class)) {
+            System.out.println("annotation onkey");
+            out.printf("    controllerManager.addKeyEventHandler(instance, OnKey.Target.%s, OnKey.Type.%s.asEventType(), event -> {%n", onKey.target(), onKey.type());
+            if (onKey.control()) {
+                out.printf("      if (!event.isControlDown()) return;%n");
+            } else if (onKey.strict()) {
+                out.printf("      if (event.isControlDown()) return;%n");
+            }
+            if (onKey.shift()) {
+                out.printf("      if (!event.isShiftDown()) return;%n");
+            } else if (onKey.strict()) {
+                out.printf("      if (event.isShiftDown()) return;%n");
+            }
+            if (onKey.alt()) {
+                out.printf("      if (!event.isAltDown()) return;%n");
+            } else if (onKey.strict()) {
+                out.printf("      if (event.isAltDown()) return;%n");
+            }
+            if (onKey.meta()) {
+                out.printf("      if (!event.isMetaDown()) return;%n");
+            } else if (onKey.strict()) {
+                out.printf("      if (event.isMetaDown()) return;%n");
+            }
+            if (onKey.code() != KeyCode.UNDEFINED) {
+                out.printf("      if (event.getCode() != javafx.scene.input.KeyCode.%s) return;%n", onKey.code());
+            }
+            if (!onKey.text().isEmpty()) {
+                out.printf("      if (!%s.equals(event.getText())) return;%n", helper.stringLiteral(onKey.text()));
+            }
+            if (!"\0".equals(onKey.character())) {
+                out.printf("      if (!%s.equals(event.getCharacter())) return;%n", helper.stringLiteral(onKey.character()));
+            }
+            out.printf("      instance.%s(%s);%n", method.getSimpleName(), method.getParameters().size() == 1 ? "event" : "");
+            out.printf("    });%n");
         }
-        if (onKey.shift()) {
-            out.printf("      if (!event.isShiftDown()) return;%n");
-        } else if (onKey.strict()) {
-            out.printf("      if (event.isShiftDown()) return;%n");
-        }
-        if (onKey.alt()) {
-            out.printf("      if (!event.isAltDown()) return;%n");
-        } else if (onKey.strict()) {
-            out.printf("      if (event.isAltDown()) return;%n");
-        }
-        if (onKey.meta()) {
-            out.printf("      if (!event.isMetaDown()) return;%n");
-        } else if (onKey.strict()) {
-            out.printf("      if (event.isMetaDown()) return;%n");
-        }
-        if (onKey.code() != KeyCode.UNDEFINED) {
-            out.printf("      if (event.getCode() != javafx.scene.input.KeyCode.%s) return;%n", onKey.code());
-        }
-        if (!onKey.text().isEmpty()) {
-            out.printf("      if (!%s.equals(event.getText())) return;%n", helper.stringLiteral(onKey.text()));
-        }
-        if (!"\0".equals(onKey.character())) {
-            out.printf("      if (!%s.equals(event.getCharacter())) return;%n", helper.stringLiteral(onKey.character()));
-        }
-        out.printf("      instance.%s(%s);%n", method.getSimpleName(), method.getParameters().size() == 1 ? "event" : "");
-        out.printf("    });%n");
     }
 
     private void generateSidecarResources(PrintWriter out, TypeElement componentClass) {

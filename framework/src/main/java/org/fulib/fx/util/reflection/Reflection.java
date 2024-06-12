@@ -33,7 +33,7 @@ public class Reflection {
      * @return A stream of fields that are annotated with the given annotation
      */
     public static Stream<Field> getFieldsWithAnnotation(@NotNull Class<?> clazz, @NotNull Class<? extends @NotNull Annotation> annotation) {
-        return Arrays.stream(clazz.getDeclaredFields()).filter(field -> field.isAnnotationPresent(annotation));
+        return Arrays.stream(clazz.getDeclaredFields()).filter(field -> field.getAnnotationsByType(annotation).length > 0);
     }
 
     /**
@@ -44,7 +44,7 @@ public class Reflection {
      * @return A stream of fields that are annotated with the given annotation
      */
     public static Stream<Field> getAllFieldsWithAnnotation(@NotNull Class<?> clazz, @NotNull Class<? extends @NotNull Annotation> annotation) {
-        return getAllFields(clazz).stream().filter(field -> field.isAnnotationPresent(annotation));
+        return getAllFields(clazz).stream().filter(field -> field.getAnnotationsByType(annotation).length > 0);
     }
 
     /**
@@ -96,7 +96,7 @@ public class Reflection {
      * @return A stream of methods that are annotated with the given annotation
      */
     public static Stream<Method> getMethodsWithAnnotation(@NotNull Class<?> clazz, @NotNull Class<? extends @NotNull Annotation> annotation) {
-        return Arrays.stream(clazz.getDeclaredMethods()).filter(method -> method.isAnnotationPresent(annotation));
+        return Arrays.stream(clazz.getDeclaredMethods()).filter(method -> method.getAnnotationsByType(annotation).length > 0);
     }
 
     /**
@@ -107,7 +107,7 @@ public class Reflection {
      * @return A stream of methods that are annotated with the given annotation
      */
     public static Stream<Method> getAllMethodsWithAnnotation(@NotNull Class<?> clazz, @NotNull Class<? extends @NotNull Annotation> annotation) {
-        return getAllMethods(clazz, false).stream().filter(method -> method.isAnnotationPresent(annotation));
+        return getAllMethods(clazz, false).stream().filter(method -> method.getAnnotationsByType(annotation).length > 0);
     }
 
     /**

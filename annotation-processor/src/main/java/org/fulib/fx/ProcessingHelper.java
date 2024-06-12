@@ -38,7 +38,7 @@ public class ProcessingHelper {
      * @return A stream of methods that are annotated with the given annotation
      */
     Stream<ExecutableElement> streamAllMethods(TypeElement clazz, Class<? extends Annotation> annotation) {
-        return streamAllMethods(clazz).filter(element -> element.getAnnotation(annotation) != null);
+        return streamAllMethods(clazz).filter(element -> element.getAnnotationsByType(annotation).length > 0);
     }
 
     /**
@@ -59,7 +59,7 @@ public class ProcessingHelper {
      * @return A stream of methods that are annotated with the given annotation
      */
     Stream<ExecutableElement> streamMethods(TypeElement clazz, Class<? extends Annotation> annotation) {
-        return streamMethods(clazz).filter(element -> element.getAnnotation(annotation) != null);
+        return streamMethods(clazz).filter(element -> element.getAnnotationsByType(annotation).length > 0);
     }
 
     /**
@@ -84,7 +84,7 @@ public class ProcessingHelper {
      * @return A stream of fields that are annotated with the given annotation
      */
     Stream<VariableElement> streamAllFields(TypeElement clazz, Class<? extends Annotation> annotation) {
-        return streamAllFields(clazz).filter(element -> element.getAnnotation(annotation) != null);
+        return streamAllFields(clazz).filter(element -> element.getAnnotationsByType(annotation).length > 0);
     }
 
     /**
@@ -106,7 +106,7 @@ public class ProcessingHelper {
      * @return A stream of fields that are annotated with the given annotation
      */
     Stream<VariableElement> streamFields(TypeElement clazz, Class<? extends Annotation> annotation) {
-        return streamFields(clazz).filter(element -> element.getAnnotation(annotation) != null);
+        return streamFields(clazz).filter(element -> element.getAnnotationsByType(annotation).length > 0);
     }
 
     /**
