@@ -4,7 +4,10 @@ The framework provides an easy way of registering keybinds for a controller. By 
 define methods that will be called when a key is pressed.
 
 The annotation has multiple parameters for specifying the key or additional keys (e.g. `shift`) that have to be pressed.
-If such an option is set to `true`, the key has to be pressed. If it is set to `false` while `strict` is enabled makes it so that the additional key **must not** be pressed.
+If such an option is set to `true`, the key has to be pressed.
+If it is not specified or set to `false`, the event will trigger regardless of whether it is pressed or not, unless the `strict` option is used.
+If it is set to `false` while `strict` is enabled, the additional key **must not** be pressed.
+That means the `strict` is useful when you have many different keyboard shortcuts with the same key but different modifiers.
 
 For more control, the annotated method can also take a `KeyEvent` as a parameter which will be passed to the method when
 the key is pressed.
