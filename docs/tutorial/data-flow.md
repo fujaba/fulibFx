@@ -147,3 +147,7 @@ public class MyComponent {
 ```
 
 Additionally, avoid using JavaFX's `getParent()` method. While it might work when the child is inside another component, it does not provide access to the controller instance if the parent is a controller, but only to its view element.
+
+---
+
+[Overview](README.md)
