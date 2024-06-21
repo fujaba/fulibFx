@@ -118,8 +118,11 @@ Instead of defining a Runnable or Consumer directly, you can create a Property a
 public class MyComponent {
 
   @Param("colorChange")
-  // If this would be "final", bind() would be used instead
   ObjectProperty<Color> color;
+
+  @Param("colorChange")
+  // As this field is final, bind() will be used instead
+  final ObjectProperty<Color> otherColor = new SimpleObjectProperty<>();
 
   void onButtonClicked() {
     Color newColor = ...;
