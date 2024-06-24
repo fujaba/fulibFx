@@ -120,7 +120,7 @@ public class MyComponent {
   @Param("colorChange")
   ObjectProperty<Color> color;
 
-  @Param("colorChange")
+  @Param("colorBind")
   // As this field is final, bind() will be used instead
   final ObjectProperty<Color> otherColor = new SimpleObjectProperty<>();
 
@@ -140,7 +140,8 @@ public class MyController {
   @OnRender
   void createSubs() {
     ObjectProperty<Color> color = new SimpleObjectProperty(Color.WHITE);
-    MyComponent component = app.initAndRender(new MyComponent(), Map.of("colorChange", color));
+    ObjectProperty<Color> colorBind = new SimpleObjectProperty(Color.WHITE);
+    MyComponent component = app.initAndRender(new MyComponent(), Map.of("colorChange", color, "colorBind", colorBind));
     subscriber.listen(color, (observable, oldValue, newValue) -> { // Use subscribers to prevent memory leaks
       System.out.println(newValue);
     });
