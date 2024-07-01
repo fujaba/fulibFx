@@ -15,6 +15,9 @@ There are several methods for sending data between controllers and components. T
 
 ## From parents to children
 
+As components are usually used to split up functionality of controllers into smaller parts, e.g. for displaying certain parts of the view in a reusable way, the need to receive data.
+This section covers different ways of sending data from a controller to its child components.
+
 ### Parameters
 
 The simplest method is using the `@Param` annotation, which can be employed when displaying a controller with the `show()` or `initAndRender()` methods. This annotation can also bind various properties, making the data flow responsive to changes.
@@ -151,6 +154,9 @@ public class MyController {
 ```
 
 The same Property could also be passed to multiple components and if one updates its value, every other component can react to it.
+
+If the field annotated with `@Param` is final and not null, the property will be bound instead of being overwritten.
+This allows to react to changes, but changes made to the property in the child will not apply to the parent.
 
 ## Bad Practices
 
