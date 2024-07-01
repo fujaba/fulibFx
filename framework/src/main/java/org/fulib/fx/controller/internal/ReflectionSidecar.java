@@ -7,6 +7,7 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.Pane;
 import org.fulib.fx.FulibFxApp;
 import org.fulib.fx.annotation.controller.*;
 import org.fulib.fx.annotation.event.OnDestroy;
@@ -370,10 +371,7 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
                 node = (Node) instance;
             } else {
                 Node root = (Node) instance;
-                // Due to the way JavaFX works, we have to clear the children list of the old root before loading its fxml file again
-                if (root instanceof Parent parent) {
-                    ReflectionUtil.getChildrenList(instance.getClass(), parent).clear();
-                }
+                clearChildren(root);
                 node = controllerManager.loadFXML(view, instance, true);
             }
         }
@@ -404,6 +402,15 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
             node = controllerManager.loadFXML(fxmlPath, instance, false);
         }
         return node;
+    }
+
+    private void clearChildren(Node node) {
+        // Due to the way JavaFX works, we have to clear the children list of the old root before loading its fxml file again
+        if (node instanceof Pane pane) {
+            pane.getChildren().clear();
+        } else if (node instanceof Parent parent) {
+            ReflectionUtil.getChildrenList(node.getClass(), parent).clear();
+        }
     }
 
     /**
