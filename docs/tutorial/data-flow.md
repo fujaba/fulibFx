@@ -15,7 +15,7 @@ There are several methods for sending data between controllers and components. T
 
 ## From parents to children
 
-As components are usually used to split up functionality of controllers into smaller parts, e.g. for displaying certain parts of the view in a reusable way, the need to receive data.
+As components are usually used to split up functionality of controllers into smaller parts, e.g. for displaying certain parts of the view in a reusable way, they need to receive data.
 This section covers different ways of sending data from a controller to its child components.
 
 ### Parameters
