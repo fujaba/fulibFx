@@ -6,6 +6,6 @@ The [tutorial](tutorial/how-to-start.md) is a good starting point for a quick in
 More detailed information can be found in the categories below.
 
 - [Controllers and Components](controller/README.md)
-- [Tutorial](tutorial/how-to-start.md)
+- [Tutorials](tutorial/README.md)
 - [Other Features](features/README.md)
 - [Testing](testing/README.md)
