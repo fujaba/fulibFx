@@ -1,4 +1,4 @@
-## Data Flow
+# Data Flow
 
 There are several methods for sending data between controllers and components. This tutorial provides an overview of the different possibilities and best practices for your application.
 
