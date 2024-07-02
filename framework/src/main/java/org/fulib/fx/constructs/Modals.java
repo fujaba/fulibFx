@@ -78,7 +78,10 @@ public class Modals {
         }
 
         /**
-         * Adds an initializer.
+         * Adds an initializer for the modal stage.
+         * Initializers are called after the component has been initialized and rendered and the stage has been created,
+         * but before the stage is shown.
+         * They can be used to set additional properties on the stage or the component.
          * <p>
          * If another initializer has been added already, the new initializer will be called after the previous one.
          *
@@ -114,6 +117,8 @@ public class Modals {
          * <p>
          * This will set the stage style to {@link StageStyle#TRANSPARENT}, the modality to {@link Modality#WINDOW_MODAL}
          * and the scene fill to transparent (see {@link ModalBuilder#FULIBFX_DIALOG}).
+         * <p>
+         * This initializer will be called before any other initializer.
          *
          * @param dialog Whether the default dialog options should be used
          * @return The current modal instance
