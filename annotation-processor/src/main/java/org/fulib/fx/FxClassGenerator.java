@@ -44,6 +44,10 @@ public class FxClassGenerator {
      * The `javafx.scene.Parent` type.
      */
     private final TypeMirror parent;
+    /**
+     * The `javafx.scene.layout.Pane` type.
+     */
+    private final TypeMirror pane;
 
     public FxClassGenerator(ProcessingHelper helper, ProcessingEnvironment processingEnv) {
         this.helper = helper;
@@ -61,6 +65,7 @@ public class FxClassGenerator {
             .orElseThrow();
 
         parent = processingEnv.getElementUtils().getTypeElement("javafx.scene.Parent").asType();
+        pane = processingEnv.getElementUtils().getTypeElement("javafx.scene.layout.Pane").asType();
     }
 
     public void generateSidecar(TypeElement componentClass) {
@@ -303,9 +308,7 @@ public class FxClassGenerator {
             if (view.isEmpty()) {
                 out.println("    final Node result = instance;");
             } else {
-                if (processingEnv.getTypeUtils().isAssignable(componentClass.asType(), parent)) {
-                    out.println("    instance.getChildren().clear();");
-                }
+                generateClearChildren(out, componentClass);
                 out.printf("    final Node result = this.controllerManager.loadFXML(%s, instance, true);%n", helper.stringLiteral(view));
             }
         } else if (controller != null) {
@@ -316,6 +319,14 @@ public class FxClassGenerator {
                 final String inferredView = view.isEmpty() ? ControllerUtil.transform(componentClass.getSimpleName().toString()) + ".fxml" : view;
                 out.printf("    final Node result = this.controllerManager.loadFXML(%s, instance, false);%n", helper.stringLiteral(inferredView));
             }
+        }
+    }
+
+    private void generateClearChildren(PrintWriter out, TypeElement componentClass) {
+        if (processingEnv.getTypeUtils().isAssignable(componentClass.asType(), pane)) {
+            out.println("    instance.getChildren().clear();");
+        } else if (processingEnv.getTypeUtils().isAssignable(componentClass.asType(), parent)) {
+            out.println("    org.fulib.fx.util.ReflectionUtil.getChildrenList(instance.getClass(), instance).clear();");
         }
     }
 
