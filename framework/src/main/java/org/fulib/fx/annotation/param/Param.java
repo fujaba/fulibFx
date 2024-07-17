@@ -31,4 +31,16 @@ public @interface Param {
      */
     String value();
 
+    /**
+     * The method of the field's class that will be called with the parameter's value.
+     * Useful for {@code final} fields or {@link javafx.beans.property.Property} fields.
+     * @return the method name
+     */
+    String method() default "";
+
+    /**
+     * When using {@link #method()}, this specifies the type of the first (and only) parameter of that method.
+     * @return the type of the method parameter
+     */
+    Class<?> type() default Object.class;
 }
