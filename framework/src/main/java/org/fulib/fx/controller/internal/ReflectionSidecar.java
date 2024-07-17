@@ -1,6 +1,5 @@
 package org.fulib.fx.controller.internal;
 
-import javafx.beans.value.WritableValue;
 import javafx.event.EventHandler;
 import javafx.event.EventType;
 import javafx.scene.Node;
