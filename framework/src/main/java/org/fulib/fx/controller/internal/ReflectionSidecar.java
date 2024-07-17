@@ -145,17 +145,18 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
                 Object value = parameters.get(param);
                 Object fieldValue = field.get(instance);
 
-                // If the field is a WriteableValue, use the setValue method
-                if (WritableValue.class.isAssignableFrom(fieldType) && !(value instanceof WritableValue)) {
+                String method = paramAnnotation.method();
+                if (method != null && !method.isEmpty()) {
 
-                    // We cannot call setValue on a non-existing property
+                    // We cannot call the method on a non-existing property
                     if (fieldValue == null) {
                         throw new RuntimeException(error(4001).formatted(param, field.getName(), instance.getClass().getName()));
                     }
 
                     try {
-                        ((WritableValue<Object>) field.get(instance)).setValue(value);
-                    } catch (ClassCastException e) {
+                        final Method methodName = field.getType().getMethod(method, paramAnnotation.type());
+                        methodName.invoke(fieldValue, value);
+                    } catch (ClassCastException | ReflectiveOperationException e) {
                         throw new RuntimeException(error(4007).formatted(param, field.getName(), instance.getClass().getName(), fieldType.getName(), value == null ? "null" : value.getClass().getName()));
                     }
                 }
