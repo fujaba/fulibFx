@@ -1,6 +1,5 @@
 package org.fulib.fx.controller.internal;
 
-import javafx.beans.value.WritableValue;
 import javafx.event.EventHandler;
 import javafx.event.EventType;
 import javafx.scene.Node;
@@ -146,18 +145,22 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
                 Object value = parameters.get(param);
                 Object fieldValue = field.get(instance);
 
-                // If the field is a WriteableValue, use the setValue method
-                if (WritableValue.class.isAssignableFrom(fieldType) && !(value instanceof WritableValue)) {
+                String method = paramAnnotation.method();
+                if (method != null && !method.isEmpty()) {
 
-                    // We cannot call setValue on a non-existing property
+                    // We cannot call the method on a non-existing property
                     if (fieldValue == null) {
-                        throw new RuntimeException(error(4001).formatted(param, field.getName(), instance.getClass().getName()));
+                        throw new RuntimeException(error(4001).formatted(method, param, field.getName(), instance.getClass().getName()));
                     }
 
+                    final Class<?> methodParamType = paramAnnotation.type();
                     try {
-                        ((WritableValue<Object>) field.get(instance)).setValue(value);
-                    } catch (ClassCastException e) {
-                        throw new RuntimeException(error(4007).formatted(param, field.getName(), instance.getClass().getName(), fieldType.getName(), value == null ? "null" : value.getClass().getName()));
+                        final Method methodName = field.getType().getMethod(method, methodParamType);
+                        methodName.invoke(fieldValue, value);
+                    } catch (IllegalArgumentException iae) { // parameter types don't match
+                        throw new RuntimeException(error(4007).formatted(param, field.getName(), instance.getClass().getName(), methodParamType.getName(), value == null ? "null" : value.getClass().getName()), iae);
+                    } catch (ReflectiveOperationException roe) { // method not found
+                        throw new RuntimeException(error(4001).formatted(method, param, field.getName(), instance.getClass().getName()), roe);
                     }
                 }
 

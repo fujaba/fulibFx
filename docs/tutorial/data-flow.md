@@ -119,17 +119,35 @@ Instead of defining a Runnable or Consumer directly, you can create a Property a
 ```java
 @Component
 public class MyComponent {
-
-  @Param("colorChange")
+  // option 1: The subcomponent reuses the parent's property instance.
+  @Param("color")
   ObjectProperty<Color> color;
 
-  @Param("colorBind")
-  // As this field is final, bind() will be used instead
-  final ObjectProperty<Color> otherColor = new SimpleObjectProperty<>();
+  // Option 2: The subcomponent uses its own property instance and binds it to the parent's property.
+  // Writing to this property will NOT update the parent's property.
+  // We have to unbind using destroy.
+  @Param(value = "color", method = "bind", type = Object.class)
+  final ObjectProperty<Color> colorBind = new SimpleObjectProperty<>();
+
+  // Option 3: The subcomponent uses its own property instance and binds it to the parent's property bidirectionally.
+  // Writing to this property will update the parent's property.
+  // We have to manually bind using subscriber to allow for unbinding.
+  final ObjectProperty<Color> colorBindBidi = new SimpleObjectProperty<>();
+  Subscriber subscriber = ...;
+  
+  @OnInit
+  void init(@Param("color") ObjectProperty<Color> color) {
+    subscriber.bindBidirectional(colorBindBidi, color);
+  }
 
   void onButtonClicked() {
     Color newColor = ...;
     color.set(newColor);
+  }
+  
+  @OnDestroy
+  void destroy() {
+    colorBind.unbind();
   }
 }
 ```
@@ -143,8 +161,7 @@ public class MyController {
   @OnRender
   void createSubs() {
     ObjectProperty<Color> color = new SimpleObjectProperty(Color.WHITE);
-    ObjectProperty<Color> colorBind = new SimpleObjectProperty(Color.WHITE);
-    MyComponent component = app.initAndRender(new MyComponent(), Map.of("colorChange", color, "colorBind", colorBind));
+    MyComponent component = app.initAndRender(new MyComponent(), Map.of("color", color));
     subscriber.listen(color, (observable, oldValue, newValue) -> { // Use subscribers to prevent memory leaks
       System.out.println(newValue);
     });

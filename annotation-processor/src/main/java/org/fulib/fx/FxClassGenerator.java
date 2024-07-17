@@ -12,10 +12,7 @@ import org.fulib.fx.annotation.param.ParamsMap;
 import org.fulib.fx.util.ControllerUtil;
 
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
+import javax.lang.model.element.*;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
@@ -31,16 +28,6 @@ public class FxClassGenerator {
     private final ProcessingHelper helper;
 
     /**
-     * The (erased) `javafx.beans.value.WritableValue` type.
-     */
-    private final TypeMirror writableValue;
-
-    /**
-     * The `setValue` method of `javafx.beans.value.WritableValue`.
-     */
-    private final ExecutableElement genericSetValue;
-
-    /**
      * The `javafx.scene.Parent` type.
      */
     private final TypeMirror parent;
@@ -52,17 +39,6 @@ public class FxClassGenerator {
     public FxClassGenerator(ProcessingHelper helper, ProcessingEnvironment processingEnv) {
         this.helper = helper;
         this.processingEnv = processingEnv;
-
-        final TypeElement writableValue = processingEnv.getElementUtils().getTypeElement("javafx.beans.value.WritableValue");
-        this.writableValue = processingEnv.getTypeUtils().erasure(writableValue.asType());
-
-        genericSetValue = writableValue.getEnclosedElements()
-            .stream()
-            .filter(e -> e instanceof ExecutableElement)
-            .map(e -> (ExecutableElement) e)
-            .filter(e -> "setValue".equals(e.getSimpleName().toString()))
-            .findFirst()
-            .orElseThrow();
 
         parent = processingEnv.getElementUtils().getTypeElement("javafx.scene.Parent").asType();
         pane = processingEnv.getElementUtils().getTypeElement("javafx.scene.layout.Pane").asType();
@@ -154,29 +130,20 @@ public class FxClassGenerator {
             out.printf("    if (params.containsKey(%s)) {%n", paramNameLiteral);
 
             // TODO field must be public, package-private or protected -- add a diagnostic if it's private
-            if (processingEnv.getTypeUtils().isAssignable(field.asType(), writableValue)) {
-                // We use the `setValue` method to infer the actual type of the field,
-                // E.g. if the field is a `StringProperty` which extends `WritableValue<String>`,
-                // we can infer that the actual type is `String`.
-                final ExecutableType asMemberOf = (ExecutableType) processingEnv.getTypeUtils().asMemberOf((DeclaredType) field.asType(), genericSetValue);
-                final TypeMirror typeArg = asMemberOf.getParameterTypes().get(0);
-                final String writableType = typeArg.toString();
-                if (field.getModifiers().contains(Modifier.FINAL)) {
-                    out.printf("      instance.%s.setValue((%s) params.get(%s));%n", fieldName, writableType, paramNameLiteral);
-                } else {
-                    // final Object param = params.get(<paramNameLiteral>);
-                    // if (param instanceof <writableValue>) {
-                    //   instance.<fieldName> = (<fieldType>) param);
-                    // } else {
-                    //   instance.<fieldName>.setValue((<writableType>) param);
-                    // }
-                    out.printf("      final Object param = params.get(%s);%n", paramNameLiteral);
-                    out.printf("      if (param instanceof %s) {%n", writableValue);
-                    out.printf("        instance.%s = (%s) param;%n", fieldName, fieldType);
-                    out.println("      } else {");
-                    out.printf("        instance.%s.setValue((%s) param);%n", fieldName, writableType);
-                    out.println("      }");
-                }
+            final String methodName = param.method();
+            if (methodName != null && !methodName.isEmpty()) {
+                // this is some hacky way to get the @Param().type().
+                // param.type() does not work because we cannot access the Class<?> instance at compile time.
+                // So we have to read the AnnotationMirror.
+                final AnnotationMirror paramMirror = field.getAnnotationMirrors().stream()
+                    .filter(a -> "org.fulib.fx.annotation.param.Param".equals(a.getAnnotationType().toString()))
+                    .findFirst().orElseThrow();
+                final String methodParamType = paramMirror.getElementValues().values().stream()
+                    .map(Object::toString)
+                    .filter(s -> s.endsWith(".class"))
+                    .map(s -> s.substring(0, s.length() - 6)) // remove ".class"
+                    .findFirst().orElse("Object"); // else case also happens when type is not specified in the annotation (default Object)
+                out.printf("      instance.%s.%s((%s) params.get(%s));%n", fieldName, methodName, methodParamType, paramNameLiteral);
             } else {
                 out.printf("      instance.%s = (%s) params.get(%s);%n", fieldName, fieldType, paramNameLiteral);
             }
