@@ -4,15 +4,11 @@ To pass parameters to a controller, an additional argument can be provided to th
 strings and objects. The strings specify the argument's name and the objects are the value of the argument. For example,
 `show("/route/to/controller", Map.of("key", value, "key2", value2))` will pass the value `value` to the argument `key`.
 
-To use a passed argument in a field or method, you have to annotate it with `@Param("key")`. The name of the parameter
-will be used to match it to the map of parameters passed to the `show()` method. If the annotation is used on a field,
-the field will be injected with the value of the parameter before the controller is initialized. If the annotation is used
-on a method, the method will be called with the value of the parameter before the controller is initialized. If the
-annotation is used on a method parameter of a render/init method, the method will be called with the value of the parameter.
-
-If `@Param` is used on a field containing a `WriteableValue` (e.g. a `StringProperty`), its value will be set to the
-parameter's value if the parameter has the correct type (e.g. a `String` for a `StringProperty`). If the parameter is
-a `WritableValue` as well, the logic will be the same as for a normal field.
+To use a passed argument in a field or method, you have to annotate it with `@Param("key")`.
+The name of the parameter will be used to match it to the map of parameters passed to the `show()` method.
+If the annotation is used on a field, the field will be injected with the value of the parameter before the controller is initialized.
+If the annotation is used on a method, the method will be called with the value of the parameter before the controller is initialized.
+If the annotation is used on a method parameter of a render/init method, the method will be called with the value of the parameter.
 
 Instead of accessing the parameters one by one, you can also use the `@ParamsMap` annotation to inject a map of all parameters.
 This annotation can be used for fields and method parameters of type `Map<String, Object>`. If the annotated field is final,
@@ -34,9 +30,10 @@ public class FooController {
     @Param("baba")
     private Bar bar;
 
-    // The set method of the writable value will be called with the parameter 'fofo'
-    @Param("fofo")
-    private ObjectProperty<Foo> foo = new SimpleObjectProperty<>();
+    // The setValue(T) method of the ObjectProperty will be called with the parameter named 'fofo'
+    // Note that the erased parameter type of ObjectProperty.setValue is Object, so we specify that as the type.
+    @Param(value = "fofo", method = "setValue", type = Object.class)
+    private final ObjectProperty<Foo> foo = new SimpleObjectProperty<>();
 
     // This field will be injected with a map of all parameters before the controller is initialized
     @ParamsMap

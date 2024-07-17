@@ -119,13 +119,13 @@ Instead of defining a Runnable or Consumer directly, you can create a Property a
 ```java
 @Component
 public class MyComponent {
-
+  // option 1: the subcomponent reuses the parent's property instance
   @Param("colorChange")
   ObjectProperty<Color> color;
 
-  @Param("colorBind")
-  // As this field is final, bind() will be used instead
-  final ObjectProperty<Color> otherColor = new SimpleObjectProperty<>();
+  // option 2: the subcomponent uses its own property instance and binds it to the parent's property bidirectionally
+  @Param(value = "colorBind", method = "bindBidirectional", type = Object.class)
+  final ObjectProperty<Color> colorBind = new SimpleObjectProperty<>();
 
   void onButtonClicked() {
     Color newColor = ...;
@@ -144,7 +144,7 @@ public class MyController {
   void createSubs() {
     ObjectProperty<Color> color = new SimpleObjectProperty(Color.WHITE);
     ObjectProperty<Color> colorBind = new SimpleObjectProperty(Color.WHITE);
-    MyComponent component = app.initAndRender(new MyComponent(), Map.of("colorChange", color, "colorBind", colorBind));
+    MyComponent component = app.initAndRender(new MyComponent(), Map.of("color", color, "colorBind", colorBind));
     subscriber.listen(color, (observable, oldValue, newValue) -> { // Use subscribers to prevent memory leaks
       System.out.println(newValue);
     });
