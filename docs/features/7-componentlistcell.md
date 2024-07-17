@@ -1,7 +1,9 @@
 # Component List Cells [![Javadocs](https://javadoc.io/badge2/org.fulib/fulibFx/Javadocs.svg?color=green)](https://javadoc.io/doc/org.fulib/fulibFx/latest/org/fulib/fx/constructs/listview/ComponentListCell.html)
 
-Component List Cells can be used to display a subcomponent as a cell in a ListView. Whenever an item is added to or removed from the list, the subcomponent updates accordingly.
-The `ComponentListCell` class is a subclass of the `ListCell` class and can be used in the same way. The `ComponentListCell` can be used to set the cell factory of a `ListView` to display a subcomponent for each item in the list.
+Component List Cells can be used to display a subcomponent as a cell in a ListView. 
+Whenever an item is added to or removed from the list, the subcomponent updates accordingly.
+The `ComponentListCell` class is a subclass of the `ListCell` class and can be used in the same way. 
+The `ComponentListCell` can be used to set the cell factory of a `ListView` to display a subcomponent for each item in the list.
 
 ```java
 @Controller
@@ -28,7 +30,7 @@ public class MainController {
 }
 ```
 
-### ReusableItemComponent [![Javadocs](https://javadoc.io/badge2/org.fulib/fulibFx/Javadocs.svg?color=green)](https://javadoc.io/doc/org.fulib/fulibFx/latest/org/fulib/fx/constructs/listview/ReusableItemComponent.html)
+### ReusableItemComponent [![Javadocs](https://javadoc.io/badge2/org.fulib/fulibFx/Javadocs.svg?color=green)](https://javadoc.io/doc/org.fulib/fulibFx/latest/org/fulib/fx/constructs/ReusableItemComponent.html)
 If the component implements the `ReusableItemComponent` interface, the `ComponentListCell` will call the `setItem` method of the component whenever the item changes. This allows the component to update its view based on the new item.
 If the component doesn't implement this interface, it will be destroyed and a new component will be created whenever the item changes.
 

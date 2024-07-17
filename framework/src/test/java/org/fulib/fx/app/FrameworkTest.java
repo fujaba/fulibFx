@@ -140,7 +140,11 @@ public class FrameworkTest extends ApplicationTest {
         FX_SCHEDULER.scheduleDirect(() -> list.add(1, "World"));
         waitForFxEvents();
 
+        FX_SCHEDULER.scheduleDirect(() -> list.set(1, "Everyone"));
+        waitForFxEvents();
+
         assertEquals(3, container.getChildren().size());
+
     }
 
     @Test

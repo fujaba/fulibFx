@@ -11,11 +11,14 @@ fxFor.of(container, items, myComponentProvider);
 ```
 
 This will create a component for each item in the list `items` and add it to the children of the `container` (e.g. a VBox).
+If the component implements the `ReusableItemComponent` interface, `setItem` will be called instead of creating a new instance.
+For more information see [this section](7-componentlistcell.md#reusableitemcomponent-).
 
 Currently, no information is passed to the created component. In order to pass static information you can add
 parameters like you would when using the `show`-method using a map.
 
-When a new component is created, the parameters `item` and `list` are automatically added to the map. The `item` parameter contains the current item of the component and the `list` parameter contains the list of all items.
+When a new component is created, the parameters `item` and `list` are automatically added to the map. 
+The `item` parameter contains the current item of the component and the `list` parameter contains the list of all items.
 If parameters with the same key are already present in the map, they will not be overwritten.
 
 ```java

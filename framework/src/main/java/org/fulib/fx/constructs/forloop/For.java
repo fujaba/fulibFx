@@ -6,6 +6,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.Parent;
+import org.fulib.fx.constructs.ReusableItemComponent;
 import org.fulib.fx.controller.ControllerManager;
 import org.fulib.fx.util.ControllerUtil;
 import org.fulib.fx.util.ReflectionUtil;
@@ -13,6 +14,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.inject.Provider;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
@@ -59,20 +61,43 @@ public class For<Node extends javafx.scene.Node, Item> {
                     this.children.set(i, children.set(change.getPermutation(i), this.children.get(i)));
                 }
             }
+
+            // If items were replaced, either update the components or remove and add them
+            if (change.wasReplaced()) {
+                int i = 0;
+                for (Item item : change.getRemoved()) {
+                    Node node = itemsToNodes.get(item);
+                    Item added = change.getAddedSubList().get(i++);
+                    if (node instanceof ReusableItemComponent<?>) {
+                        //noinspection unchecked
+                        ((ReusableItemComponent<Item>) node).setItem(added);
+                    } else {
+                        remove(item);
+                        add(added, change.getFrom() + i - 1);
+                    }
+                }
+                return; // All removed and added changes were already handled here
+            }
+
             if (change.wasRemoved()) {
                 for (Item item : change.getRemoved()) {
                     remove(item);
                 }
             }
+
             if (change.wasAdded()) {
-                int i = 0;
-                // Add the new items in the correct order
-                for (Item item : change.getAddedSubList()) {
-                    add(item, change.getFrom() + i++);
-                }
+                addAll(change.getAddedSubList(), change.getFrom());
             }
         }
     };
+
+    private void addAll(List<? extends Item> toAdd, int from) {
+        int i = 0;
+        // Add the new items in the correct order
+        for (Item item : toAdd) {
+            add(item, from + i++);
+        }
+    }
 
     /**
      * Use the factory methods to create a new For loop.
@@ -217,6 +242,11 @@ public class For<Node extends javafx.scene.Node, Item> {
             params.putIfAbsent("list", this.items);
             controllerManager.init(node, params);
             controllerManager.render(node, params);
+
+            if (node instanceof ReusableItemComponent<?>) {
+                //noinspection unchecked
+                ((ReusableItemComponent<Item>) node).setItem(item);
+            }
         }
 
         // Add the node to the container
