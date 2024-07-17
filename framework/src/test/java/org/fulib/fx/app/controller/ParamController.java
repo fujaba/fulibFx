@@ -21,7 +21,7 @@ public class ParamController {
     private String setterParam;
     @Param("integer")
     int fieldParam;
-    @Param("string")
+    @Param(value = "string", method = "set", type = String.class)
     final StringProperty fieldPropertyParam = new SimpleStringProperty();
 
     private Map<String, Object> onInitParamsMap;
