@@ -4,6 +4,7 @@ import javafx.scene.Parent;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.ListCell;
 import org.fulib.fx.FulibFxApp;
+import org.fulib.fx.constructs.ReusableItemComponent;
 
 import javax.inject.Provider;
 import java.util.HashMap;
