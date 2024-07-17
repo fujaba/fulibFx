@@ -150,14 +150,17 @@ public class ReflectionSidecar<T> implements FxSidecar<T> {
 
                     // We cannot call the method on a non-existing property
                     if (fieldValue == null) {
-                        throw new RuntimeException(error(4001).formatted(param, field.getName(), instance.getClass().getName()));
+                        throw new RuntimeException(error(4001).formatted(method, param, field.getName(), instance.getClass().getName()));
                     }
 
+                    final Class<?> methodParamType = paramAnnotation.type();
                     try {
-                        final Method methodName = field.getType().getMethod(method, paramAnnotation.type());
+                        final Method methodName = field.getType().getMethod(method, methodParamType);
                         methodName.invoke(fieldValue, value);
-                    } catch (ClassCastException | ReflectiveOperationException e) {
-                        throw new RuntimeException(error(4007).formatted(param, field.getName(), instance.getClass().getName(), fieldType.getName(), value == null ? "null" : value.getClass().getName()));
+                    } catch (IllegalArgumentException iae) { // parameter types don't match
+                        throw new RuntimeException(error(4007).formatted(param, field.getName(), instance.getClass().getName(), methodParamType.getName(), value == null ? "null" : value.getClass().getName()), iae);
+                    } catch (ReflectiveOperationException roe) { // method not found
+                        throw new RuntimeException(error(4001).formatted(method, param, field.getName(), instance.getClass().getName()), roe);
                     }
                 }
 
