@@ -328,7 +328,6 @@ public class FxClassGenerator {
         //     instance.foo();
         // });
         for (OnKey onKey : method.getAnnotationsByType(OnKey.class)) {
-            System.out.println("annotation onkey");
             out.printf("    controllerManager.addKeyEventHandler(instance, OnKey.Target.%s, OnKey.Type.%s.asEventType(), event -> {%n", onKey.target(), onKey.type());
             if (onKey.control()) {
                 out.printf("      if (!event.isControlDown()) return;%n");
