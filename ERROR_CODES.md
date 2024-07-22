@@ -341,7 +341,7 @@ This error is thrown if the framework tries to register a field as a route provi
 with `@Route`.
 This should never happen if the framework is used correctly.
 
-### 3002: `Route '*' already leads to '*' but was tried to be registered for '*'.`
+### 3002: `Route '*' already leads to a controller/component of type '*'.`
 
 - Runtime: ✅
 - Annotation Processor: ❌
@@ -376,7 +376,7 @@ public class Routes {
 
 ### 3004: `Field '*' in class '*' is not a valid provider field.`
 
-- Runtime: ✅
+- Runtime: ❌
 - Annotation Processor: ✅
 
 This error is thrown when a field annotated with `@Route` is not a `Provider`.
