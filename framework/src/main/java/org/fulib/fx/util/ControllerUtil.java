@@ -8,7 +8,6 @@ import org.fulib.fx.annotation.event.OnDestroy;
 import org.fulib.fx.annotation.event.OnInit;
 import org.fulib.fx.annotation.event.OnKey;
 import org.fulib.fx.annotation.event.OnRender;
-import org.fulib.fx.controller.exception.InvalidRouteFieldException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -99,6 +98,16 @@ public class ControllerUtil {
     }
 
     /**
+     * Checks if a class is a controller or a component.
+     *
+     * @param clazz The class to check
+     * @return True if the class is a controller or a component
+     */
+    public static boolean isControllerOrComponent(@Nullable Class<?> clazz) {
+        return isController(clazz) || isComponent(clazz);
+    }
+
+    /**
      * Checks if the given field is a field that can provide a component.
      *
      * @param field The field to check
@@ -128,11 +137,11 @@ public class ControllerUtil {
      * A valid route field is a field that is annotated with {@link Route} and is of type {@link Provider} where the generic type is a class annotated with {@link Controller} or {@link Component}.
      *
      * @param field The field to check
-     * @throws InvalidRouteFieldException If the field is not a valid route field
+     * @throws RuntimeException If the field is not a valid route field
      */
     public static void requireControllerProvider(@NotNull Field field) {
-        if (isControllerOrComponent(getProvidedClass(field))) {
-            throw new InvalidRouteFieldException(field);
+        if (!isControllerOrComponent(getProvidedClass(field))) {
+            throw new RuntimeException(error(3003).formatted(field.getName(), field.getDeclaringClass().getName()));
         }
     }
 
@@ -157,7 +166,7 @@ public class ControllerUtil {
      * If a method overrides another method and the overridden method is an event method, calling the superclass method
      * results in the subclass method being called twice due to how java handles method overrides.
      *
-     * @param method     The method to check
+     * @param method The method to check
      */
     public static void checkOverrides(Method method) {
         Method overridden = ReflectionUtil.getOverriding(method);
