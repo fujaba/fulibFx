@@ -15,7 +15,6 @@ import org.fulib.fx.annotation.event.OnInit;
 import org.fulib.fx.annotation.event.OnKey;
 import org.fulib.fx.annotation.event.OnRender;
 import org.fulib.fx.controller.building.ControllerBuildFactory;
-import org.fulib.fx.controller.exception.IllegalControllerException;
 import org.fulib.fx.controller.internal.FxSidecar;
 import org.fulib.fx.controller.internal.ReflectionSidecar;
 import org.fulib.fx.data.disposable.RefreshableCompositeDisposable;
@@ -117,7 +116,7 @@ public class ControllerManager {
 
         // Check if the instance is a controller
         if (!ControllerUtil.isControllerOrComponent(instance)) {
-            throw new IllegalControllerException(error(1001).formatted(instance.getClass().getName()));
+            throw new RuntimeException(error(1001).formatted(instance.getClass().getName()));
         }
 
         getSidecar(instance).init(instance, parameters);

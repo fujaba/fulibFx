@@ -198,4 +198,19 @@ public class TraversableNodeTree<E> implements TraversableTree<E> {
 
     }
 
+    @Override
+    public String toString() {
+        return this.toString(this.root, 0);
+    }
+
+    private String toString(Node<E> node, int depth) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("\t".repeat(Math.max(0, depth)));
+        builder.append(node.id.isBlank() ? "[empty]" : node.id).append(" ").append(node.value()).append("\n");
+        for (Node<E> child : node.children()) {
+            builder.append(toString(child, depth + 1));
+        }
+        return builder.delete(builder.length() - 2, builder.length()).toString();
+    }
+
 }

@@ -147,7 +147,7 @@ public abstract class FulibFxApp extends Application {
      */
     @SuppressWarnings("unchecked")
     public @NotNull <T extends Node> T initAndRender(@NotNull String route, @NotNull Map<@NotNull String, @Nullable Object> params, @Nullable DisposableContainer onDestroy) {
-        Object component = this.frameworkComponent.router().getController(route);
+        Object component = this.frameworkComponent.router().getRoute(route);
         if (!ControllerUtil.isComponent(component)) {
             throw new IllegalArgumentException(error(1000).formatted(component.getClass().getName()));
         }

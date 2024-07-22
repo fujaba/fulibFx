@@ -19,7 +19,6 @@ import org.fulib.fx.app.controller.history.CController;
 import org.fulib.fx.app.controller.subcomponent.basic.ButtonSubComponent;
 import org.fulib.fx.app.controller.types.BasicComponent;
 import org.fulib.fx.constructs.Modals;
-import org.fulib.fx.controller.exception.ControllerInvalidRouteException;
 import org.junit.jupiter.api.Test;
 import org.testfx.framework.junit5.ApplicationTest;
 
@@ -92,7 +91,7 @@ public class FrameworkTest extends ApplicationTest {
         verifyThat("Root Component", Node::isVisible);
         sleep(200);
 
-        assertThrows(ControllerInvalidRouteException.class, () -> app.show("/controller/invalid"));
+        assertThrows(RuntimeException.class, () -> app.show("/controller/invalid"));
     }
 
     /**

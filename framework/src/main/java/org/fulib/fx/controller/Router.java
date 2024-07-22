@@ -4,16 +4,9 @@ import dagger.Lazy;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.util.Pair;
-import org.fulib.fx.FulibFxApp;
 import org.fulib.fx.annotation.Route;
-import org.fulib.fx.annotation.controller.Component;
-import org.fulib.fx.annotation.controller.Controller;
-import org.fulib.fx.controller.exception.ControllerDuplicatedRouteException;
-import org.fulib.fx.controller.exception.ControllerInvalidRouteException;
 import org.fulib.fx.data.*;
 import org.fulib.fx.util.ControllerUtil;
-import org.fulib.fx.util.FrameworkUtil;
-import org.fulib.fx.util.ReflectionUtil;
 import org.fulib.fx.util.reflection.Reflection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -31,8 +24,8 @@ import static org.fulib.fx.util.FrameworkUtil.note;
 @Singleton
 public class Router {
 
-    private final TraversableTree<Field> routes;
-    private final SizeableTraversableQueue<Pair<Either<TraversableNodeTree.Node<Field>, Object>, Map<String, Object>>> history;
+    private final TraversableTree<Provider<?>> routes;
+    private final SizeableTraversableQueue<Pair<Either<TraversableNodeTree.Node<Provider<?>>, Object>, Map<String, Object>>> history;
 
     @Inject
     Lazy<ControllerManager> manager;
@@ -60,6 +53,15 @@ public class Router {
         Reflection.getFieldsWithAnnotation(routes.getClass(), Route.class).forEach(this::registerRoute);
     }
 
+    /**
+     * Checks if a router class has been registered already.
+     *
+     * @return True if a router class has been registered already.
+     */
+    public boolean routesRegistered() {
+        return this.routerObject != null;
+    }
+
 
     /**
      * Registers a field as a route.
@@ -79,13 +81,53 @@ public class Router {
         Route annotation = field.getAnnotation(Route.class);
         String route = annotation.value().equals("$name") ? "/" + field.getName() : annotation.value();
 
+        try {
+            field.setAccessible(true);
+            Provider<?> provider = (Provider<?>) field.get(routerObject);
+            registerRoute(route, provider);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+    /**
+     * Registers a route with the given provider.
+     * When adding a route, the route has to be unique, otherwise an exception will be thrown.
+     * <p>
+     * The route has to start with a slash, otherwise it will be added automatically.
+     * <p>
+     * This method doesn't check if the provider provides a valid controller or component.
+     *
+     * @param route    The route to register
+     * @param provider The provider to register
+     * @throws RuntimeException If the route is already registered
+     */
+    public void registerRoute(@NotNull String route, @NotNull Provider<?> provider) {
         // Make sure the route starts with a slash to prevent issues with the traversal
         route = route.startsWith("/") ? route : "/" + route;
 
+        checkDuplicatedRoute(route, provider);
+
+        this.routes.insert(route, provider);
+
+    }
+
+    private void checkDuplicatedRoute(String route, Provider<?> provider) {
         if (this.routes.containsPath(route)) {
-            throw new ControllerDuplicatedRouteException(route, field.getType(), this.routes.get(route).getType());
+            Object oldController = this.routes.get(route).get();
+            throw new RuntimeException(error(3002).formatted(route, oldController == null ? "null" : oldController.getClass().getName()));
         }
-        this.routes.insert(route, field);
+    }
+
+    private void checkContainsRoute(String route) {
+        if (!this.routes.containsPath(route)) {
+            String message = error(3005).formatted(route);
+            if (this.routes.containsPath("/" + route)) {
+                message += " " + note(3005).formatted("/" + route);
+            }
+            throw new RuntimeException(message);
+        }
     }
 
     /**
@@ -95,35 +137,27 @@ public class Router {
      * @param route      The route of the controller
      * @param parameters The parameters to pass to the controller
      * @return A pair containing the controller instance and the rendered parent (will be the same if the controller is a component)
-     * @throws ControllerInvalidRouteException If the route couldn't be found
+     * @throws RuntimeException If the route couldn't be found
      */
     public @NotNull Pair<Object, Parent> renderRoute(@NotNull String route, @NotNull Map<@NotNull String, @Nullable Object> parameters) {
         // Check if the route exists and has a valid controller
-        if (!this.routes.containsPath(route)) {
-            String message = error(3005).formatted(route);
-            if (this.routes.containsPath("/" + route)) {
-                message += " " + note(3005).formatted("/" + route);
-            }
-            throw new ControllerInvalidRouteException(message);
-        }
+        checkContainsRoute(route);
 
         // Get the provider and the controller class
-        Field provider = this.routes.traverse(route);
-        TraversableNodeTree.Node<Field> node = ((TraversableNodeTree<Field>) this.routes).currentNode();
+        Provider<?> provider = this.routes.traverse(route);
+        TraversableNodeTree.Node<Provider<?>> node = ((TraversableNodeTree<Provider<?>>) this.routes).currentNode();
 
         // Since we visited this route with the given parameters, we can add it to the history
         this.addToHistory(new Pair<>(Either.left(node), parameters));
-        Class<?> controllerClass = ReflectionUtil.getProvidedClass(Objects.requireNonNull(provider));
 
-        // Check if the provider is providing a valid controller/component
-        if (controllerClass == null) {
-            throw new RuntimeException(error(3004).formatted(provider.getName(), routerObject.getClass().getName()));
-        }
-        if (!controllerClass.isAnnotationPresent(Controller.class) && !controllerClass.isAnnotationPresent(Component.class)) {
+        // Get the instance of the controller
+        Object controllerInstance = provider.get();
+        Class<?> controllerClass = controllerInstance.getClass();
+
+        if (!ControllerUtil.isControllerOrComponent(controllerClass)) {
             throw new RuntimeException(error(1001).formatted(controllerClass.getName()));
         }
-        // Get the instance of the controller
-        Object controllerInstance = ReflectionUtil.getInstanceOfProviderField(provider, this.routerObject);
+
         Node renderedNode = this.manager.get().initAndRender(controllerInstance, parameters);
 
         if (renderedNode instanceof Parent parent) {
@@ -134,18 +168,35 @@ public class Router {
     }
 
     /**
-     * Returns the controller with the given route without initializing and rendering it.
+     * Returns the controller or component with the given route without initializing and rendering it.
      * The route will be seen as absolute, meaning it will be treated as a full path.
      *
      * @param route The route of the controller
      * @return The controller instance
      */
-    public Object getController(String route) {
-        Field provider = this.routes.get(route.startsWith("/") ? route : "/" + route);
-        return ReflectionUtil.getInstanceOfProviderField(provider, this.routerObject);
+    public Object getRoute(String route) {
+        String absoluteRoute = absolute(route);
+        checkContainsRoute(absoluteRoute);
+        Provider<?> provider = this.routes.get(absoluteRoute);
+        return provider.get();
     }
 
-    public void addToHistory(Pair<Either<TraversableNodeTree.Node<Field>, Object>, Map<String, Object>> pair) {
+    private String absolute(String route) {
+        return route.startsWith("/") ? route : "/" + route;
+    }
+
+    /**
+     * Returns whether the router contains the given route.
+     * The route will be seen as absolute, meaning it will be treated as a full path.
+     *
+     * @param route The route to check
+     * @return True if the route exists
+     */
+    public boolean containsRoute(String route) {
+        return this.routes.containsPath(absolute(route));
+    }
+
+    public void addToHistory(Pair<Either<TraversableNodeTree.Node<Provider<?>>, Object>, Map<String, Object>> pair) {
         this.history.insert(pair);
     }
 
@@ -177,12 +228,12 @@ public class Router {
         }
     }
 
-    private Pair<Object, Node> navigate(Pair<Either<TraversableNodeTree.Node<Field>, Object>, Map<String, Object>> pair) {
+    private Pair<Object, Node> navigate(Pair<Either<TraversableNodeTree.Node<Provider<?>>, Object>, Map<String, Object>> pair) {
         var either = pair.getKey();
-        either.getLeft().ifPresent(node -> ((TraversableNodeTree<Field>) routes).setCurrentNode(node)); // If the history contains a route, set it as the current node
+        either.getLeft().ifPresent(node -> ((TraversableNodeTree<Provider<?>>) routes).setCurrentNode(node)); // If the history contains a route, set it as the current node
 
         Object controller = either.isLeft() ?
-                ReflectionUtil.getInstanceOfProviderField(either.getLeft().orElseThrow().value(), this.routerObject) : // Get the controller instance from the provider
+                Objects.requireNonNull(either.getLeft().orElseThrow().value()).get() : // Get the controller instance from the provider
                 either.getRight().orElseThrow(); // Get the controller instance from the history
 
         this.manager.get().cleanup(); // Cleanup the current controller
@@ -201,17 +252,10 @@ public class Router {
      * @return The current controller object and its parameters
      */
     public Pair<Object, Map<String, Object>> current() {
-        Either<TraversableNodeTree.Node<Field>, Object> either = this.history.current().getKey();
+        Either<TraversableNodeTree.Node<Provider<?>>, Object> either = this.history.current().getKey();
         return new Pair<>(
                 either.isLeft() ?
-                        either.getLeft().map(node -> {
-                            try {
-                                Objects.requireNonNull(node.value()).setAccessible(true);
-                                return ((Provider<?>) Objects.requireNonNull(node.value()).get(routerObject)).get();
-                            } catch (IllegalAccessException e) {
-                                throw new RuntimeException(e);
-                            }
-                        }).orElseThrow() :
+                        either.getLeft().map(node -> ((Provider<?>) Objects.requireNonNull(node.value()).get())).orElseThrow() :
                         either.getRight().orElseThrow(),
                 this.history.current().getValue()
         );
@@ -225,5 +269,11 @@ public class Router {
      */
     public void setHistorySize(int size) {
         this.history.setSize(size);
+    }
+
+
+    @Override
+    public String toString() {
+        return "Router(\n" + this.routes + "\n)";
     }
 }
