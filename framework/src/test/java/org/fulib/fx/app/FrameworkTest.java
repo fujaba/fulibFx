@@ -210,32 +210,6 @@ public class FrameworkTest extends ApplicationTest {
     }
 
     @Test
-    @Deprecated
-    @SuppressWarnings("all")
-    public void modalTestLegacy() {
-        runAndWait(() -> app.show("/controller/basic"));
-        verifyThat("Basic Controller", Node::isVisible);
-        sleep(200);
-
-        ModalComponent component = new ModalComponent();
-
-        FX_SCHEDULER.scheduleDirect(() -> org.fulib.fx.controller.Modals.showModal(app, component, (stage, controller) -> {
-            stage.setTitle("Modal");
-            stage.setWidth(200);
-            stage.setHeight(200);
-        }, Map.of("key", "value"), true));
-
-        waitForFxEvents();
-
-        Stage modal = Modals.getModalStages().get(0);
-
-        assertNotNull(modal);
-        assertEquals("value", component.getValue());
-        verifyThat("Modal Component", Node::isVisible);
-        assertEquals("Modal", modal.getTitle());
-    }
-
-    @Test
     public void params() {
         ParamController controller = new ParamController();
         StringProperty property = new SimpleStringProperty("string");
