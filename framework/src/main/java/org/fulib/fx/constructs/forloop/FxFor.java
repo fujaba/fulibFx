@@ -19,13 +19,7 @@ import java.util.function.BiConsumer;
  */
 @Singleton
 public class FxFor {
-
     private final ControllerManager controllerManager;
-
-    @Deprecated
-    public FxFor(ControllerManager controllerManager) {
-        this.controllerManager = controllerManager;
-    }
 
     @Inject
     public FxFor(FulibFxApp app) {
