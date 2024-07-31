@@ -233,10 +233,7 @@ public class Subscriber implements RefreshableDisposableContainer {
     }
 
     /**
-     * Adds a disposable to the composite disposable.
-     *
-     * @param d The disposable to add
-     * @return true if the disposable was added, false otherwise
+     * {@inheritDoc}
      * @deprecated Use {@link #subscribe(Disposable)} instead
      */
     @Deprecated
@@ -246,10 +243,7 @@ public class Subscriber implements RefreshableDisposableContainer {
     }
 
     /**
-     * Adds a disposable to the composite disposable.
-     *
-     * @param d The disposable to add
-     * @return true if the disposable was added, false otherwise
+     * {@inheritDoc}
      * @deprecated Removing disposables from the composite disposable should not be done manually.
      */
     @Deprecated
@@ -259,10 +253,7 @@ public class Subscriber implements RefreshableDisposableContainer {
     }
 
     /**
-     * Adds a disposable to the composite disposable.
-     *
-     * @param d The disposable to add
-     * @return true if the disposable was added, false otherwise
+     * {@inheritDoc}
      * @deprecated Deleting disposables from the composite disposable should not be done manually.
      */
     @Deprecated
