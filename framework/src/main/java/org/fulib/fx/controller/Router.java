@@ -255,7 +255,7 @@ public class Router {
         Either<TraversableNodeTree.Node<Provider<?>>, Object> either = this.history.current().getKey();
         return new Pair<>(
                 either.isLeft() ?
-                        either.getLeft().map(node -> ((Provider<?>) Objects.requireNonNull(node.value()).get())).orElseThrow() :
+                        either.getLeft().map(node -> ((Provider<?>) Objects.requireNonNull(node.value()))).orElseThrow() :
                         either.getRight().orElseThrow(),
                 this.history.current().getValue()
         );
