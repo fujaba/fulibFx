@@ -22,6 +22,8 @@ public class AppTest extends ApplicationTest {
         super.start(stage);
         app.setComponent(DaggerTestComponent.builder().mainApp(app).build());
         app.start(stage);
+        stage.setWidth(1000);
+        stage.setHeight(800);
         stage.requestFocus();
     }
 
