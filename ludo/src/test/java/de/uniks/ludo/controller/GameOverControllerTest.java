@@ -23,6 +23,7 @@ public class GameOverControllerTest extends ControllerTest {
     public void start(Stage stage) throws Exception {
         super.start(stage);
         app.show(gameOverController, Map.of("winner", 1));
+        stage.requestFocus();
     }
 
     @Test

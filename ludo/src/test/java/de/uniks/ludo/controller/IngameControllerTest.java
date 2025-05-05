@@ -38,6 +38,7 @@ public class IngameControllerTest extends ControllerTest {
         super.start(stage);
         ingameController.diceSubComponent = diceSubComponent;
         app.show(ingameController, Map.of("playerAmount", 2));
+        stage.requestFocus();
     }
 
     @Test
