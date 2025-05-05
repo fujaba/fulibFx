@@ -7,6 +7,12 @@ It provides a simple way to create and manage controllers, views, routes, subcom
 The framework is built on top of JavaFX and uses Dagger for dependency injection and RxJava for reactive programming.
 It also provides a few utility classes and data structures to simplify the creation of JavaFX applications.
 
+## ❓ Support
+If you have any questions or need help with the framework, feel free to open an [issue on GitHub](https://github.com/fujaba/fulibFx/issues).
+When reporting errors, make sure to use the latest available version of the framework with a supported Java version (17 or 21).
+
+Before reporting an issue, please check the [common issues](#-common-issues) section or the [wiki](https://fujaba.github.io/fulibFx/) first.
+
 ## 🔗 Installation
 
 ```groovy
@@ -184,3 +190,10 @@ elements which are not present in the basic JavaFX library. To fix this, you can
 elements to the SceneBuilder. The simplest way is to build your project and then add the jar file by clicking on the small
 gear icon next to the search bar and selecting "JAR/FXML Manager". Then you can add the jar file by clicking on the "Add
 Library/FXML from file system" button.
+
+### 6. My tests fail
+Tests using TestFX (especially headless) are janky in general. This isn't really a problem of the framework but rather a problem of TestFX itself.
+Some tips to avoid problems:
+- Set the stage size to a fixed size (e.g. 1600x900) to avoid out of view elements.
+- Use `stage.requestFocus()` to focus the stage before running the test.
+- Minimize other windows to avoid interference (yes, I know this is stupid).
