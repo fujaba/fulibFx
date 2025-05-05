@@ -25,6 +25,7 @@ public class SetupControllerTest extends ControllerTest {
     public void start(Stage stage) throws Exception {
         super.start(stage);
         app.show(setupController);
+        stage.requestFocus();
     }
 
     @Test

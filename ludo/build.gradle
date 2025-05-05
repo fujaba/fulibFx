@@ -5,6 +5,14 @@ plugins {
     id 'org.fulib.fulibGradle' version "$fulibGradlePluginVersion"
 }
 
+repositories {
+    mavenCentral()
+    maven {
+        name = "jitpack"
+        url = "https://jitpack.io"
+    }
+}
+
 // JavaFX dependencies
 javafx {
     version = javaFxVersion
@@ -28,15 +36,26 @@ dependencies {
 
 // ------------------- Tests -------------------
 
+configurations {
+    mockitoAgent
+}
+
 // Test dependencies
 dependencies {
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: junitJupiterVersion
     testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: junitJupiterVersion
     testImplementation group: 'org.testfx', name: 'testfx-junit5', version: testFxVersion
     testImplementation group: 'org.testfx', name: 'openjfx-monocle', version: monocleVersion
-    testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: mockitoVersion
     testAnnotationProcessor group: 'com.google.dagger', name: 'dagger-compiler', version: daggerVersion
     testImplementation group: 'org.hamcrest', name: 'hamcrest', version: hamcrestVersion
+    testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: mockitoVersion
+    mockitoAgent("org.mockito:mockito-core:$mockitoVersion") {
+        transitive = false
+    }
+}
+
+tasks.withType(Test).configureEach {
+    jvmArgs += "-javaagent:${configurations.mockitoAgent.asPath}"
 }
 
 java {
@@ -65,14 +84,6 @@ compileJava {
     options.sourcepath = sourceSets.main.resources.getSourceDirectories()
 }
 javadoc { options.encoding = "UTF-8" }
-
-repositories {
-    mavenCentral()
-    maven {
-        name = "jitpack"
-        url = "https://jitpack.io"
-    }
-}
 
 group projectGroup
 version projectVersion
