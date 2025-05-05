@@ -29,9 +29,6 @@ public class AppTest extends ApplicationTest {
 
     @Test
     public void test() {
-        Platform.runLater(() -> app.stage().requestFocus());
-        waitForFxEvents();
-
         press(KeyCode.LEFT);
         release(KeyCode.LEFT);
         press(KeyCode.TAB);

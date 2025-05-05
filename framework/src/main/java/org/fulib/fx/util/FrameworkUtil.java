@@ -19,7 +19,7 @@ public class FrameworkUtil {
     }
 
     public static String error(int id) {
-        return ERROR_BUNDLE.getString(String.valueOf(id)) + " [FFX" + id + "]";
+        return "FFX" + id + ": " + ERROR_BUNDLE.getString(String.valueOf(id));
     }
 
     public static String note(int id) {
