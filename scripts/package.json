@@ -4,7 +4,7 @@
 		"error-codes": "node error-codes.js"
 	},
 	"dependencies": {
-		"glob": "^10.3.10",
+		"glob": "^12.0.0",
 		"java-properties": "^1.0.2"
 	},
 	"devDependencies": {
